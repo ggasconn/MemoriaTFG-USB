@@ -1,0 +1,22 @@
+pandoc_common:
+  output_basename: main  
+  filters:
+  - pandoc-citeproc
+  - teaching_md
+  input_files:
+  - settings.yaml
+## Put preambles here  
+  - titlepage.md
+  - preamble/abstract.md
+  - preamble/authorization.md
+  - separators/mainmatter.md
+## Include chapters here    
+  - chapters/test_chapter.md
+  - separators/backmatter.md
+## Include appendices here      
+  - appendices/test_appendix.md
+## Include this file if your document contains a bibliography  
+  - separators/bibliography.md
+pandoc_targets:
+  PDF:
+    options: -t latex -s --latex-engine=lualatex --template=pandoc-template.tex -N --verbose 
