@@ -20,3 +20,5 @@ pandoc_common:
 pandoc_targets:
   PDF:
     options: -t latex -s --latex-engine=lualatex --template=pandoc-template.tex -N --verbose 
+  DOCX:
+    options: -t docx
