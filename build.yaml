@@ -1,6 +1,7 @@
 pandoc_common:
   output_basename: main  
   filters:
+#  - pandoc-crossref
   - pandoc-citeproc
   - teaching_md
   input_files:
