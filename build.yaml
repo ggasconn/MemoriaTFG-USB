@@ -7,7 +7,6 @@ pandoc_common:
   input_files:
   - settings.yaml
 ## Put preambles here  
-  - titlepage.md
   - preamble/abstract.md
   - preamble/authorization.md
   - separators/mainmatter.md

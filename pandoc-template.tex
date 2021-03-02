@@ -226,8 +226,98 @@ $endif$
 
 \frontmatter
 
-%\pagestyle{empty} 
-%\input{titlepage}
+%% I add titlepage right here
+\ifpdf
+\pdfbookmark{Página de Título}{titulo}
+\fi
+
+\thispagestyle{empty}
+
+\renewcommand{\linethickness}{0.05em}
+
+\begin{titlepage}
+
+\begin{center}
+
+\rule{0.5\linewidth}{\linethickness}
+
+\vspace{1cm}
+
+{\huge \textbf{$if(title)$$title$$else$Soporte de calidad de servicio en Linux para procesadores equipados con la tecnología Intel CAT$endif$}}
+
+\vspace{1cm}
+
+\rule{0.5\linewidth}{\linethickness}
+
+
+\includegraphics[width=0.38\textwidth]{img/ucmlogo.png}
+
+{\large
+TRABAJO FIN DE GRADO
+
+\vspace{0.4cm}
+
+$if(author)$$author$$else$Fulanito López García$endif$
+}
+
+\vspace{0.2cm}
+
+Dirigido por: $if(advisor)$$advisor$$else$Juan Carlos Sáez Alcaide y Fernando Castro Rodríguez\\ $endif$
+
+\vfill
+
+$if(program)$$program$ \\ $else$ Grado en Ingeniería Informática\\ $endif$
+Facultad de Informática\\  
+Universidad Complutense de Madrid\\ 
+$if(date)$$date$$else$2020$endif$
+
+\end{center}
+
+\end{titlepage}
+
+%ADD blank page after cover 
+
+\newpage
+\thispagestyle{empty}
+\mbox{}
+
+
+%Second cover
+
+\thispagestyle{empty}
+
+\begin{titlepage}
+\begin{center}
+
+\vspace{2cm}
+
+{\huge \textbf{$if(title)$$title$$else$Soporte de calidad de servicio en Linux para procesadores equipados con la tecnología Intel CAT$endif$}}
+
+\vspace{5.5cm}
+
+{\large
+
+\textit{Memoria de Trabajo Fin de Grado}
+
+\vspace{0.4cm}
+
+$if(author)$$author$$else$Fulanito López García$endif$
+}
+
+\vspace{0.2cm}
+
+Dirigido por: $if(advisor)$$advisor$$else$Juan Carlos Sáez Alcaide y Fernando Castro Rodríguez\\ $endif$
+
+\vfill
+
+$if(program)$$program$ \\ $else$ Grado en Ingeniería Informática\\ $endif$
+Facultad de Informática\\  
+Universidad Complutense de Madrid\\ 
+$if(date)$$date$$else$2020$endif$
+
+\end{center}
+
+\end{titlepage}
 
 $for(include-before)$
 $include-before$

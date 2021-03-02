@@ -2,8 +2,20 @@
 bibliography:
 - biblio.bib
 citation-style: ieee.csl
-geometry: "top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm"
+geometry: "top=3cm, bottom=3cm, left=3cm, right=3cm"
 fontsize: 12pt
 fontfamily: times
 lang: es-ES
+header-includes:
+- \usepackage{subfig}
+#- \usepackage[ruled,vlined]{algorithm2e}
+- \usepackage{fancyhdr}
+- \fancyhf{}
+- \cfoot{\thepage}
+- \pagestyle{fancy}
+title: Algo relacionado con cambios en PMCTrack
+author: Lázaro Clemen Palafox
+advisor: Juan Carlos Sáez Alcaide
+program: Grado en Ingeniería de Computadores
+date: 2021
 ---
