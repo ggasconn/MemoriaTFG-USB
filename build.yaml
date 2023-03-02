@@ -19,6 +19,6 @@ pandoc_common:
   - separators/bibliography.md
 pandoc_targets:
   PDF:
-    options: -t latex -s --pdf-engine=lualatex --template=pandoc-template.tex -N --verbose 
+    options: -t latex -s --pdf-engine=lualatex --template=pandoc-template.tex -N --verbose --highlight-style=tango
   DOCX:
     options: -t docx

@@ -1,4 +1,10 @@
 \documentclass[$if(fontsize)$$fontsize$,$endif$$if(lang)$$babel-lang$,$endif$$if(papersize)$$papersize$paper,$endif$$for(classoption)$$classoption$$sep$,$endfor$]{book} %%Document class forzado a book
+\usepackage{tikz}
+\usepackage{standalone}
+\usetikzlibrary{calc,backgrounds,arrows,trees,shapes,snakes,shadows,patterns,matrix,fit,patterns,positioning,automata,decorations.pathmorphing,decorations.pathreplacing}
+\usepackage{pgfgantt}
+\usepackage{caption}
+\usepackage{booktabs}
 $if(beamerarticle)$
 \usepackage{beamerarticle} % needs to be loaded first
 $endif$
@@ -207,6 +213,7 @@ $endfor$
 
 $if(title)$
 \title{$title$$if(thanks)$\thanks{$thanks$}$endif$}
+\def\thetitle{$title$}
 $endif$
 $if(subtitle)$
 \providecommand{\subtitle}[1]{}
@@ -214,10 +221,20 @@ $if(subtitle)$
 $endif$
 $if(author)$
 \author{$for(author)$$author$$sep$ \and $endfor$}
+\def\theauthor{$for(author)$$author$$sep$ \and $endfor$}
+$endif$
+$if(advisor)$
+\def\theadvisor{$for(advisor)$$advisor$$sep$ \and $endfor$}
 $endif$
 $if(institute)$
 \providecommand{\institute}[1]{}
 \institute{$for(institute)$$institute$$sep$ \and $endfor$}
+$endif$
+$if(department)$
+\def\thedepartment{$department$}
+$endif$
+$if(course)$
+\def\thecourse{$course$}
 $endif$
 \date{$date$}
 
@@ -262,14 +279,14 @@ $if(author)$$author$$else$Fulanito López García$endif$
 
 \vspace{0.2cm}
 
-Dirigido por: $if(advisor)$$advisor$$else$Juan Carlos Sáez Alcaide y Fernando Castro Rodríguez\\ $endif$
+Dirigido por: $if(advisor)$$advisor$$else$Juan Carlos Sáez Alcaide\\ $endif$
 
 \vfill
 
 $if(program)$$program$ \\ $else$ Grado en Ingeniería Informática\\ $endif$
 Facultad de Informática\\  
 Universidad Complutense de Madrid\\ 
-$if(date)$$date$$else$2020$endif$
+$if(course)$Curso $course$$else$Curso 2021-22$endif$
 
 \end{center}
 
@@ -306,14 +323,14 @@ $if(author)$$author$$else$Fulanito López García$endif$
 
 \vspace{0.2cm}
 
-Dirigido por: $if(advisor)$$advisor$$else$Juan Carlos Sáez Alcaide y Fernando Castro Rodríguez\\ $endif$
+Dirigido por: $if(advisor)$$advisor$$else$Juan Carlos Sáez Alcaide\\ $endif$
 
 \vfill
 
 $if(program)$$program$ \\ $else$ Grado en Ingeniería Informática\\ $endif$
 Facultad de Informática\\  
 Universidad Complutense de Madrid\\ 
-$if(date)$$date$$else$2020$endif$
+$if(course)$Curso $course$$else$Curso 2021-22$endif$
 
 \end{center}
 

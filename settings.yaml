@@ -4,7 +4,8 @@ bibliography:
 citation-style: ieee.csl
 geometry: "top=3cm, bottom=3cm, left=3cm, right=3cm"
 fontsize: 12pt
-fontfamily: times
+fontfamily: tgpagella
+#fontfamily: times
 lang: es-ES
 header-includes:
 - \usepackage{subfig}
@@ -13,9 +14,13 @@ header-includes:
 - \fancyhf{}
 - \cfoot{\thepage}
 - \pagestyle{fancy}
-title: Algo relacionado con cambios en PMCTrack
-author: Lázaro Clemen Palafox
+# Para incluir fichero separado con código LaTeX
+#- \input{separators/preamble.tex}
+title: Un Trabajo Fin de Grado excelente 
+author: Fulanito Pérez Gómez y Gonzalo González Gonzalvo
 advisor: Juan Carlos Sáez Alcaide
-program: Grado en Ingeniería de Computadores
-date: 2021
+department: Departamento de Arquitectura de Computadores y Automática
+program: Grado en Ingeniería Informática
+course: 2022-2023
+date: 2023
 ---
