@@ -1,20 +1,4 @@
----
-geometry: "top=2cm, bottom=2cm, left=2cm, right=2cm"
-fontsize: 11pt
-autounderlined: true
-fontfamily: times
-header-includes:
-  - \usepackage{fontspec}
-  - \newfontfamily\xits{xits-regular.otf}
-  - \newcommand\cmdkey{{\xits ⌘}}
-  - \usepackage{newunicodechar}
-  - \newunicodechar{⌘}{\cmdkey}
----
-
-
-
 # ¿Dónde puedo obtener la plantilla?
-
 
 
 La plantilla puede obtenerse haciendo un fork del siguiente repositorio (opción recomendable): https://github.com/jcsaezal/plantilla-TFG-pandoc-markdown
