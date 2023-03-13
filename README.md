@@ -102,7 +102,7 @@ Los pasos a seguir son los siguientes:
 4. Para instalar los filtros básicos de Panbuild es preciso ejecutar el siguiente comando:
 
    ```bash
-   > pip install git+https://github.com/jcsaezal/panbuild
+   > pip install git+https://github.com/dualmarkdown/dualmarkdown
    ```
 
 ### Método 2: Instalación nativa
