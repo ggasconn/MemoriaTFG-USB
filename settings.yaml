@@ -16,8 +16,8 @@ header-includes:
 - \pagestyle{fancy}
 # Para incluir fichero separado con código LaTeX
 #- \input{separators/preamble.tex}
-title: Un Trabajo Fin de Grado excelente 
-author: Fulanito Pérez Gómez y Gonzalo González Gonzalvo
+title: Dispositivo hardware de bajo coste para bancos de pruebas de desarrollo de drivers USB en Linux 
+author: Guillermo Gascón Celdrán y Javier Rodríguez-Avello Tapias
 advisor: Juan Carlos Sáez Alcaide
 department: Departamento de Arquitectura de Computadores y Automática
 program: Grado en Ingeniería Informática

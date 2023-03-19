@@ -6,7 +6,7 @@ En los siguientes apartados se explican los motivos de la realización del proye
 
 
 
-### 1.1 Motivación
+## Motivación
 
 El protocolo USB es ampliamente usado en todo el mundo para la comunicación con casi cualquier periférico. De forma sencilla, cualquier usuario con un ordenador puede conectar un dispositivo, da igual la funcionalidad que tenga, al puerto USB de su ordenador y éste reconocerlo para que pueda comunicarse con la CPU y realizar la función para la que ha sido desarrollado.
 
@@ -16,13 +16,13 @@ Para poder estudiar todo el protocolo USB y la interacción entre el dispositivo
 
 
 
-### 1.2 Objetivos
+## Objetivos
 
 Uso del firmware como banco masivo de pruebas para otros proyectos que puedan utilizar la librería V-USB.
 
 
 
-### 1.3 Plan de trabajo
+## Plan de trabajo
 
 Para el desarrollo de este proyecto, se han mantenido distintas reuniones con los directores del proyecto y entre los desarrolladores. En la parte inicial del proyecto, se ha estudiado el funcionamiento de la librería V-USB con distintos proyectos que utilizan otros microchips, para ver qué uso se hacen de los report-IDs y las distintas funciones empleadas en el código. Se ha utilizado el software Wireshark para estudiar los endpoints usados y los paquetes URBs en la comunicación, y así estudiar la configuración del software y la posibilidad de utilizar, por ejemplo, interrupciones.
 
@@ -33,4 +33,4 @@ Para la integración del código, se ha utilizado GitHub.
 
 
 
-### 1.4 Organización de la memoria
+## Organización de la memoria
