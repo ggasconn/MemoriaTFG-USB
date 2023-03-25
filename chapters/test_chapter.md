@@ -1,6 +1,6 @@
 <!-- Leave a blank line before the title -->
 
-# Introducción
+# Test chapter
 
 Esto es solo un ejemplo de capítulo. Vamos a citar algo [@fig:label1] [@mauerer-book;@amba].
 

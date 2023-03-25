@@ -12,6 +12,8 @@ pandoc_common:
   - separators/mainmatter.md
 ## Include chapters here    
   - chapters/Introduction.md
+  - chapters/Firmware con USB.md
+  - chapters/Perifericos.md
   - chapters/test_chapter.md
   - separators/backmatter.md
 ## Include appendices here      

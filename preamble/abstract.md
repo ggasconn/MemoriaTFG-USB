@@ -2,13 +2,13 @@
 
 # Resumen {.unnumbered}
 
-El protocolo de comunicación USB, ampliamente usado en numerosos dispositivos en todo el mundo, resulta complejo a la hora de realizar modificaciones para determinados periféricos, sobre todo a la hora de realizar cambios en la programación del dispositivo en cuestión. En este proyecto se trabaja en la realización de un firmware para un chip determinado (ATTiny85) que sea capaz de realizar distintas funciones sobre periféricos, que trabajen con un driver cargado en Linux, todo ello programado en lenguaje C.
+El protocolo de comunicación USB, ampliamente usado en numerosos dispositivos en todo el mundo, resulta complejo a la hora de realizar modificaciones para determinados periféricos, sobre todo a la hora de realizar cambios en la programación del dispositivo en cuestión. En este proyecto se ha trabajado en la realización de un firmware para un chip determinado (ATTiny85) que sea capaz de realizar distintas funciones sobre periféricos, que trabajen con un driver cargado en Linux, todo ello programado en lenguaje C.
 
 La complejidad de la tecnología/especificación USB unido al tiempo limitado que puede dedicarse a describir aspectos de bajo nivel de entrada-salida en las titulaciones de Informática, dificulta la adquisición de conocimientos sobre desarrollo de drivers USB, muy valorados en sectores estratégicos. Asimismo, para iniciarse en el desarrollo de este tipo de drivers es preciso disponer de hardware suficientemente sencillo y de bajo coste. Un ejemplo de dispositivo para iniciación es el dispostitivo Blinkstick Strip, que cuenta con 8 LEDs de colores cuyo estado puede alterarse individualmente.
 
 En este proyecto se diseña y programa un dispositivo USB de bajo coste que pueda usarse masivamente como banco de pruebas para el desarrollo de drivers USB. Dicho dispositivo estará formado por varios componentes (LEDs, pantallas LCD, sensores, etc.), y permitirá al desarrollador familiarizarse con distintos aspectos y modos de interacción con el hardware USB, para poder afrontar la complejidad de USB de forma gradual. Además del diseño del hardware, y la construcción de un prototipo del mismo empleando un microcontrolador, como el ATTiny85, será necesario el desarrollo del firmware del dispositivo así como de un conjunto de drivers de ejemplo (preferentemente en Linux), para exponer al usuario los distintos componentes del dispositivo USB.
 
-**palabras clave**: Firmware, USB, endpoint, kernel Linux, report-ID, AVR, V-USB.
+**palabras clave**: Firmware, USB, endpoint, kernel Linux, report-ID, AVR, V-USB, Display LCD, Digispark.
 
 
 

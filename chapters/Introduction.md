@@ -34,3 +34,5 @@ Para la integración del código, se ha utilizado GitHub.
 
 
 ## Organización de la memoria
+
+Para la realización de esta memoria, se ha dividido la misma en varios capítulos. En el primero, se explica a modo de introducción el hardware utilizado y algunos aspectos de bajo nivel sobre la librería utilizada. En el siguiente capítulo, se explican los elementos hardware utilizados, como el anillo circular de leds o la pantalla LCD OLED.
