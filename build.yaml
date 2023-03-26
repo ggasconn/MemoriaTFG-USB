@@ -17,7 +17,8 @@ pandoc_common:
   - chapters/test_chapter.md
   - separators/backmatter.md
 ## Include appendices here      
-  - appendices/test_appendix.md
+  - appendices/flashCustomFirmware.md
+  - appendices/monitorUSBTraffic.md
 ## Include this file if your document contains a bibliography  
   - separators/bibliography.md
 pandoc_targets:
