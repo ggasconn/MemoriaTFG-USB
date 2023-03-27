@@ -1,60 +1,60 @@
 <!-- Leave a blank line before the title -->
 
-# How-To Monitor USB Traffic via Wireshark
+# Monitorizar el tráfico USB usando Wireshark
 
-This is a quick guide on how to capture and display USB traffic with Wireshark GUI interface which makes it very easy to interact with.
+En este anexo se explica cómo capturar y mostrar el tráfico USB con la interfaz GUI de Wireshark que hace que sea muy fácil interactuar con ella.
 
-All the software and testing has been done under `Ubuntu 20.04.5 LTS` with the kernel`5.15.0-48-generic`.
+Todo el software y las pruebas se han realizado bajo `Ubuntu 20.04.5 LTS` con el kernel`5.15.0-48-generic`.
 
 ## Software
 
-All the packages needed to monitor the traffic can be installed from the Ubuntu repositories using `apt`.
+Todos los paquetes necesarios se pueden instalar desde los repositorios de Ubuntu usando `apt`.
 
 ``` bash
 sudo apt install wireshark libpcap0.8
 ```
 
-Also, the `usbmon` module has to be enabled in order to access the usb traffic.
+Además, el módulo `usbmon` debe estar habilitado para acceder al tráfico usb.
 
 ```bash	
 sudo modprobe usbmon
 ```
 
-## Opening Wireshark
+## Abrimos Wireshark
 
-As we're going to be accessing physical hardware, we need to open Wireshark as a superuser. To accomplish that, we can launch it from the terminal as follows:
+Como vamos a acceder al hardware físico, debemos abrir Wireshark como superusuario. Para ello, procedemos a lanzarlo desde la terminal de la siguiente manera:
 
 ```bash
 sudo wireshark
 ```
 
-## Selecting the right usbmonX interface
+## Seleccionamos la interfaz usbmonX correcta
 
-Once we have opened Wireshark, we'll see a few *usbmon* interfaces we can monitor from. To select the correct one, we need to check which bus is our usb device connected to. We can use `lsusb` for that task.
+Una vez que hayamos abierto Wireshark, veremos algunas interfaces *usbmon* desde las que podemos monitorear. Para seleccionar la interfaz correcta, debemos verificar a qué bus está conectado nuestro dispositivo USB. Podemos usar `lsusb` para esa tarea.
 
 ```bash
 $ lsusb
 Bus 001 Device 067: ID 16c0:05df Van Ooijen Technische Informatica HID device
 ```
 
-In this case, we'll choose *usbmon1* since our device is connected to the bus 001 as we see on the *lsusb* output. Also, we can see that the *DeviceID* is the number 67, this will be useful later for the display filter.
+En este caso, elegiremos *usbmon1* ya que nuestro dispositivo está conectado al bus 001. Además, podemos ver que el *DeviceID* es el número 67, esto será útil más adelante para el filtro de visualización.
 
-## Starting the capture
+## Empezamos a capturar tráfico
 
-To start capturing traffic, we just need to double click on the correct *usbmon* interface and it'll automatically start showing some traffic. Most of the traffic displayed won't be useful for us, so the best thing to do now is apply some filters to only show the traffic regarding our usb device.
+Para comenzar a capturar tráfico, solo necesitamos hacer doble clic en la interfaz *usbmon* correcta y automáticamente comenzará a mostrar líneas con los paquetes en tránsito. La mayor parte del tráfico que se muestra no nos será útil, por lo que lo mejor ahora es aplicar algunos filtros para mostrar solo el tráfico relacionado con nuestro dispositivo USB.
 
-![Wireshark capturing USB traffic](img/wireshark.png)
+![Captura mostrando el tráfico USB de Wireshark capturado](img/wireshark.png)
 
-## Filtering the traffic
+## Filtrar el tráfico mostrado
 
-As I've said before, the best way to display useful traffic is using display filters, so let's do it. 
+Como se ha mencionado previamente, la mejor manera de mostrar el tráfico que nos interesa es usar filtros de visualización.
 
-The syntax is very simple, so we can write it our selfs or right click a package from our device and prepare it as a filter, but basically all we need to introduce is:
+La sintaxis es muy simple, por lo que podemos escribirla nosotros mismos o hacer clic derecho en un paquete desde nuestro dispositivo y prepararlo como un filtro. En la línea de filtros, aplicamos lo siguiente:
 
 ```
 usb.src == "1.67.0" || usb.dst == "1.67.0"
 ```
 
-Where the first number corresponds to the bus, the second to the device id and the third to the endpoint id.
+Donde el primer número corresponde al bus, el segundo al *device ID* y el tercero al *endpoint ID*.
 
-![Filter example](img/filter.png)
+![Ejemplo de un filtro aplicado](img/filter.png)

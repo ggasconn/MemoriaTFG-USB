@@ -55,8 +55,92 @@ Una de las características más importantes es que incluye un mecanismo CRC (co
 
 ## Pantalla LCD OLED
 
+Otro de los periféricos usado para el desarrollo del firmware, es una pantalla LCD tipo OLED, en el que se muestran cadenas de texto. 
 
+![Pantalla OLED utilizada en el proyecto](img/LCD_OLED.png){width=40%}
 
+Para su implementación en el firmware del dispositivo, se hace uso de la biblioteca ```oled.h```. El cambio fundamental es en la función ```uchar usbFunctionWrite(uchar *data, uchar len)```  en el que se ha añadido un nuevo report ID (el reportID 4) que hace uso de esta librería para mostrar una cadena de texto guardada en el array ```uchar *data``` que le llega por parámetro a la función.
+
+```C
+} else if (reportId == 4) {
+    display7sSet(data[1]);
+
+    return 1;
+}
+```
+
+En la función del firmware ```uchar usbFunctionRead(uchar *data, uchar len)``` no se ha implementado ninguna condición ya que no se lee ningún dato a través de la pantalla.
+
+La función que se encarga de inicializar el dispositivo ```usbMsgLen_t usbFunctionSetup(uchar data[8])``` hace lo siguiente:
+```C
+ } else if (reportId == 4) {
+
+    bytesRemaining = 1;
+    currentAddress = 0 ;
+
+    return USB_NO_MSG;
+
+ }
+```
+
+En el que retornando la macro ```USB_NO_MSG``` indicamos al firmware que debe ejecutarse la función de escritura mencionada previamente con el *reportID* correspondiente (La función de Setup es la primera que se ejecutará nada más encender el dispositivo). 
+
+Para hacer uso de la pantalla, se hace uso de la librería ```libusb```, por lo que en el main declaramos algo como lo siguiente (se obvia la comprobación de errores para que el código no sea extenso):
+```C
+#define MSG "Hello, World! :) Sent from the computer"
+
+int main() {
+    libusb_device_handle *handle;
+    libusb_init(NULL);
+
+    // Try to find and open device with PID:VID
+    handle = libusb_open_device_with_vid_pid(NULL, 0x20a0, 0x41e5);
+	// Check errors
+    
+    result = libusb_detach_kernel_driver(handle, 0);
+	// Check errors
+    
+    result = libusb_claim_interface(handle, 0);
+	// Check errors
+
+    setText(handle, 0x4);
+
+    libusb_release_interface(handle, 0);
+    libusb_close(handle);
+    libusb_exit(NULL);
+
+    return 0;
+}
+```
+La función ```setText()``` ejecuta el siguiente código:
+
+```C
+void setText(libusb_device_handle *handle, unsigned int reportID) {
+    int res = -1;
+    unsigned char data[41];
+
+    data[0] = reportID; //0x4
+
+    for (int i = 1; i < 40; i++)
+        data[i] = MSG[i - 1];
+    
+    res = libusb_control_transfer(handle, // device
+                                    LIBUSB_REQUEST_TYPE_CLASS | 
+                                  LIBUSB_RECIPIENT_INTERFACE |
+                                  LIBUSB_ENDPOINT_OUT, // bmRequestType
+                                    0x9,  // bRequest 0x1 -> GET  0x9 -> SET
+                                    0x0003, // wValue
+                                    0, // wIndex
+                                    data, // data
+                                    41, // wLength
+                                    5000); // timeout
+
+    if (res < 0)
+        printf(">>> [ERROR]: Cannot send URB! Code: %d\n", res);
+}
+```
+
+En esta función, llama a la función ```libusb_control_transfer``` utilizando una petición SET al *report ID* que le llega por parámetro y que en el main habíamos establecido en 0x4. Cabe destacar que el array ```data[]``` contiene el mensaje y en la posición 0 el *report ID*, por lo que en el primer bucle for se adapta el array para que en la primera posición esté el 0x4. 
 
 
 

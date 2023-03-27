@@ -1,27 +1,27 @@
 <!-- Leave a blank line before the title -->
 
-# How-To Flash a Custom Firmware
+# Guía para flashear un firmware propio
 
-The *Digispark ATTiny85* comes by default with a bootloader called *Micronucleus* that can talk to the host computer via serial communication, giving the user the option to upload new code through the USB port and avoiding the use of a *USBASP-like* programmer.
+La placa *Digispark ATTiny85* tiene de forma predeterminada un bootloader llamado *Micronucleus* que puede comunicarse con la máquina host a través de una comunicación serie, lo que permite al usuario la opción de flashear código a través del puerto USB y evita el uso de un programador *USBASP*.
 
-That feature may be useful sometimes, but there are certain cases where we may need to flash a custom bootloader, *C/C++* firmware or any sort of program that need to completely erase the ROM, and this can't be done using Micronucleus.
+Esta característica puede ser útil, pero hay ciertos casos en los que es posible que necesitemos actualizar un gestor de arranque personalizado, firmware *C/C++* o cualquier tipo de programa que necesite borrar completamente la ROM, y esto no se puede hacer usando Micronucleus.
 
-So in this quick guide, we're going to solve that.
+
 
 ## Hardware
 
-* **ICSP Programmer**: we'll use that to talk to the chip's ROM. *USBASP* is the one I'm going to be using, but any programmer with *MISO/MOSI/SCK/RST* pins will work, even an *Arduino* flashed with the *ArduinoISP* sketch.
+* **ICSP Programmer**: lo usaremos para hablar con la ROM integrado en el chip. *USBASP* es el que se va a usar, pero cualquier programador con pines *MISO/MOSI/SCK/RST* funcionará, incluso con un *Arduino* flasheado con el sketch *ArduinoISP*.
 * **Digispark ATTiny85**
 
 
 
 ## Software
 
-* **Arduino IDE**: we'll use the *AVR* tools that come with it.
+* **Arduino IDE**: usaremos las herramientas de *AVR* integradas en el entorno.
 
 
 
-## Wiring
+## Diagrama de pines
 
 | ISCP Programmer | Digispark ATTiny85 |
 | :-------------: | :----------------: |
@@ -34,53 +34,56 @@ So in this quick guide, we're going to solve that.
 
 
 
-## Flashing an Arduino Sketch
+## Cómo flashear un sketch de Arduino
 
-The first thing to do is click on the *Tools* tab and select the correct *Board* and CPU. *Then*, we select the *Programmer* we're using.
+Lo primero, es hacer click en el menú *Tools* y seleccionar la placa correcta y la CPU. Después, seleccionamos el programador que estamos usando.
 
-![Arduino Tools configuration](img/usbasp.png)
-
-
-
-Once all the parameters are set, we just need to hit the flash button and cross our fingers. If the flashing process has finished successfully, we'll get a message like the following:
-
-![Firmware upload output](img/flashDoneArduino.png)
+![Menú de herramientas de Arduino IDE](img/usbasp.png){width=45%}
 
 
 
-## Flashing a custom hex file
+Una vez que hayamos establecido los parámetros correctos, sólo queda iniciar el proceso de flasheo del firmware y confiar en que todo funcione correctamente. Si ha ido bien, el entorno nos mostrará un mensaje como el siguiente:
 
-Flashing an existent hex file may be useful if we want to install a pre-compiled *firmware/bootloader* or upload a *C/C++* program.
+![Mensaje de salida una vez flasheado el firmware](img/flashDoneArduino.png)
 
-*Arduino* comes with some *AVR* utilities we can use from our terminal to compile and flash code to *AVR microcontrollers*.
 
-First thing is to locate our *Arduino IDE* directory, below is one way to do it:
+
+## Flashear un firmware propio a partir de un archivo .hex
+
+Actualizar un archivo .hex existente puede ser útil si queremos instalar un *firmware/cargador de arranque* precompilado o cargar un programa *C/C++*.
+
+*Arduino* viene con algunas utilidades *AVR* que podemos usar desde nuestra terminal para compilar y flashear código a *microcontroladores AVR*.
+
+Lo primero es ubicar nuestro directorio *Arduino IDE*, a continuación se muestra una forma de hacerlo:
 
 ```bash
 $ ls -l `which arduino`
-lrwxrwxrwx root root 73 B Tue Jul 12 16:44:01 2022 /usr/local/bin/arduino ⇒ /home/ggc/arduino-1.8.19/arduino
+lrwxrwxrwx root root 73 B Tue Jul 12 16:44:01 2022 
+/usr/local/bin/arduino ⇒ /home/ggc/arduino-1.8.19/arduino
 ```
 
-Once we know where it's located, let's check for the following utilities and files:
+Una vez que sepamos dónde se encuentra, buscamos las siguientes utilidades y archivos:
 
 * ```arduino-1.8.19/hardware/tools/avr/bin/avrdude```
 * ```arduino-1.8.19/hardware/tools/avr/etc/avrdude.conf```
 
-Now all that is left to do is flash the hex file using the command line using the following arguments:
+El siguiente paso es flashear el archivo .hex usando la línea de comandos con los siguientes argumentos:
 
-* **-C**, default Arduino IDE configuration file
+* **-C**, archivo de configuración del entorno *Arduino IDE* por defecto
 * **-v**, verbose output
-* **-p**, microcontroller
-* **-c**, programmer
-* **-P**, port
-* **-U**, instruction. Syntax: *memtype*:*op*:*filename*[:*format*]
+* **-p**, microcontrolador
+* **-c**, programador
+* **-P**, puerto
+* **-U**, instrucción. Sintaxis: *memtype*:*op*:*filename*[:*format*]
 
 ```bash	
-arduino-1.8.19/hardware/tools/avr/bin/avrdude -Carduino-1.8.19/hardware/tools/avr/etc/avrdude.conf -v -pattiny85 -cusbasp -Pusb -Uflash:w:main.hex:i 
+arduino-1.8.19/hardware/tools/avr/bin/avrdude 
+-Carduino-1.8.19/hardware/tools/avr/etc/avrdude.conf 
+-v -pattiny85 -cusbasp -Pusb -Uflash:w:main.hex:i 
 ```
 
-More ```avrdude``` arguments and in-depth explanations can be found here: https://www.nongnu.org/avrdude/user-manual/avrdude_3.html
+Para encontrar más argumentos del programa ```avrdude``` y una explicación más profunda, se recomienda visitar el siguiente enlace: https://www.nongnu.org/avrdude/user-manual/avrdude_3.html
 
-If the flashing process has finished successfully, we'll get a message like the following:
+Una vez terminado el proceso, se mostrará un mensaje como el siguiente:
 
-![AVRDUDE command output](img/avrDone.png)
+![Comando de confirmación de AVRDUDE una vez terminado el proceso](img/avrDone.png)
