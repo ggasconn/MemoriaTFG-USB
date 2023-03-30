@@ -14,6 +14,7 @@ pandoc_common:
   - chapters/Introduction.md
   - chapters/Firmware con USB.md
   - chapters/Perifericos.md
+  - chapters/ATmega.md
   - chapters/test_chapter.md
   - separators/backmatter.md
 ## Include appendices here      
