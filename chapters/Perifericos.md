@@ -9,7 +9,7 @@ En este capítulo se describe con detalles de bajo nivel los periféricos utiliz
 
 ## Anillo de LEDs de colores
 
-Para probar el firmware, en la primera versión se ha hecho uso de la tira de leds circular fabricado por la empresa NeoPixel. Dichos leds se encuentran en disposición circular con colores RGB direccionables individualmente.
+Para probar el firmware, en la primera versión se ha hecho uso de la tira de leds circular fabricado por la empresa NeoPixel [@LED-strip]. Dichos leds se encuentran en disposición circular con colores RGB direccionables individualmente.
 
 ![Tira de LEDs circular de NeoPixel sobre una placa Arduino](img/LED-Strip.jpg){width=45% #fig:label3}
 
@@ -31,11 +31,9 @@ Para enviar datos al LED Smart Shift Register, el microcontrolador envía una se
 
 El LED de registro de desplazamiento inteligente también incluye un conjunto de registros de desplazamiento, que se utilizan para almacenar los datos de color y brillo de cada LED de la cadena. Los registros de desplazamiento permiten que el LED de registro de desplazamiento inteligente reciba y almacene datos del microcontrolador, y luego pase esos datos al siguiente LED de la cadena.
 
-Además de los registros de desplazamiento, el Smart Shift Register LED también incluye un conjunto de controladores de corriente constante, que se utilizan para controlar el brillo de cada LED individual. Los controladores de corriente aseguran que cada LED reciba una cantidad constante de energía, independientemente del número de LEDs en la cadena o la configuración de brillo.
+Además de los registros de desplazamiento, el Smart Shift Register LED también incluye un conjunto de controladores de corriente constante, que se utilizan para controlar el brillo de cada LED individual. Los controladores de corriente aseguran que cada LED reciba una cantidad constante de energía, independientemente del número de LEDs en la cadena o la configuración de brillo. [@smsreg-video]
 
 
-
-! Referencia al vídeo https://www.youtube.com/watch?v=PPVi3bI7_Z4
 
 ### Protocolo One-Wire
 
@@ -146,3 +144,4 @@ En esta función, llama a la función ```libusb_control_transfer``` utilizando u
 
 ## Sensor de temperatura
 
+Completar
