@@ -19,7 +19,7 @@ La tira de LED circular se alimenta con una fuente de alimentación de 5 V que p
 
 La tira de LEDs circular generalmente está controlada por un microcontrolador, en nuestro caso el ATTiny85 se encarga de ello, aunque también existen interfaces de comunicación para estas tiras de LEDs especializado, que envía los datos de color y brillo a los LED mediante el protocolo *One-Wire*. El microcontrolador se puede programar para crear una amplia variedad de efectos de iluminación, incluidos ciclos de color, animaciones y patrones.
 
-### Smart Sift Register en NeoPixel LED
+### Smart Shift Register en NeoPixel LED
 
 Cada LED individual en la tira de LEDs circular de NeoPixel contiene un registro de cambio inteligente, con un pequeño microcontrolador y un LED RGB (Red, Green, Blue). El microcontrolador es responsable de controlar el color y el brillo de los LED y comunicarse con los otros LED de la cadena.
 
