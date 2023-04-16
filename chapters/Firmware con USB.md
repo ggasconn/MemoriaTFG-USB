@@ -1,6 +1,6 @@
 <!-- Leave a blank line before the title -->
 
-# Introducción al hardware y firmware utilizado con USB
+# Hardware y firmware utilizado con USB
 
 En este capítulo se detalla el uso de la librería utilizada para el desarrollo del firmware, que está basado en V-USB. También se explican los detalles hardware del microchip utilizado para ejecutar el firmware, y la placa embebida que utiliza la interfaz USB para la comunicación con el driver de nuestro sistema operativo.
 
@@ -123,7 +123,7 @@ La macro `USB_INTR_ENABLE_BIT` especifica el bit en el registro de control de in
 ### ReportIDs en V-USB
 Para dotar de funcionalidad al firmware, éste se comunica mediante mensajes que son nombrados mediante un número hexadecimal, al que se les asigna un uso y un tiempo de espera (en bytes) que debe esperar en caso de que llegue un mensaje con dicho ID. En el siguiente ejemplo del array de ReportIDs, se declaran 3 ReportIDs de uso indefinido (ya que se usan para funciones personalizadas). El primero es de 8 bytes, cuando llega un mensaje con el ID=1 es un mensaje de cambio de color; el segundo y tercer ID son mensajes que contienen 32 bytes y es texto que puede almacenar la EEPROM, se usan para el número de serie o el nombre del dispositivo. [@usb-reports]
 
-![Array de ReportIDs utilizados en nuestro proyesto](img/array_reportids.png){width=80%}
+![Array de ReportIDs utilizados en nuestro proyecto](img/array_reportids.png){width=80%}
 
 
 
@@ -147,10 +147,13 @@ Los detalles técnicos con los que cuenta esta placa son los siguientes:
 
 Es una placa realmente compacta, con un tamaño de 25 mm x 18 mm. Incluye una interfaz USB para programación y comunicación con el host, así como un regulador de voltaje y LED de encendido. [@digispark-board]
 
-![Placa de desarrollo Digispark](img/digispark_board.jpg){width=55% #fig:label2}
+![Placa de desarrollo Digispark](img/digispark_board.jpg){width=35% #fig:label2}
 
 Una característica única de la placa Digispark es que viene preprogramada con un cargador de arranque que permite programarla a través de USB usando el IDE de Arduino (llamado Micronucleous Bootloader). Con ello se puede programar código desde Arduino fácilmente a la placa sin necesidad de un programador independiente. Aunque para el desarrollo de nuestro proyecto, se ha optado por utilizar la librería V-USB sin el entorno de Arduino, por lo que se requiere de un compilador de AVR y un programador externo. [@setup-digispark]
 
 
 
-Drivers en linux, referencia: [@drivers-linux]
+
+## Placa con ATmega y puerto serie
+
+Completar!
