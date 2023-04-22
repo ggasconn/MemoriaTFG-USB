@@ -11,9 +11,9 @@ El Atmega328P de 8 bits es un circuito integrado de alto rendimiento que está b
 
 ![Chip ATmega](img/ATMEGA328P.jpg){width=55%}
 
-Tiene 1 KB de memoria EEPROM, 2 KB de SRAM, 23 líneas de E/S de propósito general, 32 registros de proceso general, tres temporizadores flexibles/contadores con modo de comparación, interrupciones internas y externas, programador de modo USART, una interfaz serial orientada a byte de 2 cables, SPI puerto serial, 6-canales 10-bit Conversor A/D (canales en TQFP y QFN/MLF packages), temporizador "watchdog" programable con oscilador interno, y cinco modos de ahorro de energía seleccionables por software. El dispositivo opera entre 1.8 y 5.5 voltios. Puede alcanzar una respuesta de 1 MIPS, balanceando consumo de energía y velocidad de proceso.
+Tiene 1 KB de memoria EEPROM, 2 KB de SRAM, 23 líneas de E/S de propósito general, 32 registros de proceso general, tres temporizadores flexibles/contadores con modo de comparación, interrupciones internas y externas, programador de modo USART, una interfaz serial orientada a byte de 2 cables, SPI puerto serial, 6-canales 10-bit Conversor A/D (canales en TQFP y QFN/MLF packages), temporizador "watchdog" programable con oscilador interno, y cinco modos de ahorro de energía seleccionables por software. El dispositivo opera entre 1.8 y 5.5 voltios. Puede alcanzar una respuesta de 1 MIPS, balanceando consumo de energía y velocidad de proceso. [@nano-pinout]
 
-![Placa con el ATmega328P y un micro USB](img/atmega_board.png){width=40%}
+![Placa Arduino NANO con ATmega328p](img/atmega_board.png){width=40%}
 
 
 ## Depuración con ATmega328P
