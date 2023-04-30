@@ -12,9 +12,11 @@ pandoc_common:
   - separators/mainmatter.md
 ## Include chapters here    
   - chapters/Introduction.md
-  - chapters/Firmware con USB.md
-  - chapters/Perifericos.md
-  - chapters/ATmega.md
+  - chapters/Tecnologia USB.md
+  - chapters/VUSB.md
+  - chapters/Prototipo hardware.md
+##- chapters/ATmega.md
+  - chapters/Firmware.md
   - chapters/Drivers.md
   - chapters/Conclusiones.md
 ##- chapters/test_chapter.md

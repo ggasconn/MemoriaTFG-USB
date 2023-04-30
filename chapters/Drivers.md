@@ -1,8 +1,9 @@
 <!-- Leave a blank line before the title -->
 
-# Drivers desarrollados en el proyecto
+# Drivers y casos prácticos
 
 En este capítulo se describe los drivers propuestos para la interacción con los periféricos conectados a la placa, además de los detalles de bajo nivel como los endpoints utilizados en cada uno.
+
 
 
 ## BasicInterrupt - Driver asíncrono con comunicación INTERRUPT IN
@@ -15,7 +16,10 @@ El funcionamiento del módulo es muy sencillo, una vez cargado en el kernel, exp
 
 Como se usa la API asíncrona de USB la llamada a `read()` devuelve siempre 0 bytes, ya que no se sabe con exactitud cuándo se va a devolver el URB relleno con datos y al ser una función no bloqueante no esperamos a que llegue. El resultado de esta solicitud de datos al dispositivo se mostrará a través de la función de callback que se invoca una vez el URB vuelve desde el dispositivo.
 
+
+
 ### Aspectos relevantes del código desarrollado
+
 Función callback del Driver, se ejecuta cuando se devuelven datos en un URB de tipo INT para procesarlo (después de haber reservado memoria para el URB, y que éste haya sido enviado con `usb_submit_urb`:
 ```C
 /*

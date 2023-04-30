@@ -1,15 +1,32 @@
 <!-- Leave a blank line before the title -->
 
-# Conclusiones y trabajo futuro
-
-
-
-## Conclusiones
+# Conclusiones
 
 Después de haber realizado este proyecto, estamos más familiarizados sobre el funcionamiento a bajo nivel del protocolo USB, y la gran multitud de firmwares y funcionalidades que se pueden especificiar siguiendo este protocolo. Además, hemos estudiado un ejemplo concreto de firmware como es el V-USB [@objective-development], con la correspondiente complejidad que lleva el desarrollo de un firmware de estas características, haciendo uso de los distintos endpoints o los report-IDs para las distintas funcionalidades implementadas. 
 
 Con el código desarrollado para el firmware de este proyecto, se espera que el desarrollo de dispositivos para realizar tareas concretas con periféricos sea mucho más fácil, y que la gente pueda contribuir con sus propios desarrollos a través de la plataforma GitHub, y que se puedan desarrollar drivers para hacer funcionar estos dispositivos.
 
+
+
+## Extensión natural de la infraestructura para la asignatura Arquitectura interna de Linux y Android
+
+COMPLETAR:
+- Bee v2.0 (hardware extensible)
+- Este hardware puede exponerse como un conjunto de dispositivos USB
+
+
+
+## Uso en otras asignaturas
+
+### Firmware
+
+COMPLETAR
+
+
+
+### Diseño de hardware específico
+
+COMPLETAR
 
 
 

@@ -1,13 +1,123 @@
 <!-- Leave a blank line before the title -->
 
-# Periféricos utilizados para el desarrollo del firmware
+# Desarrollo del prototipo hardware
 
-En este capítulo se describe con detalles de bajo nivel los periféricos utilizados en el firmware desarrollado.
-
-
+En este capítulo se describe con detalles de bajo nivel los periféricos y hardware utilizado para el desarrollo del proyecto.
 
 
-## Anillo de LEDs de colores
+
+
+## Microcontroladores
+
+En el desarrollo del proyecto, se han utilizado dos microcontroladores sobre los que se han probado el firmware desarrollado. A continuación, se explica cada uno de ellos, así como una explicación general sobre el origen de esta familia de microcontroladores.
+
+
+
+### Familia de microcontroladores AVR
+
+La familia de microcontroladores AVR provienen del fabricante Atmel, diseñados para el desarrollo de sistemas empotrados y la ejecución de aplicaciones relacionados con robótica y una gran variedad de usos dentro del sector industrial.
+
+Esta familia de microcontroladores AVR están caracterizados por su bajo consumo energético, además de tener una alta velocidad de procesamiento y una interfaz de programación relativamente fácil de usar. Cuentan con una arquitectura RISC, permitiendo un procesamiento más rápido y un uso eficiente de los recursos. [@avr-products]
+
+Los microcontroladores AVR suelen tener una memoria flash para el almacenamiento de programas, SRAM para el almacenamiento de datos y una gran variedad de periféricos como temporizadores, UART y ADC para interactuar con dispositivos externos. Muchos de estos microcontroladores son usados en Arduino para el desarrollo de proyectos basados en la interfaz USB. [@avr-info]
+
+
+
+### ATTiny85
+
+Este es el microcontrolador usado en el desarrolo del firmware USB para el control de un anillo circular de leds junto a una pantalla LCD OLED y un sensor de temperatura. 
+
+Como se ha descrito previamente, este microcontrolador forma parte de la familia de AVR. Es un microchip de 8 bits de bajo consumo y alto rendimiento, cuenta con 8 kilobytes de memoria flash, 512 bytes de EEPROM y 512 bytes de SRAM. Tiene 6 pines de entrada/salida de propósito general (GPIOs), que se pueden usar para distintos propósitos, como entrada o salida digital, PWM o entrada analógica. También tiene un oscilador interno con frecuencias ajustables, eliminando la necesidad de un cristal o resonador externo. [@avr-attiny85] [@attiny85-datasheet]
+
+![Chip ATTiny85](img/ATTiny85.jpg){width=30% #fig:label1}
+
+El ATTiny85 es un microcontrolador versátil y se puede usar en una gran variedad de aplicaciones, como sistemas de control, monitoreo de sensores y dispositivos que funcionan con baterías. Uno de los usos más populares de ATTiny85 (y es en el que se ha trabajado en este proyecto) es el desarrollo de proyectos pequeños y de bajo costo.
+
+Para facilitar el desarrolo de estos proyectos, se ha añadido compatibilidad con este microcontrolador al entorno Arduino, lo que facilita en gran manera el programar e interactuar con dispositivos externos.
+
+![Integración del entorno Arduino con ATTiny85](img/attiny85_arduino.png){width=55% #fig:label2}
+
+En cuanto a los componentes hardware que integra, contamos con dos temporizadores 8 bits con PWM, un convertidor analógido-digital (ADC) de 8 canales, y una interfaz serie que se puede configurar para usarse como SPI, I2C o UART. Para la pantalla OLED, se ha utilizado el protocolo I2C con sus correspondientes librerías en C, que posteriormente se detallará.
+
+Un factor a destacar de este microchip es el bajo consumo que requiere para funcionar, por lo que para futuras versiones del proyecto se puede integrar una batería para demostrar que no necesita de una cantidad muy grande de energía y puede aprovechar al máximo la duración de la batería. [@attiny85-desc]
+
+A continuación, se detalla el esquema de la configuración de cada uno de los pines para el chip.
+
+![Detalle de los pines del ATTiny85](img/attiny85_pines.png){width=60% #fig:label3}
+
+
+
+### ATmega328p
+
+El Atmega328P de 8 bits es un circuito integrado de alto rendimiento que está basado un microcontrolador RISC, combinando 32 KB de memoria flash con capacidad *read-write* al mismo tiempo. 
+
+![Chip ATmega](img/ATMEGA328P.jpg){width=55%}
+
+Tiene 1 KB de memoria EEPROM, 2 KB de SRAM, 23 líneas de E/S de propósito general, 32 registros de proceso general, tres temporizadores flexibles/contadores con modo de comparación, interrupciones internas y externas, programador de modo USART, una interfaz serial orientada a byte de 2 cables, SPI puerto serial, 6-canales 10-bit Conversor A/D (canales en TQFP y QFN/MLF packages), temporizador "watchdog" programable con oscilador interno, y cinco modos de ahorro de energía seleccionables por software. El dispositivo opera entre 1.8 y 5.5 voltios. Puede alcanzar una respuesta de 1 MIPS, balanceando consumo de energía y velocidad de proceso. [@nano-pinout]
+
+![Placa Arduino NANO con ATmega328p](img/atmega_board.png){width=40%}
+
+
+
+
+
+## Placas que utilizan estos microcontroladores
+
+A continuación se detallan las dos placas sobre las que se han hecho pruebas en este proyecto.
+
+
+
+### Digispark con ATTiny85
+
+La placa Digispark cuenta con una interfaz USB, necesaria para este proyecto.
+Los detalles técnicos con los que cuenta esta placa son los siguientes:
+
+- Microcontroller: ATTiny85
+- Operating Voltage: 5V
+- Input Voltage (recommended): 7-12V
+- Input Voltage (limits): 5-16V
+- Digital I/O Pins: 6
+- PWM Channels: 3
+- Analog Input Channels: 4
+- Flash Memory: 8 KB (of which 2.5 KB is used by the bootloader)
+- SRAM: 512 bytes
+- EEPROM: 512 bytes
+
+Es una placa realmente compacta, con un tamaño de 25 mm x 18 mm. Incluye una interfaz USB para programación y comunicación con el host, así como un regulador de voltaje y LED de encendido. [@digispark-board]
+
+![Placa de desarrollo Digispark](img/digispark_board.jpg){width=35% #fig:label2}
+
+Una característica única de la placa Digispark es que viene preprogramada con un cargador de arranque que permite programarla a través de USB usando el IDE de Arduino (llamado Micronucleous Bootloader). Con ello se puede programar código desde Arduino fácilmente a la placa sin necesidad de un programador independiente. Aunque para el desarrollo de nuestro proyecto, se ha optado por utilizar la librería V-USB sin el entorno de Arduino, por lo que se requiere de un compilador de AVR y un programador externo. [@setup-digispark]
+
+
+
+### NANO con ATmega328p y puerto serie
+
+Arduino Nano se utiliza para desarrollar proyectos en los que se requiere un tamaño reducido, bajo consumo de energía y una amplia gama de opciones de E/S. Está basada en el microcontrolador ATmega328p, en el que destaca su asequibilidad y facilidad de uso.
+
+El chip ATmega328p es un microcontrolador AVR de 8 bits que funciona hasta a 16 MHz con 32 KB de memoria flash, 2 KB de SRAM y 1 KB de EEPROM. También incluye diversos periféricos, como convertidores analógico-digitales, salidas de modulación por ancho de pulsos (PWM) e interfaces de comunicación serie.
+
+![Pinout de la placa NANO con ATmega328p](img/nanopinout.png){width=50%}
+
+
+
+La placa Nano tiene un formato compacto de tamaño 45 mm x 18 mm), lo que resulta idóneo para su uso en proyectos pequeños que requieren portabilidad y ahorro de espacio. A pesar de su reducido tamaño, cuenta con una gran variedad de opciones de E/S, incluidos 14 pines de entrada/salida digital, 8 pines de entrada analógica y 6 pines PWM. Cuenta también con un puerto USB para programación y alimentación, y un botón de reset para reiniciar la placa. [@nano-info]
+
+Una de las características más atractivas de la placa Nano es su compatibilidad con Arduino IDE, aunque nosotros desarrollamos y cargamos el firmware directamente sin utilizar este entorno, como se explica en otro apartados. 
+
+La placa Nano se utiliza, en general, para una amplia gama de proyectos, incluyendo robótica, automatización, registro de datos y aplicaciones de sensores. También es una opción para la creación de prototipos y pruebas, ya que se puede integrar fácilmente en circuitos breadboard o perfboard. En este proyecto resulta realmente útil, comparando con Digispark, ya que el número de pines de entrada y salida es notablemente mayor que la anterior, lo que resulta útil para realizar pruebas con varios periféricos conectados a la vez.
+
+
+
+
+
+## Periféricos con soporte en el proyecto
+
+COMPLETAR: placa de expansión genérica, integra algunos periféricos y permite la conexión de otros. 
+
+
+
+### Anillo de LEDs de colores
 
 Para probar el firmware, en la primera versión se ha hecho uso de la tira de leds circular fabricado por la empresa NeoPixel [@LED-strip]. Dichos leds se encuentran en disposición circular con colores RGB direccionables individualmente.
 
@@ -19,7 +129,9 @@ La tira de LED circular se alimenta con una fuente de alimentación de 5 V que p
 
 La tira de LEDs circular generalmente está controlada por un microcontrolador, en nuestro caso el ATTiny85 se encarga de ello, aunque también existen interfaces de comunicación para estas tiras de LEDs especializado, que envía los datos de color y brillo a los LED mediante el protocolo *One-Wire*. El microcontrolador se puede programar para crear una amplia variedad de efectos de iluminación, incluidos ciclos de color, animaciones y patrones.
 
-### Smart Shift Register en NeoPixel LED
+
+
+#### Smart Shift Register en NeoPixel LED
 
 Cada LED individual en la tira de LEDs circular de NeoPixel contiene un registro de cambio inteligente, con un pequeño microcontrolador y un LED RGB (Red, Green, Blue). El microcontrolador es responsable de controlar el color y el brillo de los LED y comunicarse con los otros LED de la cadena.
 
@@ -35,7 +147,7 @@ Además de los registros de desplazamiento, el Smart Shift Register LED también
 
 
 
-### Protocolo One-Wire
+#### Protocolo One-Wire
 
 El protocolo *One-Wire* es un protocolo de comunicación serie de bajo nivel que se utiliza para comunicarse con dispositivos que tienen una sola línea de datos. Fue desarrollado por *Dallas Semiconductor* en la década de los 90 y ahora se usa en una amplia gama de aplicaciones, incluidos sensores de temperatura, tiras de LED y EEPROM.
 
@@ -51,7 +163,13 @@ Una de las características más importantes es que incluye un mecanismo CRC (co
 
 
 
-## Pantalla LCD OLED
+### Display 7 segmentos
+
+COMPLETAR
+
+
+
+### Pantalla LCD OLED
 
 Otro de los periféricos usado para el desarrollo del firmware, es una pantalla LCD tipo OLED, en el que se muestran cadenas de texto. 
 
@@ -142,6 +260,12 @@ En esta función, llama a la función ```libusb_control_transfer``` utilizando u
 
 
 
-## Sensor de temperatura
+### Sensor de temperatura
 
 Completar
+
+
+
+### Placa Bee 2.0
+
+COMPLETAR: Relación con LIN

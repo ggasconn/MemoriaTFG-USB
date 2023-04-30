@@ -5,6 +5,8 @@
 En los siguientes apartados se explican los motivos de la realización del proyecto, los objetivos y la planificación de las tareas para llevarlo a cabo.
 
 
+
+
 ## Motivación
 
 El protocolo USB es ampliamente usado en todo el mundo para la comunicación con casi cualquier periférico. De forma sencilla, cualquier usuario con un ordenador puede conectar un dispositivo, da igual la funcionalidad que tenga, al puerto USB de su ordenador y éste reconocerlo para que pueda comunicarse con la CPU y realizar la función para la que ha sido desarrollado.
@@ -14,11 +16,17 @@ Para que todo esto se pueda dar, el protocolo USB tiene una complejidad enorme e
 Para poder estudiar todo el protocolo USB y la interacción entre el dispositivo y la CPU, en este proyecto hemos desarrollado un firmware en C que se comunica con diferentes sensores y dispositivos, utilizando un microcontrolador AVR. Así como un conjunto de drivers de ejemplo para mostrar el funcionamiento y la comunicación entre el ordenador y el dispositivo.
 
 
+
+
 ## Objetivos
 
 El objetivo principal de este proyecto es construir un dispositivo USB de bajo coste, que pueda ser utilizado para familiarizarse con el complejo protocolo que maneja este estandar de conexión, entre otros aspectos podemos destacar los paquetes de información utilizados, *URBs*, y los pasos en la comunicación entre el dispositivo USB y el host.  Así como con el desarrollo de drivers para dispositivos USB, utilizando la API síncrona y asícrona del kernel Linux.
 
 Además, también pretende familizarse con los distintos dispositivos y sensores, como pantallas o lectores de temperatura, que se usan conectados al dispositivo USB que en este proyecto se desarrolla.
+
+! EXPLICAR LAS DISTINTAS ALTERNATIVAS CONTEMPLADAS, EN LUGAR DE USAR V-USB
+
+
 
 ## Plan de trabajo
 
