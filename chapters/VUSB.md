@@ -9,13 +9,11 @@ En este capítulo se describe el funcionamiento a bajo nivel de esta librería u
 
 ## Descripción
 
-COMPLETAR
+El proyecto V-USB [@objective-development] se utiliza para implementar firmware en dispositivos USB de baja velocidad y con pocos recursos, entre ellos se encuentran los microcontroladores AVR (como los ATTiny o Atmel, utilizados en este proyecto para realizar las pruebas y desarrollar el firmware final). Una ventaja de V-USB que hace que desarrollar firmware para dispositivos con pocos recursos (como el ATTiny85) sea más sencillo, es el pequeño tamaño y bajo consumo que se hace de los recursos disponibles. Para su funcionamiento, se necesitan unos pocos kilobytes de código y una pequeña cantidad de memoria RAM. El único requisito que se tiene en ambos chips, es el número de periféricos que se desean conectar a ellos, ya que dependiendo del alcance del proyecto, ésto puede llegar a ser una limitación.
 
-La librería V-USB [@objective-development] se usa para la implementación de software para dispositivos USB de baja velocidad que utilizan microcontroladores AVR (como los ATTiny o Atmel). Permite que estos microcontroladores actúen como un dispositivo USB, permitiendo la comunicación con el driver del host u otros dispositivos utilizando este protocolo. Más adelante se detallan algunos aspectos de esta comunicación, como el uso que hace esta librería de los report-id o los endpoints.
+El proyecto V-USB utiliza la interfaz USB para la comunicación entre el host (con un driver cargado que lo controle) y el dispositivo conectado, por lo que utiliza todos los elementos de la comunicación USB (endpoints, mensajes URBs, etc) que se detallarán más adelante. También hablaremos de la estructura interna del proyecto, ya que se hace uso de Report-IDs, característico de V-USB.
 
-La gran ventaja de V-USB con respecto a otras librerías es el pequeño tamaño y bajo consumo que hace de los recursos disponibles. Para su funcionamiento, se requiere unos de pocos kilobytes de código firmware y una pequeña cantidad de memoria RAM para funcionar. Esto es especialmente ventajoso para dispositivos como el ATTiny85. Además, esta librería no necesita de ningún componente hardware adicional, sólamente un chip con interfaz USB, reduciendo notablemente su costo y diseño del circuito. 
-
-Para la comunicación USB, esta librería hace uso de dos endpoints en el chip ATTiny85: el endpoint 0 y endpoint 1. El endpoint 0 es usado para las transferencias de control, es decir, inicializar y configurar la interfaz USB. El endpoint 1, se usa para la transferencia de datos, es decir, para enviar y recibir los informes USB HID. [@vusb-library]
+En cuanto a la comunicación USB, esta librería hace uso de dos endpoints en el chip ATTiny85: el endpoint 0 y endpoint 1. El endpoint 0 es usado para las transferencias de control, es decir, inicializar y configurar la interfaz USB. El endpoint 1, se usa para la transferencia de datos, es decir, para enviar y recibir los informes USB HID. [@vusb-library]
 
 Para la configuración de los endpoints, están definidos en el archivo cabecera `usbconfig.h`. En el caso del ATTiny85, dicha configuración se puede encontrar en el directorio `usbdrv`.
 
