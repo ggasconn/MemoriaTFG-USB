@@ -161,18 +161,51 @@ Este tipo de transferencias solo son soportadas por dispositivos Full y High Spe
 Al igual que los tipos anteriores, permite transferencias de tipo IN o OUT.
 
 
-## Protocolo HID
+## Clases USB
 
-Completar
+La organización usb.org [@usb-org] tiene definidas unas serie de códigos de clase que se utilizan para identificar la funcionalidad del dispositivo y ayudan al host a cargar un driver que sea compatible basado en esa funcionalidad.
 
+La información se representa en tres bytes y contiene:
 
-### Report-ID
+- Byte 1 - Clase base
 
-Completar!
+- Byte 2 - Subclase
 
-Los report-ID son mensajes que mediante un número hexadecimal, se asigna un uso y un tiempo de espera (en bytes) que debe esperar en caso de que llegue un mensaje con dicho ID. En el siguiente ejemplo del array de ReportIDs, se declaran 3 ReportIDs de uso indefinido (ya que se usan para funciones personalizadas). El primero es de 8 bytes, cuando llega un mensaje con el ID=1 es un mensaje de cambio de color; el segundo y tercer ID son mensajes que contienen 32 bytes y es texto que puede almacenar la EEPROM, se usan para el número de serie o el nombre del dispositivo. [@usb-reports]
+- Byte 3 - Protocolo
 
-![Array de ReportIDs utilizados en nuestro proyecto](img/array_reportids.png){width=80%}
+Como veíamos en el apartado anterior, esta información viaja al host a través de los descriptores y podemos encontrarla o bien en el descriptor de dispositivo, en el de interfaz o incluso en ambos.
+
+Aunque en este proyecto solo se trabaja y se trata con la clase HID, *Human Interface Device*, hay algunas otras clases que también son muy conocidas y usadas como:
+
+- ***Audio Class.*** Usada por dispositivos de audio.
+
+- ***CDC Class.*** Usada por dispositivos de comunicación.
+
+- ***Mass Storage Class.*** Usada por dispositivos de almacenamiento.
+
+### Human Interface Device Class (HID)
+
+La clase de dispositivos HID, codificada como `03h`, es principalmente usada por dispositivos que se comunican con el host y son controlados por humanos.
+
+A través de este tipo de dispositivos, el host es capaz de interpretar acciones que los humanos realizan sobre los dispositivos. Son realmente cotidianos, ya que dentro de esta categoría podemos englobar a los teclados, ratones, mandos, joysticks, botones y un largo etcétera.
+
+Al implementar un dispositivo de este tipo es necesario seguir ciertos estándares:
+
+- Toda la información debe moverse en *Reports*, los trataremos más adelante pero son estructuras que contienen la información necesaria para la acción a realizar.
+- Un endpoint de tipo *INTERRUPT IN* es necesario para enviar reports de tipo *Input* al host.
+- El máximo número de endpoints *INTERRUPT* es uno *IN* y otro *OUT*, siendo este último opcional.
+- Al poder el dispositivo enviar información a través del endpoint *INTERRUPT* en cualquier momento, el host debe de estar preparado para revisar el polling y recoger esta información
+
+#### Reports
+
+Como hemos mencionado anteriormente, los *Reports* son estructuras donde se encapsula la información que viaja en la comunicación con un dispositivo HID. Son de un tamaño fijo y previamente definido, ya que el host debe conocer esta información para generarlos.
+
+Un dispositivo HID puede tener múltiples *Reports*, identificados por *Report IDs*, que básicamente son indentificadores en hexadecimales que permiten diferenciar el tipo de información que se envía y se recibe. Todas estas estructuras tienen un uso definido, que puede ser indefinido en caso de usarse para acciones personalizadas.
+
+Los *Reports* se mueven a través de transferencias, y las dos más usadas dentro de esta clase de dispositivos son:
+
+- ***GET_Report,*** permite enviar al host información.
+- ***SET_Report,*** permite recibir información del host.
 
 
 ## Drivers USB en Linux
