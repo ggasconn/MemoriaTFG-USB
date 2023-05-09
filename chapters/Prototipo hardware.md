@@ -15,11 +15,11 @@ En el desarrollo del proyecto, se han utilizado dos microcontroladores sobre los
 
 ### Familia de microcontroladores AVR
 
-Los microcontroladores AVR provienen del fabricante Atmel (actualmente perteneciente a Microchip Technology [@atmel-web]), están principalmente diseñados para el desarrollo de sistemas empotrados y aplicaciones relacionados con robótica, así como su uso a más gran escala en entornos industriales. Su interfaz y diseño es relativamente sencillo, por lo que implementar aplicaciones que usen estos chips resulta realmente atractivo para programadores que quieran aprender a desarrollar software en el que se utilice, por ejemplo, el protocolo USB, entre otros muchos, contando con ello con un gran abanico de utilidades y periféricos.
+Los microcontroladores AVR provienen del fabricante Atmel (actualmente perteneciente a Microchip Technology [@atmel-web]), están principalmente diseñados para el desarrollo de sistemas empotrados y aplicaciones relacionados con robótica, así como su uso a gran escala en entornos industriales. Su interfaz y diseño es relativamente sencillo, por lo que implementar aplicaciones que usen estos chips resulta realmente atractivo para programadores que quieran aprender a desarrollar software en el que se utilice, por ejemplo, el protocolo USB, entre otros muchos, contando con ello con un gran abanico de utilidades y periféricos.
 
-Estos microcontroladores, entre los que se incluyen ATTiny85 y ATmega, se caracterizan por permitir implementaciones en las que se requieren pocas prestaciones, como bajo consumo energético, pero que a su vez ofrecen un gran rendimiento para proyectos de realización de pruebas como en el que se ha estado trabajando. El uso de una arquitectura RISC hace que sea una ventaja en el procesamiento de datos, aunque como veremos más adelante, en el ATTiny85 se cuenta con una limitación en cuanto a temporización, que en el caso del desarrollo de este proyecto ha sido un problema para determinados periféricos. Salvo esto último, la única complejidad que puede presentar el desarrollo de un firmware es la adquisición de los conocimientos propios de toda la API de USB. [@avr-products]
+Estos microcontroladores, entre los que se incluyen ATTiny85 y ATmega328p, se caracterizan por permitir implementaciones en las que se requieren pocas prestaciones, así como su bajo consumo energético, pero que a su vez ofrecen un gran rendimiento en proyectos o entornos de pruebas, como en el que se ha estado trabajando. El uso de una arquitectura RISC hace que sea una ventaja en el procesamiento de datos, aunque como veremos más adelante, en el ATTiny85 se cuenta con una limitación en cuanto a temporización, que en el caso del desarrollo de este proyecto ha sido un problema para determinados periféricos. Salvo esto último, la única complejidad que puede presentar el desarrollo de un firmware es la adquisición de los conocimientos propios de toda la API de USB. [@avr-products]
 
-En cuanto a componentes hardware, estos chips cuentan con una memoria flash para el almacenamiento del firmware, una SRAM y, como habíamos mencionado antes para el caso del ATTiny85, cuentan también con temporizadores. Se puede hacer uso de un puerto serie (para el caso del ATmega) y, por ejemplo, un conversor ADC, para interactuar con dispositivos externos como un sensor de temperatura, y más componentes que se detallarán más adelante para los dos microchips que se han utilizado en este proyecto. [@avr-info]
+En cuanto a componentes hardware, estos chips cuentan con una memoria flash para el almacenamiento del firmware, una SRAM y, como habíamos mencionado antes para el caso del ATTiny85, cuentan también con temporizadores. Se puede hacer uso de un puerto serie (para el caso del ATmega) y, por ejemplo, un conversor ADC, para interactuar con dispositivos externos como un sensor de temperatura, y más componentes que se detallarán más adelante para los dos microchips que se han utilizado en este proyecto.
 
 
 
@@ -65,7 +65,7 @@ El dispositivo puede operar entre 1.8 y 5.5 voltios, en función de distintos fa
 
 ## Placas que utilizan estos microcontroladores
 
-A continuación se detallan las dos placas sobre las que se han hecho pruebas en este proyecto.
+A continuación se detallan las dos placas sobre las que se han hecho pruebas en este proyecto, en las que se incluyen los microcontroladores mencionados anteriormente.
 
 
 
@@ -102,7 +102,7 @@ El uso de esta placa es una opción muy interesante para la creación de prototi
 
 ## Periféricos con soporte en el proyecto
 
-COMPLETAR: placa de expansión genérica, integra algunos periféricos y permite la conexión de otros. 
+En este apartado se explica los distintos elementos hardware con los que se ha dado soporte en el proyecto. En este proyecto se ha contado con una placa inicial, la placa Bee 2.0, utilizada en la asignatura Arquitectura interna de Linux y Android, en la que se cuentan con distintos periféricos, como un display 7 segmentos o un buzzer, permitiendo la interconexión entre todas sus componentes. También se ha hecho uso de un anillo led circular y de una pantalla OLED.
 
 
 
@@ -110,7 +110,7 @@ COMPLETAR: placa de expansión genérica, integra algunos periféricos y permite
 
 Para probar el firmware, en la primera versión con ATTiny85 se ha hecho uso de la tira de leds circular fabricado por la empresa NeoPixel [@LED-strip]. Dichos leds se encuentran en disposición circular con colores RGB direccionables individualmente. Posteriormente, se han utilizado como un periférico para el prototipo final de este proyecto, utilizando ATmega328p.
 
-![Tira de LEDs circular de NeoPixel sobre una placa Arduino](img/LED-Strip.jpg){width=45% #fig:label3}
+![Tira de LEDs circular de NeoPixel](img/LED-Strip.jpg){width=45% #fig:label3}
 
 Estos LEDs están conectados en cadena, y cada LED está controlado por una sola línea de datos. La línea de datos usa un protocolo de comunicación específico llamado *One-Wire Protocol*, es un protocolo software que controla el color y el brillo de cada LED individual. Su funcionamiento se explica en los siguientes apartados. De esta forma, conseguimos hacer iluminar todos los leds del anillo a la vez, o crear una serie de patrones para que se vayan encendiendo poco a poco, con distintos colores. 
 
@@ -148,30 +148,53 @@ El funcionamiento de este protocolo es el siguiente: para poder determinar el da
 
 ### Display 7 segmentos
 
-COMPLETAR
+Este periférico con soporte en el firmware es capaz de representar un número del 0 al 9, mediante segmentos verticales y horizontales que, según el número a mostrar, se encienden o apagan mostrando el número en cuestión. También cuenta con un punto a la derecha de los segmentos. La configuración de este display es de cátodo común, es decir, cuando se escribe un 1 se enciende el segmento deseado, y cuando se escribe un 0, se apaga.
+
+![Diagrama del circuito del display 7 segmentos de la placa Bee 2.0](img/d7seglin.png){width=50%}
+
+El diagrama anterior ilustra el circuito interno del display 7 segmentos. Se puede observar que se cuenta con dos registros, y para ello el sistema tiene 3 pines de entrada. Esto es una enorme ventaja, ya que si tuviéramos 8 pines de entrada para el display, a parte de la complejidad en el código que se añadiría, limitaría la posible interacción con otros dispositivos de E/S, al tener que estar constantemente enviando un 1 lógico en aquellos pines correspondientes a los segmentos que se quieren encender. Para ello, se ha implementado el sistema con dos registros, uno de desplazamiento y otro de salida, que se explican a continuación.
+
+Entradas del registro de desplazamiento: 
+
+- **SDI** (Serial Data Input): es la entrada serie del registro, de 8 bits. Cada bit corresponde a un segmento. El bit menos significativo corresponde al punto.
+- **SRCLK** (Shift Register Clock): señal del reloj correspondiente al registro de desplazamiento. 
+- **Enable**. Esta señal debe estar a 1 para que el sistema realice la acción de desplazamiento y carga paralela, mediante los dos registros.
+
+Entradas del registro de salida:
+
+- **RCLK** (Register Clock): señal del reloj correspondiente al registro de salida.
+- **Load**. Al igual que la señal de enable, tiene que estar a 1 para el sistema realice las acciones de desplazamiento y carga paralela.
+
+Para poder generar la salida deseada, con establecer un 1 en la señal de RCLK (que debe estar a 0 durante todo el proceso previo), se cargaría inmediatamente el número en el registro, y por lo tanto, en la salida de los segmentos del display. [@bee-board]
 
 
 
 ### Pantalla LCD OLED
 
-Otro de los periféricos usado para el desarrollo del firmware, es una pantalla LCD tipo OLED, en el que se muestran cadenas de texto. Para el desarrollo del firmware correspondiente a este periférico, nos hemos basado en un proyecto que también hace uso de V-USB para implementar funcionalidad con una pantalla de las mismas características, en concreto para utilizarla como salida de la consola de puerto serie. [@attiny-oled]
+Otro de los periféricos con soporte en el firmware del proyecto es una pantalla LCD tipo OLED, en el que se muestran cadenas de texto. Para el desarrollo de la funcionalidad correspondiente a este periférico, nos hemos basado en otro proyecto que también hace uso de V-USB para implementar funcionalidad con una pantalla de las mismas características, en concreto para utilizarla para mostrar mensajes que se reciben a través del protocolo I2C. [@attiny-oled]
 
 ![Pantalla OLED utilizada en el proyecto](img/LCD_OLED.png){width=40%}
 
+Para la conexión del periférico con el microcontrolador, a través de las placas Digispark o NANO, se hace a través de los pines de I2C de ambas placas, en concreto a través de los pines de SDA y SCL.
 
+[COMPLETAR explicación I2C]
 
-### Sensor de temperatura
-
-Completar
+En los siguientes apartados se explica la funcionalidad implementada en el firmware y también los distintos drivers que hacen uso de este dispositivo.
 
 
 
 ### Buzzer
 
-Completar
+Este buzzer utiliza una señal PWM para su funcionamiento. Cuando se recibe un 1 por dicho pin, éste empieza a emitir un sonido constante, cuando se deja de transmitir, no se emite ningún sonido. La explicación sobre la implementación de la funcionalidad de este periférico en el firmware y drivers se explica en los siguientes apartados de la memoria. 
+
+Para poder entender el funcionamiento de este periférico, es preciso entender cómo funciona la señal PWM (Pulse Width Modulation, en castellano, modulación por ancho de pulso). El objetivo es convertir una señal digital (un 1 lógico) en una señal analógica, lo que se traduce en sonido para el Buzzer (una determinada frecuencia, generalmente entre los 2 KHz ~ 5 KHz). Para ello, se hace pasar dicha corriente por una componente interna que es la que produce el sonido.
 
 
 
 ### Placa Bee 2.0
 
-COMPLETAR: Relación con LIN
+Como punto de partida en el proyecto, se ha estudiado el funcionamiento e interconexión de los distintos elementos hardware de la placa Bee 2.0 diseñada para la asignatura Arquitectura Interna de Linux y Android.
+
+![Placa Bee 2.0 de la asignatura Arquitectura interna de Linux y Android](img/bee20gen.png){width=40%}
+
+La idea de este proyecto es la posible fusión del uso de la librería V-USB con esta asignatura, así como el diseño de prácticas relacionadas con el uso de este firmware, para que la interacción y funcionalidad con los elementos hardware de la placa sea mucho más variada, y que la modificación de funcionalidades a implementar por los alumnos sea cada vez de una forma distinta, lo que ayuda a la adquisición de los conocimientos de bajo nivel sobre el funcionamiento, entre otras cosas, del protocolo USB.
