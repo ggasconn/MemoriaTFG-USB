@@ -41,4 +41,4 @@ Para poder llevar a cabo el desarrollo de este proyecto, hemos tenido que docume
 A continuación se listan una posible serie de ampliaciones del proyecto para su desarrollo en un futuro:
 
 - Uso de más periféricos como otros sensores o actuadores.
-- Ampliación del firmware V-USB con más endpoints.
+- Ampliación del firmware V-USB con más funcionalidad.

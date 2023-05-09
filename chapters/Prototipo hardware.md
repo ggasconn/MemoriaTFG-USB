@@ -138,8 +138,6 @@ Cada LED cuenta con 24 *Shift Registers* que se van rellenando según se vayan r
 
 El protocolo One-Wire (o también conocido como 1-Wire) es utilizado en la tira de LEDs circular de Neopixel para poder transmitir  los 1's o 0's lógicos a cada LEDs, ya que se cuenta con una única línea de datos. 
 
-![Flujo de datos usando 1-Wire](img/onewire.png){width=50%}
-
 El funcionamiento de este protocolo es el siguiente: para poder determinar el dato, se mide los tiempos entre cada flanco de subida y de bajada, para cada transmisión. Si el tiempo entre el flanco de subida y el flanco de bajada es mayor que el tiempo transcurrido hasta el siguiente flanco de subida, el resultado es un voltaje alto (TH) o un 1 lógico. Por el contrario, si el tiempo entre el primer flanco de subida y el siguiente flanco de bajada es menor que el tiempo transcurrido hasta el el siguiente flanco de subida, el resultado es un voltaje bajo (LW) o un 0 lógico. En la siguiente figura se ilustra este funcionamiento.
 
 ![Cálculo de cada dato según los flancos de subida o bajada en 1-Wire](img/1wireTHTL.png){width=50%}
@@ -195,6 +193,6 @@ Para poder entender el funcionamiento de este periférico, es preciso entender c
 
 Como punto de partida en el proyecto, se ha estudiado el funcionamiento e interconexión de los distintos elementos hardware de la placa Bee 2.0 diseñada para la asignatura Arquitectura Interna de Linux y Android.
 
-![Placa Bee 2.0 de la asignatura Arquitectura interna de Linux y Android](img/bee20gen.png){width=40%}
+![Placa Bee 2.0 de la asignatura Arquitectura interna de Linux y Android](img/bee20gen.png){width=70%}
 
 La idea de este proyecto es la posible fusión del uso de la librería V-USB con esta asignatura, así como el diseño de prácticas relacionadas con el uso de este firmware, para que la interacción y funcionalidad con los elementos hardware de la placa sea mucho más variada, y que la modificación de funcionalidades a implementar por los alumnos sea cada vez de una forma distinta, lo que ayuda a la adquisición de los conocimientos de bajo nivel sobre el funcionamiento, entre otras cosas, del protocolo USB.
