@@ -2,20 +2,28 @@
 
 # Proyecto V-USB
 
-En este capítulo se describe el funcionamiento a bajo nivel de esta librería utilizada para el desarrollo del firmware, así como otras alternativas contempladas.
+V-USB es la librería que se ha utilizado en el proyecto para emular un dispositivo USB usando un microcontrolador sin esta capacidad. 
+
+En este capítulo, se describen los detalles de la librería, así como algunas alternativas que se podrían haber usado para la implementación del dispositivo
 
 
 ## Descripción
 
-El proyecto V-USB [@objective-development] se utiliza para implementar firmware en dispositivos USB de baja velocidad con pocos recursos, entre ellos se encuentran los microcontroladores AVR (como los ATTiny o Atmel, utilizados en este proyecto para realizar las pruebas y desarrollar el firmware final). Al ser una librería que no requiere de mucho tamaño para almacenar su código, ni del funcionamiento de muchos recursos del chip, hace que sea compatible sobre dispositivos con prestaciones hardware limitadas y con arquitecturas más bien sencillas.
+El proyecto V-USB [@objective-development] distribuye una implementación de uso libre que permite la creación de dispositivos USB low-speed vía software, capaz de funcionar en los microcontroladores *AVR* de la empresa *Atmel*.
 
-Esta librería ha sido probada en los chips ATTiny85 y posteriormente en ATmega328p, las ventajas han sido evidentes en el uso de un firmware basado en V-USB para estos dispositivos. El requisito más importante que se tiene en ambos chips, es el número de periféricos que se desean conectar a ellos, ya que dependiendo del alcance del proyecto, ésto puede llegar a ser una limitación. En ATmega, como se explica más adelante, esta limitación se reduce notablemente al disponer de pines suficientes para el alcance de este proyecto. 
+De esta manera, nos brinda la posibilidad de construir dispositivos USB por muy poco coste ya que hace uso únicamente del hardware del microcontrolador sin ningún chip adicional, por lo que es una alternativa económica y sencilla frente a las otras opciones que hay para construir este tipo de dispositivos.
 
-El proyecto V-USB utiliza la interfaz USB para la comunicación entre el host (con un driver cargado que lo controle) y el dispositivo conectado, por lo que utiliza todos los elementos de la comunicación USB (endpoints, mensajes URBs, etc) que se detallarán más adelante. También hablaremos de la estructura interna del proyecto, ya que se hace uso de Report-IDs, característico de V-USB.
+Las limitaciones que pone en los chips que soporta son extremandamente bajas, por lo que prácticamente cualquier microcontrolador Atmel será compatible. Algunas de las características que deben de tener los chips son:
 
-En cuanto a la comunicación USB, esta librería hace uso de dos endpoints en el chip ATTiny85: el endpoint 0 y endpoint 1. El endpoint 0 es usado para las transferencias de control, es decir, inicializar y configurar la interfaz USB. El endpoint 1, se usa para la transferencia de datos, es decir, para enviar y recibir los informes USB HID. [@vusb-library]
+- 2kB de memoria flash
+- 128B de memoria RAM
+- Reloj de al menos 12MHz. Soportando frecuencias de hasta 20Mhz
 
-Para la configuración de los endpoints, están definidos en el archivo cabecera `usbconfig.h`. En el caso del ATTiny85, dicha configuración se puede encontrar en el directorio `usbdrv`.
+Además, no requiere de ningún puerto UART, timer o hardware especial para funcionar. Siendo esto una ventaja ya que en caso de que el microcontrolador elegido tenga estas características, quedan completamente disponibles para su uso.
+
+La libería está escrita en C y consta de diferentes ficheros donde se emula el comportamiento de un controlador USB hardware, así como diferentes ficheros de configuración que permiten exprimir al máximo el microcontrolador en uso gracias a todos los parámetros que se pueden ajustar.
+
+Durante el proyecto, hemos hecho uso de la librería tanto en el microcontrolador *ATTiny85* como en el *ATMega328P* con completo éxito, siendo este último mucho mejor opción debido a la frecuencia de reloj y el número de puertos I/O, así como del hardware adicional que trae como timers o generadores de señales.
 
 
 ## Alternativas a esta librería
