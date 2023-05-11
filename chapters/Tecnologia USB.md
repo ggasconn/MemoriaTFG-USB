@@ -223,7 +223,7 @@ USB Core es el mecanismo construido en el kernel Linux para el soporte del estan
 
 Es el encargado de todo lo relacionado con USB, ya sea la enumeración de dispositivos, exponerlos a través de un árbol de ficheros y directorios, controlar la comunicación, entre otras tareas. Además, provee al programador de diferentes APIs que permiten ampliar el framework desarrollando nuevos drivers para soportar nuevos dispositivos y funcionalidades.
 
-![Arquitectura del subsistema USB en Linux. Referencia a las transparencias de la asignatura LIN](img/usb-core.png)
+![Arquitectura del subsistema USB en Linux. [@usb-core-image]](img/usb-core.png)
 
 Como se puede ver en la imagen anterior, el USB Core es sistema que se encuentra entre la controladora USB, que es el hardware que gestiona los dispositivos y el más cercano a ellos, y los drivers, que son los encargados de comunicarse con el dispositivo.
 
