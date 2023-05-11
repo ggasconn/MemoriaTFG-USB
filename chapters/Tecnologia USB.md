@@ -210,25 +210,60 @@ Los *Reports* se mueven a través de transferencias, y las dos más usadas dentr
 
 ## Drivers USB en Linux
 
-Completar
+Los drivers son el componente software que se encarga de la comunicación entre el dispositivo USB y el host. Esencialmente, envía las instrucciones requeridas por el dispositivo para hacerlo funcionar como se espera, y su vez también permite recoger la respuesta enviada.
+
+Todos los dispositivos, y más concretamente USB, deben de tener un driver asociado para funcionar y permitir al host comunicarse satisfactoriamente con él, en caso contrario el host no sería capaz de entender el *'lenguaje'* que habla el dispositivo y la comunicación sería imposible.
+
+En este capítulo, veremos la arquitectura que hay debajo del USB core en los sistemas operativos Linux, los paquetes URBs que encapsulan la información de las comunicaciones, así como las diferentes APIs que nos ofrece el kernel Linux para el desarrollo de drivers USB. Terminaremos poniendo en valor el proyecto que hemos desarrollado haciendo una comparativa con el dispositivo actual de la asignatura *Arquitectura Interna de Linux y Android*.
 
 
 ### USB core y su arquitectura
 
-Completar
+USB Core es el mecanismo construido en el kernel Linux para el soporte del estandar USB y se encuentra en medio de los dispositivos USB y el propio sistema operativo.
+
+Es el encargado de todo lo relacionado con USB, ya sea la enumeración de dispositivos, exponerlos a través de un árbol de ficheros y directorios, controlar la comunicación, entre otras tareas. Además, provee al programador de diferentes APIs que permiten ampliar el framework desarrollando nuevos drivers para soportar nuevos dispositivos y funcionalidades.
+
+![Arquitectura del subsistema USB en Linux. Referencia a las transparencias de la asignatura LIN](img/usb-core.png)
+
+Como se puede ver en la imagen anterior, el USB Core es sistema que se encuentra entre la controladora USB, que es el hardware que gestiona los dispositivos y el más cercano a ellos, y los drivers, que son los encargados de comunicarse con el dispositivo.
 
 
 ### URBs
 
-Completar
+Como mencionábamos en la introducción, los *URBs* son paquetes de datos donde se encapsula una petición USB, su propio nombre hace referencia a ello, ya que *URB* son las siglas de *USB Request Block* [@urb-docs].
+
+Estas estructuras poseen todos los valores relevantes para que una petición USB pueda llevarse a cabo, pudiendo entregar los datos y obtener un estado de respuesta encapsulado también en URB. 
+
+Cada vez que se envía uno de estos paquetes se produce una operación asíncrona, que tiene asociada una función callback que será ejecutada una vez finalice dicha operación. Además, cada dispositivo lógico soporta una cola de peticiones, por lo que el hardware puede ir llenando esta cola mientras que el driver atiende las peticiones más antiguas.
+
+En la API USB integrada en el kernel Linux los URBs se pueden manejar de manera muy natural, esto es posible gracias a la estructura que nos ofrecen,  `struct urb`, que encapsula todos los datos que pueden llevar estos paquetes. Para el de esta estructura, el kernel también nos ofrece funciones de las cuales podemos destacar las siguientes:
+
+- `usb_alloc_urb()`, permite reservar memoria donde alojar un URB. Esta memoria luego será compartida con el controlador USB para que envíe el paquete al dispositivo.
+
+- `usb_fill_control_urb() / usb_fill_int_urb() / usb_fill_bulk_urb()`, son las funciones que, dependiendo del tipo de petición, nos permiten rellenar los datos que viajarán en el paquete.
+
+- `usb_submit_urb()`, manda el URB a la controladora de host una vez está listo para ser transmitido.
+
+- `usb_unlink_urb()`, permite cancelar la transmisión de un URB que ya ha sido enviado.
+
+
 
 
 ### API síncrona y asíncrona
 
-Completar
+Dentro del USB Core que viene incorporado en el kernel Linux tenemos dos modelos de API para realizar llamadas USB. El primero de ellos es el más estandar, está soportado por todos los tipos de transferencia y es el modelo ***asíncrono***. [@usb-api-docs]
+
+La manera de funcionar del modelo asíncrono consiste en crear un *URB*, rellenarlo y posteriormente ser enviado a la controladora USB asociado a una función callback. Esta función será llamada una vez se complete la transferencia y será la encargada del siguiente paso.
+
+Construida por encima de esta API podemos encontrar la API ***síncrona***, que principalmente hace uso de todas las funciones que nos ofrece la anterior pero además añade bloqueos una vez se envían los URBs para esperar a su respuesta. Esta API oculta al usuario todos los detalles de reserva de memoria y envío de los URBS, ya que ofrece funciones muy sencillas para enviar los datos necesarios.
+
+A pesar de que la API síncrona es más sencilla de usar también es mucho más ineficiente, ya que bloquea el programa en todos los puntos donde se envíen paquetes, quedando sin la posibilidad de ejecutar otros trozos de código en el tiempo que vuelve la respuesta.
+
+En este proyecto, se abordan ambas APIs para comparar los métodos de uso y dotar a los usuarios del dispositivo de diferentes ejemplos de uso de estas interfaces de programación que nos ofrece el kernel Linux.
 
 
 ### Blinkstick
 
 Completar
 
+​    
