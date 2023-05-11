@@ -25,7 +25,31 @@ La manera en la que se ha implementado esta funcionalidad ha sido usando compila
 
 ## main.cpp
 
-El fichero `main.cpp` es el punto central de la implementación, en él se maneja tanto la comunicación y respuesta USB... TODO.
+El fichero `main.cpp` es el punto central de la implementación, en él se maneja tanto la comunicación y respuesta USB, como la inicialización de los periféricos, reserva de memoria necesaria, entre otras acciones.
+
+En este fichero podemos encontrar implementadas diferentes funciones de la librería V-USB, que han sido previamente definidas en los ficheros de cabecera de la propia librería.
+
+En los siguientes apartados, se describen tres de las funciones clave en la comunicación USB.
+
+### Función `usbMsgLen_t usbFunctionSetup(uchar)`
+
+Esta función es el principal punto de entrada cuando se empieza a procesar un paquete USB procedente del host. La función recibe como parámetro 8 bytes de datos que contienen información como el *ReportID* al que va dirigido el paquete, el número de bytes recibidos, también conocido en terminología USB como *wLenght* o el tipo de transmisión, *bRequest*, que puede ser de tipo SET o GET en nuestro caso.
+
+Dentro de esta función se examinan los diferentes bytes para ir tomando decisiones sobre qué código ejecutar. Se mira primero la clase de la petición junto con el tipo de transferencia, para posteriormente comprobar qué *ReportID* es que ha recibido.
+
+En caso de que el código que haya que ejecutar para realizar la petición con éxito no sea demasiado simple o necesite más de 8 bytes de datos se debe de ejecutar la función `usbFunctionRead(uchar)` en transferencias de lectura o `usbFunctionWrite(uchar)` en caso de escritura, estas funciones serán llamadas tantas veces como sea necesario en trozos de 8 bytes hasta completar la longitud total del mensaje. Para que esto suceda, la función debe devolver la macro `USB_NO_MSG`. Por otro lado, si la petición puede completarse en esta función se devolverá el número de bytes que se han escrito en el buffer que será devuelto al host.
+
+### Funciones `uchar usbFunctionRead(uchar*, uchar)` y `uchar usbFunctionWrite(uchar*, uchar)`
+
+Como mencionaba la sección anterior, estas funciones son llamadas por el core de V-USB cuando en la función `usbFunctionSetup()` se devuelve el valor *USB_NO_MSG*. 
+
+Estas funciones se llaman con 8 bytes de datos que residen dentro del buffer que se envía como argumento junto con la longitud del mismo. La longitud total de los datos de la transferencia en curso se puede encontrar en el campo *wLenght* accesible desde la función de setup, de esta manera podemos calcular cuántos bytes nos quedan por leer y así acabar la transacción o si por el contrario tenemos que esperar más datos, esto es útil para lecturas de más de 8 bytes de datos.
+
+Si durante la ejecución de la función se produce algún error debemos retornar el valor -1, que se convertira en un *STALL* informando al host del fallo.
+
+En la función de lectura, cuando se quieren seguir leyendo datos se debe devolver el valor 0, en caso de haber finalizado se devolverá 1. Similar pasa con la función de escritura, pero en este caso siempre se debe devolver 1 cuando la transferencia haya finalizado con éxito.
+
+Es importante recalcar, que ambas funciones deben de ser previamente definidas por V-USB y para ello hay que activar dos macros que haran disponible la cabecera para su implementación, `USB_CFG_IMPLEMENT_FN_WRITE` y `USB_CFG_IMPLEMENT_FN_READ`.
 
 ## usbconfig.h
 
@@ -58,9 +82,14 @@ Aquí también se trabaja con los timers que nos ofrece el hardware en las funci
 
 Es un fichero relativamente sencillo pero de gran uso, ya que libera del fichero de ejecución principal el código de estas funciones.
 
-## Otras librerias usadas
+## Otras librerías usadas
 
-TODO
+Durante el proyecto, hemos usado también dos librerías de la comunidad que nos han permitido integrar en el software tanto el anillo de leds como el display de tipo OLED.
+
+Estas librerías son:
+
+- `oled/`, se encarga de controlar el display OLED mediante el protocolo de comunicación *i2c* que solo usa dos líneas de datos para la transmisión de la información. [@wagiminator-profile]
+- `light_ws2812/`, esta librería implementa el protocolo *one-wire* que nos permite controlar el anillo de led. [@ws2812-library]
 
 ## Depuración del código del microcontrolador
 
