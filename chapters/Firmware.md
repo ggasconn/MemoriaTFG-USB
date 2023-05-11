@@ -43,7 +43,7 @@ En caso de que el código que haya que ejecutar para realizar la petición con �
 
 Como mencionaba la sección anterior, estas funciones son llamadas por el core de V-USB cuando en la función `usbFunctionSetup()` se devuelve el valor *USB_NO_MSG*. 
 
-Estas funciones se llaman con 8 bytes de datos que residen dentro del buffer que se envía como argumento junto con la longitud del mismo. La longitud total de los datos de la transferencia en curso se puede encontrar en el campo *wLenght* accesible desde la función de setup, de esta manera podemos calcular cuántos bytes nos quedan por leer y así acabar la transacción o si por el contrario tenemos que esperar más datos, esto es útil para lecturas de más de 8 bytes de datos.
+Estas funciones se llaman con 8 bytes de datos que residen dentro del buffer que se envía como argumento junto con la longitud del mismo. La longitud total de los datos de la transferencia en curso se puede encontrar en el campo *wLenght* accesible desde la función de setup, de esta manera podemos calcular cuántos bytes nos quedan por leer y así acabar la transacción o si por el contrario tenemos que esperar más datos, esto es útil para lecturas de más de 8 bytes.
 
 Si durante la ejecución de la función se produce algún error debemos retornar el valor -1, que se convertira en un *STALL* informando al host del fallo.
 
