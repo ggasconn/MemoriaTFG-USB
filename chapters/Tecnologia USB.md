@@ -264,6 +264,20 @@ En este proyecto, se abordan ambas APIs para comparar los métodos de uso y dota
 
 ### Blinkstick
 
-Completar
+El desarrollo de este TFG está muy enfocado en docencia, ya que lo que se pretende es conseguir un dispositivo que sea barato de producir y muy versátil para poder desarrollar diversos tipos de drivers y aprender el funcionamiento de las diferentes partes que se involucran en este campo.
+
+Actualmente, en la asignatura *Arquitectura Interna de Linux y Android*, se está usando un dispositivo llamado *Blinkstick* [@blinkstick-page] para impartir este tipo de lecciones donde los alumnos aprenden a desarrollar drivers para el kernel Linux capaces de controlar este dispositivo.
+
+![Dispositivo Blinkstick usado actualmente en LIN [@blinkstick-page]](img/blinkstick.jpg)
+
+Pero este dispositivo tiene diferentes aspectos negativos que hacen de él una opción no del todo aconsejable para docencia, ya que el precio de venta es demasiado caro para lo que ofrece y la cantidad de material que hay que adquirir para un aula. También es demasiado sencillo, lo que limita en gran medida el tipo de drivers que los alumnos pueden desarrollar y la API que pueden usar, ya que este dispositivo solo admite transferencias de tipo *CONTROL*.
+
+Por ello, nuestro dispositivo ofrece significativas ventajas tanto en precio como en versatibilidad:
+
+- Comparado con el coste de adquirir *Blinksticks*, nuestro dispositivo es mucho más barato de producir.
+- Dispone de diferentes endpoints *CONTROL* y *INTERRUPT* lo que nos permite desarrollar diferentes tipos de drivers usando ambas APIs.
+- El *Blinkstick* solamente cuenta con unos cuántos diodos LEDs, mientras que nuestro dispositivo tiene ya implementados diversos periféricos de varios tipos con gran posibilidad de ampliación debido a la arquitectura del firmware y la disponibilidad de pines en el microcontrolador usado.
+
+
 
 ​    
