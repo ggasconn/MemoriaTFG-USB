@@ -2,7 +2,11 @@
 
 # Drivers y casos prácticos
 
-En este capítulo se describe los drivers propuestos para la interacción con los periféricos conectados a la placa, además de los detalles de bajo nivel como los endpoints utilizados en cada uno.
+Otra de las grandes partes de este proyecto es proporcionar a los usuarios de la placa un paquete de drivers que puedan tomar de ejemplo para desarrollar y aprender sobre su funcionamiento. 
+
+Ya que este material tiene una finalidad docente y de aprendizaje, el funcionamiento de los drivers es sencillo, pero no por ello simple de implementar. Se ofrecen 5 drivers los cuales hacen uso de bastantes partes de la API que nos proporciona *USB core* con los que los usuarios podrán ver y experimentar el funcionamiento de las utilidades USB que nos ofrece el kernel Linux, trabajando con ambas APIs y usando diferentes tipos de transferencias, con todo lo que ello conlleva.
+
+Como decía el párrafo anterior, el paquete de drivers contiene 5 diferentes, uno por cada plantilla de funcionamiento del firmware y otro que hace uso de la API asíncrona junto con transferencias *INTERRUPT*.
 
 
 
@@ -10,238 +14,110 @@ En este capítulo se describe los drivers propuestos para la interacción con lo
 
 ### Descripción del funcionamiento 
 
-Este módulo del kernel implementa un driver USB utilizando el endpoint de tipo IN del dispositivo USB, así como la API asíncrona del kernel. [@drivers-linux]
+Este módulo del kernel implementa un driver USB utilizando el endpoint de tipo *INTERRUPT IN* del dispositivo USB, así como la API asíncrona del kernel. [@drivers-linux]
 
 El funcionamiento del módulo es muy sencillo, una vez cargado en el kernel, expone un dispositivo de caracteres que tiene implementada la operación de lectura. Por ello, si lanzamos una llamada `read()`, por ejemplo con `cat`, iniciaremos la rutina que envía el URB de tipo *INTERRUPT IN* al dispositivo pidiéndole que le rellene el buffer enviado con datos.
 
-Como se usa la API asíncrona de USB la llamada a `read()` devuelve siempre 0 bytes, ya que no se sabe con exactitud cuándo se va a devolver el URB relleno con datos y al ser una función no bloqueante no esperamos a que llegue. El resultado de esta solicitud de datos al dispositivo se mostrará a través de la función de callback que se invoca una vez el URB vuelve desde el dispositivo.
+Como se usa la API asíncrona de USB la llamada a `read()` devuelve siempre 0 bytes, ya que no se sabe con exactitud cuándo se va a devolver el *URB* relleno con datos y al ser una función no bloqueante no esperamos a que llegue. El resultado de esta solicitud de datos al dispositivo se mostrará a través de la función de callback que se invoca una vez el URB vuelve desde el dispositivo.
 
+Como este driver está programado usando la API asíncrona que nos ofrece el kernel, toda la gestión de *URBs*, así como el descubrimiento de endpoints y todo el control de transferencia es gestionado por el driver. A continuación, veremos varios puntos relevantes del código que marcan una diferencia en el uso de esta API y del tipo de transferencia *INTERRUPT*.
 
+### Descubrimiento de endpoints
 
-### Aspectos relevantes del código desarrollado
+El descubrimiento de endpoints es de lo primero que se hace cuando un driver ha sido asociado a un dispositivo, esta asociación se hace mediante el *ProductID* y *VendorID*.
 
-Función callback del Driver, se ejecuta cuando se devuelven datos en un URB de tipo INT para procesarlo (después de haber reservado memoria para el URB, y que éste haya sido enviado con `usb_submit_urb`:
-```C
-/*
-* Callback function. Executed when INT IN URB returns back with data.
-*/
-static void pwnedDevice_int_in_callback(struct urb *urb) {
-	struct usb_pwnedDevice *dev = urb->context;
+Cuando el *USB Core* asigna el driver al dispositivo lo primero que se ejecuta es la función `pwnedDevice_probe()`, que ejecuta todas las tareas necesarias de inicialización, entre ellas el descubrimiento de endpoints.
 
-	if (urb->status) {
-		if (urb->status == -ENOENT ||
-		    urb->status == -ECONNRESET ||
-		    urb->status == -ESHUTDOWN) {
-			printk(KERN_INFO "Error on callback!");
-			return;
-		}
-	}
+Como argumento de esta función *probe* recibimos una descripción de la interfaz que está siendo conectada con el driver, en ella podemos ver los diferentes tipos de descriptores USB que muestran las características del dispositivo. Dentro de estos descriptores podemos llegar a los descriptores de interfaces donde buscaremos un endpoint de tipo *INTERRUPT* y en sentido *IN*, en caso de no encontrarse el driver no puede funcionar y se aborta la inicialización.
 
-	if (urb->actual_length > 0)
-		printk(KERN_INFO "Transfered data: %s\n", dev->int_in_buffer);	
-}
-```
+### Reserva de URBs
 
+Dentro de la función de *probe* que comentaba la sección anterior, también se realiza la reserva de memoria para el *URB* que se va a enviar al dispositivo para ser rellenado con información.
 
+Esta acción se hace a través de la función `usb_alloc_urb()` que devuelve un puntero al trozo de memoria que se ha destinado al *URB* solicitado. Este trozo de memoria será reutilizado y compartido con la controladora USB durante toda la vida del driver. Cabe destacar que es único por dispositivo, ya que el driver soporta varios dispositivos a la vez, cada uno de ellos reservará su propio *URB*.
 
-Función open (ejecutada nada más cargar el módulo en el kernel), se inicializa un URB de tipo INT en `usb_fill_int_urb` inicial y se envía con la función `usb_submit_urb`:
+### Montaje de un URB
 
-```C
-/* Called when a user program invokes the open() system call on the device */
-static int pwnedDevice_open(struct inode *inode, struct file *file)
-{
-	struct usb_pwnedDevice *dev;
-	struct usb_interface *interface;
-	int subminor;
-	int retval = 0;
+Cuando el driver recibe una operación de lectura, read(), en la callback de lectura `pwnedDevice_read()` se rellena el URB reservado previamente con información y se lleva a la controladora USB para que sea enviado al dispositivo.
 
-	subminor = iminor(inode);
-	
-	/* Obtain reference to USB interface from minor number */
-	interface = usb_find_interface(&pwnedDevice_driver, subminor);
-	if (!interface) {
-		pr_err("%s - error, can't find device for minor %d\n",
-			__func__, subminor);
-		return -ENODEV;
-	}
+Los datos introducidos al URB mediante la función que nos aporta el kernel `usb_fill_int_urb()`, a la cual le mandamos la información que queremos hacerle llegar, así como diferentes parámetros obligatorios y un buffer que rellenará el dispositivo con los datos que le solicitamos.
 
-	/* Obtain driver data associated with the USB interface */
-	dev = usb_get_intfdata(interface);
-	if (!dev)
-		return -ENODEV;
+Una vez todos los datos están correctos, tenemos que llamar a la función `usb_submit_urb()` para decirle a la controladora que ese URB está listo para ser enviado y proceder a ello.
 
-	/* Initialize URB */
-	usb_fill_int_urb(dev->int_in_urb, dev->udev,
-					usb_rcvintpipe(dev->udev,
-								dev->int_in_endpoint->bEndpointAddress),
-					dev->int_in_buffer,
-					le16_to_cpu(0x0008),
-					pwnedDevice_int_in_callback,
-					dev,
-					dev->int_in_endpoint->bInterval);
-	retval = usb_submit_urb(dev->int_in_urb, GFP_KERNEL);
+### Gestión de la respuesta
 
-	/* increment our usage count for the device */
-	kref_get(&dev->kref);
+Al usarse la API asíncrona después del envío del driver no hay ningún bloqueo que sirva de espera a la respuesta del dispositivo, es por esto que la respuesta se gestiona desde una función externa que es llamada cuando el URB vuelve relleno. Esta función es `pwnedDevice_int_in_callback()`.
 
-	/* save our object in the file's private structure */
-	file->private_data = dev;
+Dentro de la función se hacen dos cosas muy sencillas, lo primero es comprobar el estado de la transferencia ya que en caso de haberse producido algún fallo los datos devueltos puede que no sean coherentes.
 
-	return retval;
-}
-```
+En caso de que todo haya ido bien, se extraen los datos del buffer que previamente se reservó para ser relleno con información por el dispositivo y se muestra por la salida de información del kernel usando `printk()`.
 
+Este tipo de dispositivo tiene la limitación de que el tamaño máximo de transferencia mediante *INTERRUPT* es de 8 bytes, esta limitación la impone el estándar *USB* para dispositivos *Low-Speed.*
 
+## DisplaysDriver
 
-Función read() ejecutada cuando se hace un cat en el fichero de  /dev (se puede observar que se envía un URB tipo INT con datos al dispositivo):
+Este driver ha sido desarrollado para interactuar con los periféricos que muestran al usuario información a través de pantallas. En este momento están soportados por el firmware el display de 7 segmentos y la pantalla OLED, por lo que el driver es capaz de enviar información a ambos.
 
-```C
-#define MAX_LEN_MSG 35
-static ssize_t pwnedDevice_read(struct file *file, char *user_buffer,
-			  size_t count, loff_t *ppos)
-{
-	struct usb_pwnedDevice *dev;
-	int retval = 0;
+El driver utiliza la API síncrona que nos ofrece *USB Core* y todas las transferencias van sobre el tipo *CONTROL*.
 
-	dev = file->private_data;
-	
-	if (*ppos > 0)
-		return 0;
+Una vez cargado el módulo que hace de driver en el kernel, este expone un dispositivo de caracteres bajo la ruta `/dev/usb/displaysx`, donde *x* hace referencia al índice del dispositivo que se encuentra conectado, ya que el driver soporta más de un dispositivo a la vez.
 
-	/* Send URB. */
-	usb_fill_int_urb(dev->int_in_urb, dev->udev,
-	                 usb_rcvintpipe(dev->udev,
-	                                dev->int_in_endpoint->bEndpointAddress),
-	                 dev->int_in_buffer,
-	                 le16_to_cpu(0x0008),
-	                 pwnedDevice_int_in_callback,
-	                 dev,
-	                 dev->int_in_endpoint->bInterval);
-	retval = usb_submit_urb(dev->int_in_urb, GFP_KERNEL);
+### Operación de lectura
 
-	if (retval != 0)
-		return retval;
+Cuando el dispositivo recibe una llamada `read()`, independientemente del origen, se ejecuta la callback `displays_read()`. Como la plantilla *DISPLAYS* no puede ofrecer ninguna información útil de lectura sobre sus periféricos, cuando una operación de este tipo llega al dispositivo devuelve una frase de 33 bytes a modo de respuesta.
 
-	return 0; // No bytes returned. Async USB API used.
-}
-```
+![Salida de la operación de lectura al dispositivo](img/displaysRead.png)
 
+### Operación de escritura
 
+Las operaciones de escritura se ejecutan cuando el dispositivo recibe una llamada `write()`, esto dispara dentro del driver la ejecución de la callback `displays_write()` que puede funcionar de diferente manera según los argumentos que reciba.
 
-Función probe() que se ejecuta cuando se conecta al puerto USB un dispositivo de tipo `pwnedDevicestick` (se reserva memoria inicial para el URB, que posteriormente será rellenado y enviado):
+En caso de recibir como datos el comando *oled* seguido de una frase, esta frase será enviada al dispositivo mediante el *ReportID* 3 y automáticamente será mostrada en la pantalla oled.
 
-El punto donde se reserva memoria para el URB sin datos es el siguiente:
+Por el contrario, si como datos de la llamada viene el comando *7s* seguido de un dígito en hexadecimal, este será enviado al display de 7 segmentos.
 
-```C 
-dev->int_in_urb = usb_alloc_urb(0, GFP_KERNEL);
-```
+## LedPartyDriver
 
-Ésta es la función del Driver completa:
+*LedPartyDriver* es el driver USB encargado de la comunicación con los periféricos cuando el dispositivo se encuentra flasheado con la plantilla *LED_PARTY*.
 
-```C
-/*
- * Invoked when the USB core detects a new
- * pwnedDevicestick device connected to the system.
- */
-static int pwnedDevice_probe(struct usb_interface *interface,
-		      const struct usb_device_id *id)
-{
-	struct usb_pwnedDevice *dev;
-	struct usb_host_interface *iface_desc;
-	struct usb_endpoint_descriptor *endpoint;
-	int retval = -ENOMEM;
-	int i;
+Permite enviar comandos para controlar el anillo de led, ya sea el anillo completo o  un led concreto.
 
-	/*
- 	 * Allocate memory for a usb_pwnedDevice structure.
-	 * This structure represents the device state.
-	 * The driver assigns a separate structure to each pwnedDevicestick device
- 	 *
-	 */
-	dev = kmalloc(sizeof(struct usb_pwnedDevice), GFP_KERNEL);
+### Operación de lectura
 
-	if (!dev) {
-		dev_err(&interface->dev, "Out of memory\n");
-		goto error;
-	}
+Cuando este driver recibe una operación de lectura, lanza una transferencia de tipo *CONTROL* al *ReportID* 2 del dispositivo y devuelve la configuración actual de colores del anillo LED.
 
-	/* Initialize the various fields in the usb_pwnedDevice structure */
-	kref_init(&dev->kref);
-	dev->udev = usb_get_dev(interface_to_usbdev(interface));
-	dev->interface = interface;
+El dispositivo transfiere un buffer de 4 bytes de datos donde los 3 últimos son el color del anillo codificado en *RGB*. Con esta información el driver construye la cadena, *R: valor G: valor B: valor*, y la devuelve al usuario.
 
-	iface_desc = interface->cur_altsetting;
+![Salida de una operación de lectura al dispositivo por consola con todos los leds apagados](img/ledPartyRead.png)
 
-	for (i = 0; i < iface_desc->desc.bNumEndpoints; ++i) {
-		endpoint = &iface_desc->endpoint[i].desc;
+Todo este procedimiento de llamada y devolución de una cadena formateada al usuario se hace, al igual que en el resto de drivers, en la función `ledParty_read()`.
 
-		if (((endpoint->bEndpointAddress & USB_ENDPOINT_DIR_MASK)
-		     == USB_DIR_IN)
-		    && ((endpoint->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK)
-		        == USB_ENDPOINT_XFER_INT))
-			dev->int_in_endpoint = endpoint;
-	}
+### Operación de escritura
 
-	if (! dev->int_in_endpoint) {
-		pr_err("could not find interrupt in endpoint");
-		goto error;
-	}
+Este driver soporta dos diferentes comandos de escritura a través de la función `write()`.
 
+Cuando la función de callback `ledParty_write()`es ejecutada con el comando *setFullColor* seguido de una combinación de color separada por dos puntos, *R:G:B*, se envía una transferencia de tipo *CONTROL* con el color indicado al *ReportID* 1 y el anillo cambia de color por completo.
 
-	/* Request IN URB */
-	dev->int_in_urb = usb_alloc_urb(0, GFP_KERNEL);
-	if (!dev->int_in_urb) {
-		printk(KERN_INFO "Error allocating URB");
-		retval = -ENOMEM;
-		goto error;
-	}
+Otro de los comandos disponibles es *setLedColor* seguido del número de led a cambiar y el color, *nLed:R:G:B*. Este comando envía la información al *ReportID* 2, que cambia el led indicado por el color que recibe en la transferencia.
 
-	/* save our data pointer in this interface device */
-	usb_set_intfdata(interface, dev);
+## PWMDriver
 
-	/* we can register the device now, as it is ready */
-	retval = usb_register_dev(interface, &pwnedDevice_class);
-	if (retval) {
-		/* something prevented us from registering this driver */
-		dev_err(&interface->dev,
-			"Not able to get a minor for this device.\n");
-		usb_set_intfdata(interface, NULL);
-		goto error;
-	}
+Este driver es compatible cuando el dispositivo se encuentra flasheado con la plantilla *PWM*. Esta plantilla expone un led y un buzzer capaces de ser controlados mediante señales *PWM* generadas por el microcontrolador, y el driver permite comunicar el host con estos dispositivos.
 
-	/* let the user know what node this device is now attached to */	
-	dev_info(&interface->dev,
-		 "PwnedDevice now available via pwnedDevice-%d",
-		 interface->minor);
-	return 0;
+### Operación de lectura
 
-error:
-	if (dev->int_in_urb)
-		usb_free_urb(dev->int_in_urb);
+Al igual que en el driver *DisplaysDriver*, este módulo no dispone de información relevante de lectura desde el microcontrolador. Por ello cuando llega una operación `read()` a la función de callback, `pwm_read()`, se envía una transferencia de tipo *CONTROL* al dispositivo que devuelve una cadena a modo de respuesta.
 
-	if (dev)
-		/* this frees up allocated memory */
-		kref_put(&dev->kref, pwnedDevice_delete);
+### Operación de escritura
 
-	return retval;
-}
-```
+Para la operación de escritura, este driver también soporta varios comandos que interactúan con los dos periféricos soportados.
 
+El primero de ellos es *blinkLed* seguido de un *booleano* que indica si se desea parar (1) o reanudar (0) el parpadeo del led. Esta transferencia también se hace usando el tipo *CONTROL* y envía un paquete al *ReportID* 5.
 
+El segundo comando que soporta el driver es *buzzer* seguido de la frecuencia deseada y de si se quiere parar (1) o reanudar (0) el sonido. Igual que el comando anterior, envía una transferencia de tipo *CONTROL* pero esta vez al *ReportID* 6. Esta función del driver es muy útil de usar ya que escribiendo un programa de usuario, como el que se puede encontrar en el directorio `scripts/`del proyecto, se pueden generar melodías haciendo variar las frecuencias y tiempos de vibración del buzzer.
 
-### Uso
+## AllDevicesDriver
 
-Para usar este driver tan solo hay que compilarlo y cargarlo en el kernel.
+Este driver es el más potente de todos, esencialmente es una combinación de todos ellos para cuando el dispositivo se encuentra flasheado con la plantilla *ALL_DEVICES*.
 
-```bash
-make
-sudo insmod BasicInterrupt.ko
-```
-
-Una vez cargado en el kernel, podemos ver en kern.log que ya está disponible y si tenemos conectado el dispositivo USB también será reconocido.
-
-![Salida dmesg. Muestra la carga del módulo y el dispositivo reconocido](img/cargaBasicInterrupt.png)
-
-Y si ejecutamos una llamada a `read()`, por ejemplo usando el comando `cat`, veremos la información que devuelve el dispositivo.
-
-![Salida dmesg. Muestra la carga del módulo y el dispositivo reconocido](img/SalidaBasicDriver.png)
+Permite controlar todos los periféricos, así como acceder a las dos operaciones de lectura que ofrece el dispositivo.
