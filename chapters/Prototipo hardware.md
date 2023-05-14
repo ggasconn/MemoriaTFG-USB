@@ -25,23 +25,23 @@ En cuanto a componentes hardware, estos chips cuentan con una memoria flash para
 
 ### ATTiny85
 
-Este es el microcontrolador usado originalmente para el desarrolo del firmware con V-USB, en el que se ha implementado funcionalidad para controlar un anillo circular de leds junto a una pantalla LCD OLED. Debido a las limitaciones en cuanto a puertos y temporización que presenta, nos vimos obligados a buscar otras alternativas, entre ellas nos decantamos por el microchip ATmega328p que describiremos más adelante.
+Este es el microcontrolador usado originalmente para probar el firmware desarrollado basado en V-USB, en el que se ha implementado funcionalidad para controlar un anillo circular de leds junto a una pantalla LCD OLED. Debido a las limitaciones en cuanto a puertos y temporización que presenta, nos vimos obligados a buscar otras alternativas, entre ellas nos decantamos por el microchip ATmega328p que describiremos más adelante.
 
 A continuación vamos a hablar de las características hardware de este chip, así como datos relacionados con su arquitectura. Al ser un chip bastante sencillo, está implementado con una arquitectura de 8 bits. Al igual que otros chips de la familia AVR, y en especial éste, cuenta con un bajo consumo al tener pocos pines de entrada/salida, solamente 6. Se cuenta con 8 kilobytes de memoria flash para almacenar el firmware, 512 bytes de EEPROM donde almacenamos el *bootloader*, y 512 bytes de SRAM.
 
-Cuenta con 6 pines de I/O de propósito general (desde PB0 hasta PB5), una limitación bastante importante en el proyecto, ya que solamente se puede hacer uso de unos pocos periféricos conectados simultáneamente. Otro de los problemas encontrados en el desarrollo de este proyecto, tiene que ver con el oscilador interno, ya que resulta un problema en términos de temporización al ejecutar aplicaciones que requieran estar recibiendo datos de un dispositivo externo, en este caso se ha hecho uso de un sensor de temperatura. [@avr-attiny85] [@attiny85-datasheet]
+Cuenta con 6 pines de I/O de propósito general (desde PB0 hasta PB5), una limitación bastante importante en el proyecto, ya que solamente se puede hacer uso de unos pocos periféricos conectados simultáneamente. Otro de los problemas encontrados en el desarrollo de este proyecto, tiene que ver con el oscilador interno, ya que resulta un problema en términos de temporización al ejecutar aplicaciones que requieran procesar datos en tiempo real, como estar recibiendo datos de un dispositivo externo, en este caso se han realizado pruebas con un sensor de temperatura. [@avr-attiny85] [@attiny85-datasheet]
 
-![Chip ATTiny85](img/ATTiny85.jpg){width=30% #fig:label1}
+![Chip ATTiny85 [@chipatiny-page]](img/ATTiny85.jpg){width=30% #fig:label1}
 
-La elección de este microcontrolador para el proyecto resultó originalmente ser una gran ventaja debido a la gran posibilidad de usos con el que se contaba, además de poder integrarlo con el entorno Arduido y con el que se realizaron distintas pruebas previas para entender el funcionamiento del bootloader de Micronucleus (originalmente cargado en el microchip y totalmente compatible con Arduino). Posteriormente, al desarrollar nuestro propio firmware basado en V-USB, decidimos dejar de usar este entorno para poder usar un bootloader propio de AVR, y de esta forma, mediante un programador, poder cargar el firmware V-USB dentro del ATTiny85. Así, dejamos de depender del entorno Arduino y pudimos trabajar en el desarrollo de V-USB puro, entendiendo toda la funcionalidad de este firmware y del propio protocolo USB a bajo nivel. Todo esto se explica en los siguientes apartados, cuando se hace uso del ATTiny85 con la placa Digispark que ya lo incorpora, por lo que utilizar Micronucleus con Arduino en Digispark nos resultó realmente sencillo.
+La elección de este microcontrolador para el proyecto resultó originalmente ser una gran ventaja debido a la gran posibilidad de usos con el que se contaba, además de poder integrarlo con el entorno Arduido y con el que se realizaron distintas pruebas previas para entender el funcionamiento del bootloader de Micronucleus (originalmente cargado en el microchip y totalmente compatible con Arduino). Posteriormente, al desarrollar nuestro propio firmware basado en V-USB, decidimos dejar de usar este entorno para poder usar un bootloader propio de AVR, y de esta forma, mediante un programador, poder cargar el firmware V-USB dentro del ATTiny85. Así, dejamos de depender del entorno Arduino y pudimos trabajar en el desarrollo de V-USB puro, entendiendo toda la funcionalidad de este firmware y del propio protocolo USB a bajo nivel. Todo esto se explica en los siguientes apartados, en la parte en la que se explican los detalles de la placa Digispark, por lo que utilizar Micronucleus con Arduino nos resultó realmente sencillo.
 
-![Integración del entorno Arduino con ATTiny85](img/attiny85_arduino.png){width=55% #fig:label2}
+![Integración del entorno Arduino con ATTiny85](img/attiny85_arduino.png){width=95% #fig:label2}
 
 Un factor destacable de este microchip es el bajo consumo que requiere para funcionar, por lo que para futuras versiones del proyecto, se puede integrar una batería para demostrar que no necesita de una cantidad muy grande de energía y puede aprovechar al máximo su duración. Un ejemplo concreto podría ser una integración de batería y sensor de temperatura con pantalla OLED, para monitorizar la temperatura de manera constante (aunque con ATTiny85 el uso de un sensor de temperatura es limitado por lo comentado anteriormente de la temporización). [@attiny85-desc]
 
 A continuación, se detalla el esquema de la configuración de cada uno de los pines para el chip.
 
-![Detalle de los pines del ATTiny85](img/attiny85_pines.png){width=60% #fig:label3}
+![Detalle de los pines del ATTiny85 [@pinoutatiny-page]](img/attiny85_pines.png){width=90% #fig:label3}
 
 
 
@@ -49,7 +49,7 @@ A continuación, se detalla el esquema de la configuración de cada uno de los p
 
 Tras estar trabajando con el ATTiny85, nos dimos cuenta de las limitaciones en cuanto a puertos de I/O y temporización que éste contaba. Por lo que decidimos buscar alternativas de chips dentro de la familia AVR, y nos llamó la atención este microchip al contar con un número bastante grande de puertos de entrada/salida, ya que cuenta con 23 pines. Además, utilizando el ATmega no contamos con las limitaciones de temporización (el ATmega cuenta con 3 *timers* o temporizadores), por lo que el uso de dispositivos que envíen datos al microchip (dispositivos de entrada) resulta muy adecuado al no presentar ninguna limitación que pueda provocar inestabilidad en el firmware o lectura de datos incorrecta.
 
-![Chip ATmega](img/ATMEGA328P.jpg){width=55%}
+![Microcontrolador ATmega328p [@atmegachip-image]](img/ATMEGA328P.jpg){width=55%}
 
 A diferencia de los 512 KB del ATTiny85, éste cuenta con 1 KB de memoria EEPROM donde se almacena el bootloader, 2 KB de SRAM y, como hemos mencionado anteriormente, 23 pines I/O de propósito general, una de las grandes ventajas. 
 
@@ -57,30 +57,32 @@ Otros datos sobre el hardware son las 24 líneas de interrupción internas que t
 
 El dispositivo puede operar entre 1.8 y 5.5 voltios, en función de distintos factores como el número de periféricos que contenga. Puede alcanzar una respuesta de 1 MIPS. [@nano-pinout]
 
-![Placa Arduino NANO con ATmega328p](img/atmega_board.png){width=40%}
+Este chip lo integra la placa NANO que se ha utilizado para el prototipo final del proyecto. A continuación mostramos una imagen de la placa (sus detalles se explican más adelante).
+
+![Pinout del microchip ATmega328p [@atmegapinout-image]](img/atmega_pinout.png){width=55%}
 
 
 
 
+## Placas que integran estos microcontroladores
 
-## Placas que utilizan estos microcontroladores
-
-A continuación se detallan las dos placas sobre las que se han hecho pruebas en este proyecto, en las que se incluyen los microcontroladores mencionados anteriormente.
+A continuación se detallan las dos placas sobre las que se han hecho pruebas en este proyecto, en las que se incluyen los microcontroladores mencionados anteriormente. Además, cuentan con una interfaz USB, necesaria para el desarrollo de este proyecto.
 
 
 
 ### Digispark con ATTiny85
 
-Para el desarrollo original del firmware con el microchip ATTiny85, escogimos hacer uso de la placa Digispark, que además cuenta con una interfaz USB necesaria para el desarrollo de este proyecto.
-Los detalles técnicos que cuenta Digispark son similiares al chip ATTiny, salvo la interfaz USB y los pines de entrada de corriente con los que cuenta. Puede funcionar con un voltaje de 5V.
+Para un primer prototipo del proyecto se estuvieron realizando pruebas con el microchip ATTiny85, para ello utilizamos la placa Digispark, que integra este chip. Una característica muy importante es la interfaz USB con la que se cuenta. Los detalles técnicos son similiares al chip ATTiny85, salvo la interfaz USB y los pines de entrada de corriente con los que cuenta. Puede funcionar con un voltaje de 5V.
 
-![Pinout de la placa Digispark](img/Digispark_Pinout.png){width=55% #fig:label2}
+Su tamaño de 25 mm x 18 mm, lo que resulta realmente manejable y portable. Como dato adicional, incorpora un regulador de voltaje y un LED de encendido. Dicho LED se ha utilizado al comienzo del proyecto para poder hace debug del firmware, ya que incoporando una función que encienda dicho LED se sabe si se ha ejecutado código hasta dicha línea. [@digispark-board]
 
-Su tamaño de 25 mm x 18 mm, lo que resulta realmente manejable y portable. Incluye una interfaz USB para programación y comunicación con el host, así como un regulador de voltaje y LED de encendido. [@digispark-board]
-
-![Placa de desarrollo Digispark](img/digispark_board.jpg){width=35% #fig:label2}
+![Pinout de la placa Digispark [@digisparkpin-image]](img/Digispark_Pinout.png){width=55% #fig:label2}
 
 Una característica única de la placa Digispark es que viene preprogramada con un cargador de arranque que permite el flasheo de firmware a través del propio puerto USB usando el IDE de Arduino (llamado Micronucleous Bootloader). Con ello se puede programar código desde Arduino fácilmente a la placa sin necesidad de un programador independiente. Aunque para el desarrollo de nuestro proyecto, se ha optado por no depender de Arduino y utilizar la librería V-USB pura, entendiento todos los aspectos de bajo nivel del protocolo y comunicación USB, por lo que se requiere de un bootloader de AVR y un programador externo. [@setup-digispark]
+
+![Placa de desarrollo Digispark [@digisparkboard-image]](img/digispark_board.jpg){width=35% #fig:label2}
+
+A continuación se explica la segunda placa de desarrollo del proyecto, donde se encuentra montado el prototipo final.
 
 
 
@@ -88,7 +90,7 @@ Una característica única de la placa Digispark es que viene preprogramada con 
 
 Para el prototipo final del proyecto, hacemos uso de la placa Nano que incorpora el microchip ATmega328p. Las ventajas de utilizar esta placa en relación a Digispark son bastantes, además de poder contar con una interfaz puerto serie utilizada en el proyecto para depuración. En esta placa cabe destacar también el bajo consumo energético, y el amplio número de pines de E/S con el que se cuenta, en este caso 14. Una ventaja muy notable en comparación a la placa Digispark con ATTiny85.
 
-![Pinout de la placa NANO con ATmega328p](img/nanopinout.png){width=50%}
+![Placa NANO con ATmega328p [@atmegaboard-image]](img/atmega_board.png){width=40%}
 
 Además de los pines de E/S mencionados anteriormente, contamos con 8 pines de entrada analógica y 6 pines PWM. Cuenta también con un puerto USB utilizado en este caso como salida de puerto serie (para depuración del firmware), y un botón de reset para reiniciar la placa. [@nano-info]
 
@@ -96,7 +98,7 @@ En cuanto a términos de programación, Nano es totalmente compatible con Arduin
 
 El uso de esta placa es una opción muy interesante para la creación de prototipos, ya que se puede integrar fácilmente en circuitos breadboard o perfboard, y poder realizar pruebas como las que se realizaron en este proyecto para implementar la interfaz USB, usando distintos diodos que posibilitaran el funcionamiento de este puerto.
 
-
+![Pinout de la placa NANO con ATmega328p [@nanopinout-image]](img/nanopinout.png){width=70%}
 
 
 
@@ -110,7 +112,7 @@ En este apartado se explica los distintos elementos hardware con los que se ha d
 
 Para probar el firmware, en la primera versión con ATTiny85 se ha hecho uso de la tira de leds circular fabricado por la empresa NeoPixel [@LED-strip]. Dichos leds se encuentran en disposición circular con colores RGB direccionables individualmente. Posteriormente, se han utilizado como un periférico para el prototipo final de este proyecto, utilizando ATmega328p.
 
-![Tira de LEDs circular de NeoPixel](img/LED-Strip.jpg){width=45% #fig:label3}
+![Tira de LEDs circular de NeoPixel](img/LED-Strip.jpg){width=75% #fig:label3}
 
 Estos LEDs están conectados en cadena, y cada LED está controlado por una sola línea de datos. La línea de datos usa un protocolo de comunicación específico llamado *One-Wire Protocol*, es un protocolo software que controla el color y el brillo de cada LED individual. Su funcionamiento se explica en los siguientes apartados. De esta forma, conseguimos hacer iluminar todos los leds del anillo a la vez, o crear una serie de patrones para que se vayan encendiendo poco a poco, con distintos colores. 
 
@@ -122,13 +124,13 @@ La tira de LED circular se alimenta con una fuente de alimentación de 5V que pr
 
 Cada LED individual en la tira de LEDs circular de NeoPixel contiene un registro, con un pequeño microcontrolador y un LED RGB (Red, Green, Blue). El microcontrolador de cada LED es el responsable de controlar el color y el brillo, y de comunicarse con los otros LED de la cadena.
 
-![Disposición de los pines y del controlador en cada LED](img/pines_neopixel.jpg){width=50% #fig:label3}
+![Disposición de los pines y del controlador en cada LED [@smsreg-video]](img/pines_neopixel.jpg){width=50% #fig:label3}
 
 El *Smart Shift Register* utiliza un protocolo de comunicación específico llamado *One-Wire Protocol*, se usa para poder recibir datos del microcontrolador. Su funcionamiento se explica en el siguiente apartado. 
 
 Dicho protocolo se basa en otro de más bajo nivel que hace uso de una sola línea de datos, para transmitir estos bits entre el microcontrolador y cada LED. Para enviar datos a cada LED utilizando cada registro, el microcontrolador envía una serie de bits, que el microcontrador del LED interpreta como una secuencia de comandos. Los comandos incluyen instrucciones para configurar el color y el brillo de cada LED individual, así como para configurar el tiempo y la sincronización de la cadena de LEDs.
 
-![Animación sobre la disposición de los bits dentro del controlador de cada LED](img/onewire.png){width=70% #fig:label3}
+![Posición de los bits dentro del controlador de cada LED [@smsreg-video]](img/onewire.png){width=70% #fig:label3}
 
 Cada LED cuenta con 24 *Shift Registers* que se van rellenando según se vayan recibiendo datos del microcontrolador principal (ATTiny o ATmega). Cuando se reciben 24 bits, éstos se agrupan en 3 *data latches* que el controlador de cada LED interpreta para ajustar el color o brillo de cada LED (se utiliza un grupo de 8 bits para controlar el color rojo, otro grupo de 8 bits para el color verde y otro grupo de 8 bits para el color azul). De esta forma, los bits correspondientes a la configuración del siguiente LED de la cadena pasa por el registro de desplazamiento anterior, que éste lo reenvía al siguiente hasta que se desplazan a los *data latches*. Cuando el registro de desplazamiento recibe la señal de reset, quiere decir que se pueden iluminar los LEDs al haber terminado el envío de datos de toda la cadena, se empezaría a partir de ese momento otra ronda de envío de datos. [@smsreg-video]
 
@@ -140,7 +142,7 @@ El protocolo One-Wire (o también conocido como 1-Wire) es utilizado en la tira 
 
 El funcionamiento de este protocolo es el siguiente: para poder determinar el dato, se mide los tiempos entre cada flanco de subida y de bajada, para cada transmisión. Si el tiempo entre el flanco de subida y el flanco de bajada es mayor que el tiempo transcurrido hasta el siguiente flanco de subida, el resultado es un voltaje alto (TH) o un 1 lógico. Por el contrario, si el tiempo entre el primer flanco de subida y el siguiente flanco de bajada es menor que el tiempo transcurrido hasta el el siguiente flanco de subida, el resultado es un voltaje bajo (LW) o un 0 lógico. En la siguiente figura se ilustra este funcionamiento.
 
-![Cálculo de cada dato según los flancos de subida o bajada en 1-Wire](img/1wireTHTL.png){width=50%}
+![Cálculo de cada dato según los flancos de subida o bajada en 1-Wire [@smsreg-video]](img/1wireTHTL.png){width=50%}
 
 
 
@@ -148,7 +150,7 @@ El funcionamiento de este protocolo es el siguiente: para poder determinar el da
 
 Este periférico con soporte en el firmware es capaz de representar un número del 0 al 9, mediante segmentos verticales y horizontales que, según el número a mostrar, se encienden o apagan mostrando el número en cuestión. También cuenta con un punto a la derecha de los segmentos. La configuración de este display es de cátodo común, es decir, cuando se escribe un 1 se enciende el segmento deseado, y cuando se escribe un 0, se apaga.
 
-![Diagrama del circuito del display 7 segmentos de la placa Bee 2.0](img/d7seglin.png){width=50%}
+![Diagrama del circuito del display 7 segmentos de la placa Bee 2.0 [@sevenseg]](img/d7seglin.png){width=50%}
 
 El diagrama anterior ilustra el circuito interno del display 7 segmentos. Se puede observar que se cuenta con dos registros, y para ello el sistema tiene 3 pines de entrada. Esto es una enorme ventaja, ya que si tuviéramos 8 pines de entrada para el display, a parte de la complejidad en el código que se añadiría, limitaría la posible interacción con otros dispositivos de E/S, al tener que estar constantemente enviando un 1 lógico en aquellos pines correspondientes a los segmentos que se quieren encender. Para ello, se ha implementado el sistema con dos registros, uno de desplazamiento y otro de salida, que se explican a continuación.
 
@@ -175,9 +177,7 @@ Otro de los periféricos con soporte en el firmware del proyecto es una pantalla
 
 Para la conexión del periférico con el microcontrolador, a través de las placas Digispark o NANO, se hace a través de los pines de I2C de ambas placas, en concreto a través de los pines de SDA y SCL.
 
-[COMPLETAR explicación I2C]
-
-En los siguientes apartados se explica la funcionalidad implementada en el firmware y también los distintos drivers que hacen uso de este dispositivo.
+En los siguientes apartados se explica la funcionalidad implementada en el firmware y también los distintos drivers que hacen uso de este dispositivo. Este periférico utiliza el ReportID 3 del firmware para su funcionamiento.
 
 
 
@@ -193,6 +193,6 @@ Para poder entender el funcionamiento de este periférico, es preciso entender c
 
 Como punto de partida en el proyecto, se ha estudiado el funcionamiento e interconexión de los distintos elementos hardware de la placa Bee 2.0 diseñada para la asignatura Arquitectura Interna de Linux y Android.
 
-![Placa Bee 2.0 de la asignatura Arquitectura interna de Linux y Android](img/bee20gen.png){width=70%}
+![Placa Bee 2.0 de la asignatura Arquitectura interna de Linux y Android [@bee-lin-image]](img/bee20gen.png){width=70%}
 
-La idea de este proyecto es la posible fusión del uso de la librería V-USB con esta asignatura, así como el diseño de prácticas relacionadas con el uso de este firmware, para que la interacción y funcionalidad con los elementos hardware de la placa sea mucho más variada, y que la modificación de funcionalidades a implementar por los alumnos sea cada vez de una forma distinta, lo que ayuda a la adquisición de los conocimientos de bajo nivel sobre el funcionamiento, entre otras cosas, del protocolo USB.
+La idea de este proyecto es la posible fusión del uso de la librería V-USB con esta asignatura, así como el diseño de prácticas relacionadas con el uso de este firmware, para que la funcionalidad e interacción con los elementos hardware de la placa sea mucho más variada, y que la modificación de la implementación software por parte de los alumnos sea bastante más amplia que con la que se cuenta actualmente con el Blinkstick, lo que ayudaría a la adquisición de los conocimientos de bajo nivel sobre el funcionamiento, entre otras cosas, del protocolo USB.
