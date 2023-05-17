@@ -16,11 +16,11 @@ header-includes:
 - \pagestyle{fancy}
 # Para incluir fichero separado con código LaTeX
 #- \input{separators/preamble.tex}
-title: Dispositivo hardware de bajo coste para bancos de pruebas de desarrollo de drivers USB en Linux 
+title: Infraestructura hardware/software de bajo coste para implementación de dispositivos USB y drivers en Linux 
 author: Guillermo Gascón Celdrán y Javier Rodríguez-Avello Tapias
 advisor: Juan Carlos Sáez Alcaide y Christian Tomás Tenllado Van Der Reijden 
 department: Departamento de Arquitectura de Computadores y Automática
-program: Grado en Ingeniería Informática
+program: Grado en Ingeniería del Software e Ingeniería de Computadores
 course: 2022-2023
 date: 2023
 ---

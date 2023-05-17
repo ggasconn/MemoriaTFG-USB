@@ -15,6 +15,8 @@ En el desarrollo del proyecto, se han utilizado dos microcontroladores sobre los
 
 ### Familia de microcontroladores AVR
 
+[WORK IN PROGRESS]
+
 Los microcontroladores AVR provienen del fabricante Atmel (actualmente perteneciente a Microchip Technology [@atmel-web]), están principalmente diseñados para el desarrollo de sistemas empotrados y aplicaciones relacionados con robótica, así como su uso a gran escala en entornos industriales. Su interfaz y diseño es relativamente sencillo, por lo que implementar aplicaciones que usen estos chips resulta realmente atractivo para programadores que quieran aprender a desarrollar software en el que se utilice, por ejemplo, el protocolo USB, entre otros muchos, contando con ello con un gran abanico de utilidades y periféricos.
 
 Estos microcontroladores, entre los que se incluyen ATTiny85 y ATmega328p, se caracterizan por permitir implementaciones en las que se requieren pocas prestaciones, así como su bajo consumo energético, pero que a su vez ofrecen un gran rendimiento en proyectos o entornos de pruebas, como en el que se ha estado trabajando. El uso de una arquitectura RISC hace que sea una ventaja en el procesamiento de datos, aunque como veremos más adelante, en el ATTiny85 se cuenta con una limitación en cuanto a temporización, que en el caso del desarrollo de este proyecto ha sido un problema para determinados periféricos. Salvo esto último, la única complejidad que puede presentar el desarrollo de un firmware es la adquisición de los conocimientos propios de toda la API de USB. [@avr-products]
@@ -68,6 +70,8 @@ Este chip lo integra la placa NANO que se ha utilizado para el prototipo final d
 
 A continuación se detallan las dos placas sobre las que se han hecho pruebas en este proyecto, en las que se incluyen los microcontroladores mencionados anteriormente. Además, cuentan con una interfaz USB, necesaria para el desarrollo de este proyecto.
 
+[WORK IN PROGRESS]
+
 
 
 ### Digispark con ATTiny85
@@ -105,6 +109,18 @@ El uso de esta placa es una opción muy interesante para la creación de prototi
 ## Periféricos con soporte en el proyecto
 
 En este apartado se explica los distintos elementos hardware con los que se ha dado soporte en el proyecto. En este proyecto se ha contado con una placa inicial, la placa Bee 2.0, utilizada en la asignatura Arquitectura interna de Linux y Android, en la que se cuentan con distintos periféricos, como un display 7 segmentos o un buzzer, permitiendo la interconexión entre todas sus componentes. También se ha hecho uso de un anillo led circular y de una pantalla OLED.
+
+
+
+
+### Placa Bee 2.0
+
+[WORK IN PROGRESS] Como punto de partida en el proyecto, se ha estudiado el funcionamiento e interconexión de los distintos elementos hardware de la placa Bee 2.0 diseñada para la asignatura Arquitectura Interna de Linux y Android.
+
+![Placa Bee 2.0 de la asignatura Arquitectura interna de Linux y Android [@bee-board]](img/bee20gen.png){width=70%}
+
+La idea de este proyecto es la posible fusión del uso de la librería V-USB con esta asignatura, así como el diseño de prácticas relacionadas con el uso de este firmware, para que la funcionalidad e interacción con los elementos hardware de la placa sea mucho más variada, y que la modificación de la implementación software por parte de los alumnos sea bastante más amplia que con la que se cuenta actualmente con el Blinkstick, lo que ayudaría a la adquisición de los conocimientos de bajo nivel sobre el funcionamiento, entre otras cosas, del protocolo USB.
+
 
 
 
@@ -186,13 +202,3 @@ En los siguientes apartados se explica la funcionalidad implementada en el firmw
 Este buzzer utiliza una señal PWM para su funcionamiento. Cuando se recibe un 1 por dicho pin, éste empieza a emitir un sonido constante, cuando se deja de transmitir, no se emite ningún sonido. La explicación sobre la implementación de la funcionalidad de este periférico en el firmware y drivers se explica en los siguientes apartados de la memoria. 
 
 Para poder entender el funcionamiento de este periférico, es preciso entender cómo funciona la señal PWM (Pulse Width Modulation, en castellano, modulación por ancho de pulso). El objetivo es convertir una señal digital (un 1 lógico) en una señal analógica, lo que se traduce en sonido para el Buzzer (una determinada frecuencia, generalmente entre los 2 KHz ~ 5 KHz). Para ello, se hace pasar dicha corriente por una componente interna que es la que produce el sonido.
-
-
-
-### Placa Bee 2.0
-
-Como punto de partida en el proyecto, se ha estudiado el funcionamiento e interconexión de los distintos elementos hardware de la placa Bee 2.0 diseñada para la asignatura Arquitectura Interna de Linux y Android.
-
-![Placa Bee 2.0 de la asignatura Arquitectura interna de Linux y Android [@bee-lin-image]](img/bee20gen.png){width=70%}
-
-La idea de este proyecto es la posible fusión del uso de la librería V-USB con esta asignatura, así como el diseño de prácticas relacionadas con el uso de este firmware, para que la funcionalidad e interacción con los elementos hardware de la placa sea mucho más variada, y que la modificación de la implementación software por parte de los alumnos sea bastante más amplia que con la que se cuenta actualmente con el Blinkstick, lo que ayudaría a la adquisición de los conocimientos de bajo nivel sobre el funcionamiento, entre otras cosas, del protocolo USB.
