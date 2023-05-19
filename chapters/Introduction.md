@@ -58,7 +58,31 @@ Para la realización del proyecto, se han contemplado distintas alternativas, en
 
 
 
-## Plan de trabajo
+## Plan de trabajo {#cap:hw}
+
+En este proyecto se han desarrollado dos prototipos hardware de la infraestructura. El primer prototipo está basado en el microcontrolador ATTiny85 --mismo chip empleado por el dispositivo Blinkstick Strip. El segundo prototipo hace uso del micro controlador ATMega328p, que supera las limitaciones del anterior microcontrolador, descritas en detalle en el capítulo \ref{#cap:hw}. Teniendo esto en cuenta, se llevó a cabo un plan de trabajo, que consta de las siguientes tareas (ver Fig \ref{fig:gantt}) :
+
+T1) 
+
+: Aquí va la descripción
+
+
+
+T2)
+
+: Aquí va la descripción
+
+
+
+<!-- 
+
+https://www.uv.es/wikibase/doc/cas/pandoc_manual_2.7.3.wiki?82
+
+-->
+
+
+
+
 
 Para el desarrollo de este proyecto, se han mantenido distintas reuniones con los directores del proyecto y entre los desarrolladores. En la parte inicial del proyecto, se ha estudiado el funcionamiento de la librería V-USB con distintos proyectos que utilizan otros microchips, para ver qué uso se hacen de los distintos elementos del firmware y las distintas funciones empleadas en el código. Se ha utilizado el software Wireshark [@sw-wireshark] para estudiar la comunicación USB, es decir, los endpoints usados y los paquetes URBs en la comunicación. También se ha tenido en cuenta la configuración del software y la posibilidad de utilizar, por ejemplo, interrupciones.
 

@@ -289,8 +289,8 @@ static ssize_t ledParty_read(struct file *file, char *user_buffer,
 }
 ```
 
-```shell
-~$ cat /dev/usb/ledParty0
+```bash
+$ cat /dev/usb/ledParty0
 File: /dev/usb/ledParty0
 R: 0 G: 0 B: 0
 ```

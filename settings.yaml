@@ -7,7 +7,12 @@ fontsize: 12pt
 fontfamily: tgpagella
 #fontfamily: times
 lang: es-ES
+colorlinks: true
+linkcolor: red
+urlcolor: red
 header-includes:
+- \fvset{fontsize=\footnotesize}
+- \hypersetup{colorlinks=true}
 - \usepackage{subfig}
 #- \usepackage[ruled,vlined]{algorithm2e}
 - \usepackage{fancyhdr}
