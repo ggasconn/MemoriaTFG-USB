@@ -40,7 +40,7 @@ Para poder estudiar todo el protocolo USB y la interacción entre el dispositivo
 
 ## Objetivos
 
-El objetivo principal de este proyecto ha sido construir una infraestructura hardware software de bajo coste que permita el prototipado de dispositivos USB y el desarrollo de drivers para estos dispositivos.  Nuestra infraestructura está basada en microcontroladores AVR de Atmel [REF], y en el proyecto V-USB [@v-usb], que proporciona un *firmware* genérico para implementar soporte de USB por software. Nuestro proyecto extiende V-USB para facilitar la creación de *firmware* USB que  gestione múltiples periféricos simultáneamente. Aunque existen otras alternativas al uso del  framework de  V-USB (p.ej. el uso de microcontroladores con soporte de USB por hardware), la infraestructura propuesta no solo tiene bajo coste, sino que también ofrece gran versatilidad para el desarrollo de software de bajo nivel. En particular, permite experimentar tanto con el desarrollo de drivers USB en sistemas provistos de sistema operativo, así como como la implementación de *firmware USB* para la gestión de hardware, empleando programación *bare metal*.  En este TFG se ha realizado desarrollo en ambos ámbitos.  
+El objetivo principal de este proyecto ha sido construir una infraestructura hardware software de bajo coste que permita el prototipado de dispositivos USB y el desarrollo de drivers para estos dispositivos.  Nuestra infraestructura está basada en microcontroladores AVR de Atmel [@avr-atmel], y en el proyecto V-USB [@v-usb], que proporciona un *firmware* genérico para implementar soporte de USB por software. Nuestro proyecto extiende V-USB para facilitar la creación de *firmware* USB que  gestione múltiples periféricos simultáneamente. Aunque existen otras alternativas al uso del  framework de  V-USB (p.ej. el uso de microcontroladores con soporte de USB por hardware), la infraestructura propuesta no solo tiene bajo coste, sino que también ofrece gran versatilidad para el desarrollo de software de bajo nivel. En particular, permite experimentar tanto con el desarrollo de drivers USB en sistemas provistos de sistema operativo, así como como la implementación de *firmware USB* para la gestión de hardware, empleando programación *bare metal*.  En este TFG se ha realizado desarrollo en ambos ámbitos.  
 
 Otro objetivo del proyecto es proporcionar un conjunto de drivers USB que ilustren la interacción con dispositivos de distinta naturaleza, como conjuntos de LEDs RGB, pantallas LCD, displays 7 segmentos, zumbadores o sensores de tempera. Para ello la infraestructura propuesta se acompaña de una colección de drivers que emplean una amplia colección de funciones de la API proporcionada por el kernel Linux para el desarrollo de drivers USB. Estos drivers se implementan como módulos cargables del kernel Linux, para así servir de base para futuras prácticas de la asignatura LIN. Aunque el desarrollo de drivers USB en espacio de usuario con *libusb* [@libusb] queda fuera del ámbito de este TFG, los drivers del kernel proporcionados son fácilmente adaptables a esta biblioteca. 
 
@@ -84,9 +84,99 @@ https://www.uv.es/wikibase/doc/cas/pandoc_manual_2.7.3.wiki?82
 
 
 
-Para el desarrollo de este proyecto, se han mantenido distintas reuniones con los directores del proyecto y entre los desarrolladores. En la parte inicial del proyecto, se ha estudiado el funcionamiento de la librería V-USB con distintos proyectos que utilizan otros microchips, para ver qué uso se hacen de los distintos elementos del firmware y las distintas funciones empleadas en el código. Se ha utilizado el software Wireshark [@sw-wireshark] para estudiar la comunicación USB, es decir, los endpoints usados y los paquetes URBs en la comunicación. También se ha tenido en cuenta la configuración del software y la posibilidad de utilizar, por ejemplo, interrupciones.
 
-Para el desarrollo de los periféricos que se van a usar conjuntamente en la placa, Guillermo se ha encargado de estudiar y desarrollar el código correspondiente a los periféricos de NeoPixel, y del buzzer y display 7segmentos; Javier al correspondiente con la pantalla LCD 2x16, que posteriormente se ha utilizado una pantalla LCD OLED. Se han ido manteniendo conversaciones constantes sobre los avances de implementación de todas las partes, así como reuniones en caso de bloqueos.
+
+T1
+
+:	Estudio de los diferentes periféricos y placa Digispark bajo entorno Arduino
+
+T
+
+: Estudio del dispositivo *Blinkstick Strip* y su firmware de código abierto
+
+T
+
+: Estudio de la librería V-USB
+
+T
+
+: Creación de un firmware de prueba para testear V-USB en la placa Digispark
+
+T
+
+: Estudio de las funciones de E/S utilzando los registros del ATTiny85
+
+T
+
+: Desarrollo y puesta en marcha del diodo led a nivel de registros
+
+T
+
+: Desarrollo y puesta en marcha del anillo de led a nivel de registros
+
+T
+
+: Desarrollo y puesta en marcha del buzzer a nivel de registros
+
+T
+
+: Desarrollo y puesta en marcha del display 7 segmentos a nivel de registros
+
+T
+
+: Estudio del circuito del conector micro USB
+
+T
+
+: Adaptación del circuito USB a Arduino Nano usando ATTMega328P
+
+T
+
+: Modificación del firmware para funcionar con chip ATTMega328P
+
+T
+
+: Adaptación de herramienta de debug a nuestro prototipo
+
+T
+
+: Desarrollo y puesta en marcha de la pantalla OLED a nivel de registros
+
+T
+
+: Estudio de los temporizadores incluidos en el ATMega328P
+
+T
+
+: Estudio de señales PWM y su generación a través de temporizadores
+
+T
+
+: Diseño del firmware para la utilización de perfiles
+
+T
+
+: Implementación de perfiles hardware a través de macros
+
+T
+
+: Migración de la implementación del led a PWM
+
+T
+
+: Migración de la implementación del buzzer a PWM
+
+T
+
+: Montaje del prototipo final en placa perforada
+
+
+
+
+
+Para el desarrollo de este proyecto, se han mantenido distintas reuniones con los directores del proyecto y entre los desarrolladores, que han ido creciendo de manera exponencial conforme ha ido avanzado el desarrollo. En la parte inicial del proyecto, se ha estudiado el funcionamiento de la librería V-USB con distintos proyectos que utilizan otros microchips, para ver qué uso se hacen de los distintos elementos del firmware y las distintas funciones empleadas en el código. Se ha utilizado el software Wireshark [@sw-wireshark] para estudiar la comunicación USB, es decir, los endpoints usados y los paquetes URBs en la comunicación. También se ha tenido en cuenta la configuración del software y la posibilidad de utilizar, por ejemplo, interrupciones.
+
+
 
 Para la integración del código, se ha utilizado GitHub.
 
