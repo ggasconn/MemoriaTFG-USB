@@ -58,21 +58,13 @@ Para la realización del proyecto, se han contemplado distintas alternativas, en
 
 
 
-## Plan de trabajo {#cap:hw}
+## Plan de trabajo
 
-En este proyecto se han desarrollado dos prototipos hardware de la infraestructura. El primer prototipo está basado en el microcontrolador ATTiny85 --mismo chip empleado por el dispositivo Blinkstick Strip. El segundo prototipo hace uso del micro controlador ATMega328p, que supera las limitaciones del anterior microcontrolador, descritas en detalle en el capítulo \ref{#cap:hw}. Teniendo esto en cuenta, se llevó a cabo un plan de trabajo, que consta de las siguientes tareas (ver Fig \ref{fig:gantt}) :
-
-T1) 
-
-: Aquí va la descripción
+En este proyecto se han desarrollado dos prototipos hardware de la infraestructura. El primer prototipo está basado en el microcontrolador ATTiny85 --mismo chip empleado por el dispositivo Blinkstick Strip. El segundo prototipo hace uso del microcontrolador ATMega328p, que supera las limitaciones del anterior microcontrolador, descritas en detalle en el capítulo \ref{ #cap:hw }. Teniendo esto en cuenta, se llevó a cabo un plan de trabajo, que consta de las siguientes tareas (ver Fig \ref{fig:gantt}):
 
 
 
-T2)
-
-: Aquí va la descripción
-
-
+![Diagrama de Gantt del proyecto](img/gantt.png){width=90% #fig:gantt}
 
 <!-- 
 
@@ -83,103 +75,107 @@ https://www.uv.es/wikibase/doc/cas/pandoc_manual_2.7.3.wiki?82
 
 
 
-
-
-
 T1
 
 :	Estudio de los diferentes periféricos y placa Digispark bajo entorno Arduino
 
-T
+T2
 
 : Estudio del dispositivo *Blinkstick Strip* y su firmware de código abierto
 
-T
+T3
 
 : Estudio de la librería V-USB
 
-T
+T4
 
 : Creación de un firmware de prueba para testear V-USB en la placa Digispark
 
-T
+T5
 
 : Estudio de las funciones de E/S utilzando los registros del ATTiny85
 
-T
+T6
+
+:	Diseño e Implementación del firmware
+
+T7
 
 : Desarrollo y puesta en marcha del diodo led a nivel de registros
 
-T
+T8
 
 : Desarrollo y puesta en marcha del anillo de led a nivel de registros
 
-T
+T9
 
 : Desarrollo y puesta en marcha del buzzer a nivel de registros
 
-T
+T10
 
 : Desarrollo y puesta en marcha del display 7 segmentos a nivel de registros
 
-T
+T11
 
 : Estudio del circuito del conector micro USB
 
-T
+T12
 
-: Adaptación del circuito USB a Arduino Nano usando ATTMega328P
+: Diseño del prototipo hardware
 
-T
+T13
 
-: Modificación del firmware para funcionar con chip ATTMega328P
+: Adaptación del circuito USB a Arduino Nano usando ATMega328p
 
-T
+T14
+
+: Modificación del firmware para funcionar con chip ATTMega328p
+
+T15
 
 : Adaptación de herramienta de debug a nuestro prototipo
 
-T
+T16
 
 : Desarrollo y puesta en marcha de la pantalla OLED a nivel de registros
 
-T
+T17
 
-: Estudio de los temporizadores incluidos en el ATMega328P
+: Estudio de los temporizadores incluidos en el ATMega328p
 
-T
+T18
 
 : Estudio de señales PWM y su generación a través de temporizadores
 
-T
+T19
 
 : Diseño del firmware para la utilización de perfiles
 
-T
+T20
 
 : Implementación de perfiles hardware a través de macros
 
-T
+T21
 
 : Migración de la implementación del led a PWM
 
-T
+T22
 
 : Migración de la implementación del buzzer a PWM
 
-T
+T23
 
 : Montaje del prototipo final en placa perforada
 
+T24
+
+: Redacción de la memoria final
 
 
+Para el desarrollo de este proyecto, se han mantenido distintas reuniones con los directores de proyecto y los desarrolladores, la frecuencia de las mismas ha ido incrementando de manera exponencial conforme ha ido avanzado el desarrollo. Estas reuniones han servido para resolver problemas de diseño, plantear las diferentes fases y solucionar múltiples dudas y limitaciones que han ido apareciendo durante todo el proyecto.
 
 
-Para el desarrollo de este proyecto, se han mantenido distintas reuniones con los directores del proyecto y entre los desarrolladores, que han ido creciendo de manera exponencial conforme ha ido avanzado el desarrollo. En la parte inicial del proyecto, se ha estudiado el funcionamiento de la librería V-USB con distintos proyectos que utilizan otros microchips, para ver qué uso se hacen de los distintos elementos del firmware y las distintas funciones empleadas en el código. Se ha utilizado el software Wireshark [@sw-wireshark] para estudiar la comunicación USB, es decir, los endpoints usados y los paquetes URBs en la comunicación. También se ha tenido en cuenta la configuración del software y la posibilidad de utilizar, por ejemplo, interrupciones.
-
-
-
-Para la integración del código, se ha utilizado GitHub.
-
+Para la integración tanto del código como de la memoria final, se han utilizado repositorios compartidos en la plataforma GitHub.
 
 
 

@@ -1,6 +1,6 @@
 <!-- Leave a blank line before the title -->
 
-# Desarrollo del prototipo hardware
+# Desarrollo del prototipo hardware { #cap:hw }
 
 En este capítulo se describe con detalles a más bajo nivel sobre los periféricos y hardware utilizado para el desarrollo del proyecto, así como una breve introducción de la familia de microcontroladores de la que se ha hecho uso en el proyecto.
 

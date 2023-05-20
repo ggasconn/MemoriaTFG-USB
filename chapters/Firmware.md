@@ -4,6 +4,12 @@
 
 El firmware es el código fuente que se ejecuta dentro del microcontrolador responsable de controlar los periféricos con los que interactúa, así como de gestionar un extremo de la comunicación USB gracias a V-USB. En este capítulo se describen con detalle las partes y características más importantes del firmware, así como las librerías auxiliares utlizadas para los periféricos
 
+## Motivación
+
+El diseño del firmware juega un papel muy importante dentro de lo que se pretende conseguir con este proyecto, ya que tiene la capacidad de soportar y exponer diferentes periféricos a través de un mismo dispositivo USB gracias a plantillas configurables por el usuario o el docente. Esto brinda la posibilidad de tener "diferentes" dispositivos con los que interactuar y que de cara al desarrollo de drivers sean completamente distintos. Esta flexibilidad nos permite también incorporar de manera sencilla placas de expansión como Bee, usada actualmente en la Facultad de Informática, que nos proporciona múltiples periféricos en un mismo espacio haciendo el hardware mucho más flexible.
+
+Dentro del entorno docente, esto permite disponer de un gran abanico de opciones para realizar prácticas en las asignaturas donde se imparta el desarrollo de drivers para dispositivos USB, ya que con un mismo dispositivo físico, podemos tener periféricos con maneras diferentes de ser accedidos y que permiten explorar muchas partes de la API USB presente en el kernel Linux. La manera en la que se ha diseñado la forma de seleccionar qué periféricos están disponibles también es otro punto a recalcar, ya que al configurarse a través de macros, `define`, permite a profesores y usuarios de la infraestructura escoger un subconjunto de prácticas que le interesen sin necesidad de tener el conocimiento de cómo programar el dispositivo.
+
 ## Perfiles de hardware
 
 Una de las partes claves del diseño del código es la segmentación en perfiles según los periféricos que se deseen utilizar. Esto permite crear diferentes tipos de dispositivos simplemente configurando la opción en el fichero correspondiente. Dependiendo de la opción seleccionada, por ejemplo, pueden solo habilitarse las funciones y *Report IDs* relativos a la iluminación LED o a las pantallas y displays, quedando dispositivos con funcionalidades completamente diferentes pero usando el mismo código. No hay limitación de plantillas a elegir, todas las que se marquen como `ON` serán incluidas en el código compilado.
