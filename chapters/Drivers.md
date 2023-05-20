@@ -6,7 +6,298 @@ En este capítulo se explica un punto muy importante en el proyecto, que es prop
 
 Ya que este material tiene una finalidad docente y de aprendizaje, el funcionamiento de los drivers es sencillo, pero no por ello simple de implementar. Se ofrecen 5 drivers los cuales hacen uso de nuevas funciones y tipos de datos de la API que nos proporciona *USB core*. Con estos drivers se pretende que los usuarios puedan probar y experimentar el funcionamiento de las utilidades USB que nos ofrece el kernel Linux, trabajando con ambas APIs y usando diferentes tipos de transferencias, con todo lo que conlleva.
 
-Como se menciona en el párrafo anterior, el paquete de drivers contiene 5 ejemplos diferentes, uno por cada plantilla de funcionamiento del firmware y otro que hace uso de la API asíncrona junto con transferencias tipo *INTERRUPT*. A continuación se describe cada uno uno de ellos explicando su funcionamiento y arquitectura interna, con ejemplos de código.
+Como se menciona en el párrafo anterior, el paquete de drivers contiene 5 ejemplos diferentes, uno por cada plantilla de funcionamiento del firmware y otro que hace uso de la API asíncrona junto con transferencias tipo *INTERRUPT*. A continuación se describe a modo de introducción la API de USB del kernel de Linux, después se explica con detalle cada uno uno de ellos explicando su funcionamiento y arquitectura interna, con ejemplos de código.
+
+
+
+## Drivers USB en el kernel Linux
+
+Un componente muy importante en los drivers USB es la definición de la interfaz `usb_driver`, que debe implementar cualquier módulo para poder registrarse y administrar controladores que interactuen con periféricos USB. Esta estructura viene definida en `<linux/usb.h>`, y se deben implementar aquellos campos que requieran definir las funciones que interactúen con el dispositivo USB. Lo hemos definido como interfaz ya que muchos de sus campos son punteros a función. Estructuras similares son `file_operations` y `proc_ops`, de las que se hablarán más adelante.
+
+
+
+[AÑADIR REFERENCIAS: 
+
+https://jcsaezal.github.io/lin-ucm-docs/blinkdrv.html
+
+https://www.kernel.org/doc/html/latest/driver-api/usb/usb.html?highlight=usb_driver
+
+]
+
+
+
+```C
+struct usb_driver {
+	const char *name;
+	int (*probe) (struct usb_interface *intf,
+		      const struct usb_device_id *id);
+	void (*disconnect) (struct usb_interface *intf);
+	int (*unlocked_ioctl) (struct usb_interface *intf, unsigned int code,
+			void *buf);
+	int (*suspend) (struct usb_interface *intf, pm_message_t message);
+	int (*resume) (struct usb_interface *intf);
+	int (*reset_resume)(struct usb_interface *intf);
+
+	int (*pre_reset)(struct usb_interface *intf);
+	int (*post_reset)(struct usb_interface *intf);
+
+	const struct usb_device_id *id_table;
+	const struct attribute_group **dev_groups;
+
+	struct usb_dynids dynids;
+	struct usbdrv_wrap drvwrap;
+	unsigned int no_dynamic_id:1;
+	unsigned int supports_autosuspend:1;
+	unsigned int disable_hub_initiated_lpm:1;
+	unsigned int soft_unbind:1;
+};
+```
+
+
+
+Como se puede observar en la estructura `struct usb_driver`, hay diversos campos para poder implementar funciones que doten de funcionalidad al driver, o simplemente para configuración. No es necesario implementar todas las entradas, solamente aquellas que se requieran para garantizar el funcionamiento mínimo del dispositivo (como ya ocurre con la gestión de las entradas en `/proc`). Las entradas más importantes que los drivers USB deben implementar son las siguientes:
+
+- `name`: Cadena de caracteres, representa el nombre del driver.
+
+- `id_table`: Tabla de dispositivos compatibles con el driver, definidos mediante un *vendor-ID* y *product-ID*.
+
+- `probe`: Este campo define la función encargada de ejecutarse cuando se detecta un dispositivo compatible con el controlador USB al conectarloal host, se encarga de inicializarlo y prepararlo para su uso. Se le pasa a esta función el descriptor del dispositivo como parámetro de la función, `struct usb_interface *`.
+
+- `disconnect`: Esta función se ejecuta cuando se desconecta el dispositivo USB que previamente ha sido detectado y grestionado por el driver.
+
+  
+
+En nuestros drivers, definimos cuatro campos básicos de la interfaz `usb_driver`, como se muestra a continuación:
+
+```C
+static struct usb_driver pwnedDevice_driver = {
+	.name =		"pwnedDevice",
+	.probe =	pwnedDevice_probe,
+	.disconnect =	pwnedDevice_disconnect,
+	.id_table =	pwnedDevice_table,
+};
+```
+
+En la estructura `usb_driver` definimos punteros a función en `.probe` y `.disconnect` para implementar las funciones `pwnedDevice_probe()` y `pwnedDevice_disconnect()`:
+
+```C
+/*
+ * Invoked when the USB core detects a new
+ * pwnedDevicestick device connected to the system.
+ */
+static int pwnedDevice_probe(struct usb_interface *interface,
+		      			const struct usb_device_id *id) {
+	struct usb_pwnedDevice *dev;
+
+	/*
+ 	 * Allocate memory for a usb_pwnedDevice structure.
+	 * This structure represents the device state.
+	 * The driver assigns a separate structure to each pwnedDevicestick device
+ 	 *
+	 */
+	dev = kmalloc(sizeof(struct usb_pwnedDevice), GFP_KERNEL);
+
+    // ...
+
+	/* Initialize the various fields in the usb_pwnedDevice structure */
+	kref_init(&dev->kref);
+	dev->udev = usb_get_dev(interface_to_usbdev(interface));
+	dev->interface = interface;
+
+	/* save our data pointer in this interface device */
+	usb_set_intfdata(interface, dev);
+
+	/* we can register the device now, as it is ready */
+	retval = usb_register_dev(interface, &pwnedDevice_class);
+
+    // ...
+    
+	return 0;
+}
+```
+
+Como hemos mencionado previamente, esta función es la encargada de reservar memoria e inicializar los campos de la estructura del dispositivo. Destacar que a esta función se le pasa el descritor del dispositivo como parámetro, que se utilizará para poder registrarlo posteriormente. La función invocada cuando se desconecta el dispositivo previamente gestionado por el driver es la siguiente:
+
+```C
+/*
+ * Invoked when a pwnedDevicestick device is 
+ * disconnected from the system.
+ */
+static void pwnedDevice_disconnect(struct usb_interface *interface) {
+	struct usb_pwnedDevice *dev;
+	int minor = interface->minor;
+
+	dev = usb_get_intfdata(interface);
+	usb_set_intfdata(interface, NULL);
+
+	/* give back our minor */
+	usb_deregister_dev(interface, &pwnedDevice_class);
+
+	/* prevent more I/O from starting */
+	dev->interface = NULL;
+
+	/* decrement our usage count */
+	kref_put(&dev->kref, pwnedDevice_delete);
+
+    // ...
+}
+```
+
+Cabe destacar que en la última función, se decrementa el contador de referencias del dispositivo. Puede llegar a eliminarlo si el valor de este contador es 0. Esta función también es encargada de invalidar la interfaz del dispositivo.
+
+A continuación se muestran las funciones encargadas de la inicialización del módulo `pwnedDevicedrv_module_init()` y de eliminar su registro mediante la función `pwnedDevicedrv_module_cleanup()`. 
+
+```C
+/* Module initialization */
+int pwnedDevicedrv_module_init(void) {
+   return usb_register(&pwnedDevice_driver);
+}
+
+/* Module cleanup function */
+void pwnedDevicedrv_module_cleanup(void) {
+  usb_deregister(&pwnedDevice_driver);
+}
+
+module_init(pwnedDevicedrv_module_init);
+module_exit(pwnedDevicedrv_module_cleanup);
+```
+
+Para llevar a cabo el registro del módulo, se invoca la función `usb_register()`, que acepta como parámetro un puntero a la interfaz `usb_driver`, definida mediante la variable `pwnedDevice_driver`. En el caso de que se produzca correctamente el registro, se devuelve 0. En caso contrario, un número negativo con el código de error. Para la descarga del módulo, se ejecuta `usb_deregister()`, que se encarga de la limpieza del módulo, aceptando un puntero a la interfaz `usb_driver`.
+
+En la instanciación de `usb_driver`, a parte de la definición de los campos explicados previamente, se ha definido otro para los dispositivos compatibles (`.id_table =	pwnedDevice_table`). La implementación de esta tabla es la siguiente:
+
+```C
+/* Define these values to match your devices */
+#define VENDOR_ID	0X20A0
+#define PRODUCT_ID	0X41E5
+
+/* table of devices that work with this driver */
+static const struct usb_device_id pwnedDevice_table[] = {
+	{ USB_DEVICE(VENDOR_ID,  PRODUCT_ID) },
+	{ }					/* Terminating entry */
+};
+
+MODULE_DEVICE_TABLE(usb, pwnedDevice_table);
+```
+
+La tabla `pwnedDevice_table[]` almacena todos los identificadores de dispositivos `usb_device_id` que el driver puede gestionar. Cada posición del array es un descriptor del dispositivo, que se inicializa mediante la macro `USB_DEVICE()`, cuyos parámetros son el identificador del fabricante `VENDOR_ID` y el identificador del producto `PRODUCT_ID`. Cada vez que un dispositivo se conecta al host con los valores de `VENDOR_ID` y `PRODUCT_ID` definidos anteriormente, se consulta la tabla `pwnedDevice_table[]` que contiene esta información y posteriormente se ejecuta la función `probe()` del driver USB (en nuestro caso `pwnedDevice_probe()`). 
+
+
+
+Otro de los campos importantes de un driver es la estructura de estado, ya que con esta estructura se permite la conexión simultánea de varios dispositivos del mismo tipo (asociando a cada uno una estructura que represente su estado). En nuestros drivers, hemos definido la siguiente estructura:
+
+```C
+/* Structure to hold all of our device specific stuff */
+struct usb_pwnedDevice {
+	struct usb_device	*udev;			/* the usb device for this device */
+	struct usb_interface	*interface;		/* the interface for this device */
+	struct kref		kref;
+};
+```
+A continuación se explican los distintos campos de la estructura:
+
+- `udev`: Es una referencia al descriptor del dispositivo físico USB, que es una estructura de datos utilizada por las funciones principales del USB para transferir datos entre el host y el dispositivo USB. Este puntero se encuentra en la mayoría de las estructuras de estado de los controladores USB y se obtiene durante la ejecución de la función `probe()`, donde se crea e inicializa la estructura de estado del dispositivo.
+
+- `interface`: Es una referencia al descriptor de la interfaz USB que el controlador está gestionando. Se refiere a un único dispositivo lógico. Al igual que el campo `udev`, este puntero se inicializa durante la ejecución de la función `probe()`, y se encuentra en muchas estructuras de estado de los controladores USB.
+
+- `kref`: Es un contador de referencias utilizado para gestionar la estructura de estado. En el kernel, el tipo de datos `struct kref` se utiliza para implementar contadores de referencia de objetos del núcleo. Estos contadores son importantes para determinar cuándo es seguro liberar la memoria de un objeto. El tipo de datos `struct kref` proporciona operaciones seguras (desde el punto de vista de la concurrencia en el kernel) para incrementar y decrementar el contador de referencias. Se inicializa con la función `kref_init()` y se incrementa con `kref_get()` y se decrementa con `kref_put()`. 
+
+  El contador de referencia `kref` en los drivers se utiliza para dos propósitos principales: 
+
+  1.  Gestionar correctamente la memoria de la estructura de estado.
+  2.  Resolver problemas de concurrencia asociados con la desconexión física del dispositivo cuando el controlador está en uso. Básicamente, la memoria para el objeto de estado se asigna dinámicamente. Se solicita memoria cuando el dispositivo se conecta al sistema (en la función `probe()`) y, en ese momento, el valor interno del contador es 1. El contador de referencias se incrementa con `kref_get()` en el código del controlador cada vez que un proceso de usuario está utilizando el dispositivo, y se decrementa con `kref_put()` cuando el proceso deja de usarlo. Gracias al correcto manejo del contador, la memoria de la estructura de estado se libera únicamente cuando el contador alcanza el valor cero al decrementarse.
+
+Cabe destacar que sin la ejecución de `usb_set_intfdata(interface, dev)` en la función `pwnedDevice_probe()` mostrada anteriormente, no sería posible recuperar la estructura de estado desde las funciones del driver que implementan operaciones sobre ficheros especiales de caracteres, y por lo tanto no se podrían realizar transferencias de datos entre el dispositivo y el kernel, por ejemplo, en la función `pwnedDevice_write()`. 
+
+Como hemos adelantado en el párrafo anterior, otro de los aspectos importantes en drivers es poder interactuar con el driver desde el espacio de usuario. Para ello, es necesario registrar los dispositivos reconocidos (uno por cada dispositivo) en una clase del Linux Device Model (LDM). Es por ello que USB Core asigna major numbers diferentes para clases distintas, dentro de, por ejemplo, `input`, `usb`, `ttyACM`, `tty_usb`, etc. [REF: http://www.linux-usb.org/usb.devices.txt].
+
+```C
+extern int usb_register_dev(struct usb_interface *intf,
+                struct usb_class_driver *class_driver);
+```
+
+La clase `usb` en Linux abarca la mayoría de los dispositivos USB. Estos dispositivos se identifican con un número identificativo, el `major number`, cuyo valor es 180. Para utilizar esta clase y su `major number`, el controlador básico del dispositivo USB registra cada dispositivo conectado mediante la función `usb_register_dev()`, que realiza las siguientes acciones:
+
+1. Registra el dispositivo en la clase `usb` y le asigna un número `minor number`.
+2. Automáticamente crea un archivo de dispositivo en la ubicación `/dev`, interactuando con el servicio `Udev`.
+3. Asigna una interfaz de operaciones (`file_operations`) al archivo de dispositivo, definiendo las funciones que se ejecutarán cuando se realicen operaciones sobre estos ficheros de caracteres (por ejemplo, `ẁrite()` o `read()`).
+
+
+
+La estructura `usb_class_driver` se define como sigue:
+
+```C
+struct usb_class_driver {
+    char *name;
+    char *(*devnode)(struct device *dev, umode_t *mode);
+    const struct file_operations *fops;
+    int minor_base;
+};
+```
+
+- `name`: Es una cadena de caracteres que contiene el nombre del dispositivo y también se utiliza para codificar el nombre de su archivo especial asociado.
+
+- `devnode`: Es una función que debe ser definida en el controlador y se utiliza para indicar:
+  1. La ubicación relativa dentro de `/dev` donde se creará el archivo de dispositivo.
+  2. Los permisos que se asignarán al archivo de dispositivo (usando el parámetro `mode`).
+  
+- `file_operations`: Es un puntero que apunta a las operaciones que el controlador ejecutará cuando un programa acceda al dispositivo. El controlador debe instanciar la estructura `file_operations` e implementar las operaciones correspondientes.
+
+- `minor_base`: Indica el valor inicial en el rango de números `minor_numer` asignados para este controlador.
+
+
+
+El siguiente fragmento de código muestra la definición de la estructura global de tipo `struct usb_class_driver`, que se pasa como parámetro a la función `usb_register_dev()` en `pwnedDevice_probe()`:
+
+```C
+#define USB_MINOR_BASE    0
+
+/*
+ * Operations associated with the character device 
+ * exposed by driver
+ * 
+ */
+static const struct file_operations pwnedDevice_fops = {
+	.owner =	THIS_MODULE,
+	.write =	pwnedDevice_write,	 	/* write() operation on the file */
+	.read =		pwnedDevice_read,			/* read() operation on the file */
+	.open =		pwnedDevice_open,			/* open() operation on the file */
+	.release =	pwnedDevice_release, 		/* close() operation on the file */
+};
+
+/* 
+ * Return permissions and pattern enabling udev 
+ * to create device file names under /dev
+ * 
+ * For each pwnedDevicestick connected device a character device file
+ * named /dev/usb/pwnedDevicestick<N> will be created automatically  
+ */
+char* set_device_permissions(struct device *dev, umode_t *mode) {
+	if (mode)
+		(*mode)=0666; /* RW permissions */
+ 	return kasprintf(GFP_KERNEL, "usb/%s", dev_name(dev)); /* Return formatted string */
+}
+
+
+/*
+ * usb class driver info in order to get a minor number from the usb core,
+ * and to have the device registered with the driver core
+ */
+static struct usb_class_driver pwnedDevice_class = {
+	.name =		"pwnedDevice%d",  /* Pattern used to create device files */	
+	.devnode=	set_device_permissions,	
+	.fops =		&pwnedDevice_fops,
+	.minor_base =	USB_MINOR_BASE,
+};
+```
+
+Como puede observarse en la estructura `pwnedDevice_class`, el campo `name` denota un patrón. Según este patrón el nombre de los ficheros de dispositivo serán *pwnedDevice0*, *pwnedDevice1*, *pwnedDevice2*, etc.
+
+El segundo campo, `devnode`, se establece con la dirección de la función `set_device_permissions()` que se define anteriormente en el código. El valor de retorno de esta función indica a `Udev` dónde debe crear el archivo especial de dispositivo dentro de `/dev`. En este caso, la implementación especifica que la ruta será `/dev/usb`. Además, el parámetro de retorno `mode` se utiliza para indicar los permisos del archivo de dispositivo, que en esta implementación se establecen en `666` (permisos de lectura y escritura para todos).
+
+El tercer campo, `fops`, se inicializa con la dirección que nos proporciona la variable `pwnedDevice_fops`. En la inicialización de esta variable, se asocian cuatro operaciones al controlador: `pwnedDevice_write()`, `pwnedDevice_read()`,  `pwnedDevice_open()` y `pwnedDevice_release()`. Estas operaciones se invocan cuando se ejecutan las llamadas al sistema `write()`, `read()``open()` y `close()` desde un programa de usuario en relación a cualquier archivo especial de caracteres asociado al controlador.
+
+Por último, el campo `minor_base` se inicializa con una macro definida al principio (`#define USB_MINOR_BASE    0`).
 
 
 
@@ -181,9 +472,8 @@ static ssize_t displays_read(struct file *file, char *user_buffer,
 }
 ```
 
-```shell
+```bash
 ~$ cat /dev/usb/displays0
-File: /dev/usb/displays0
 Hello, World! I'm pwnedDevice ;)
 ```
 
@@ -291,7 +581,6 @@ static ssize_t ledParty_read(struct file *file, char *user_buffer,
 
 ```bash
 $ cat /dev/usb/ledParty0
-File: /dev/usb/ledParty0
 R: 0 G: 0 B: 0
 ```
 
@@ -470,3 +759,4 @@ static ssize_t pwm_write(struct file *file, const char *user_buffer,
 Este driver es el más potente de todos, esencialmente es una combinación de todos ellos para cuando el dispositivo se encuentra flasheado con la plantilla *ALL_DEVICES*.
 
 Permite controlar todos los periféricos, así como acceder a las dos operaciones de lectura que ofrece el dispositivo.
+
