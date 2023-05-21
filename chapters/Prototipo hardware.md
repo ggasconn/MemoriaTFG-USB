@@ -83,14 +83,14 @@ Para el prototipo final del proyecto, hacemos uso de la placa NANO que incorpora
 
 ## Periféricos soportados por el proyecto
 
-En este apartado se describen los distintos elementos hardware a los que se ha dado soporte en el proyecto. Se ha partido de una placa inicial, la placa Bee 2.0, utilizada en la asignatura LIN, que cuenta con distintos periféricos, entre ellos un display 7 segmentos o un buzzer. También se ha hecho uso de un anillo led circular y de una pantalla OLED, externos a esta placa.
+En este apartado se describen los distintos elementos hardware a los que se ha dado soporte en el proyecto. Se ha partido de una placa inicial, la placa Bee 2.0, utilizada en la asignatura LIN que cuenta con distintos periféricos, entre ellos un display 7 segmentos o un buzzer. También se ha hecho uso de un anillo led circular y de una pantalla OLED, externos a esta placa.
 
 
 
 
 ### Placa Bee 2.0
 
-[WORK IN PROGRESS] Como punto de partida en el proyecto, se ha estudiado el funcionamiento e interconexión de los distintos elementos hardware de la placa Bee 2.0 diseñada para la asignatura Arquitectura Interna de Linux y Android.
+[WORK IN PROGRESS] Como punto de partida en el proyecto, se ha estudiado los componentes y el funcionamiento de los distintos elementos hardware de la placa Bee 2.0 diseñada para la asignatura Arquitectura Interna de Linux y Android.
 
 ![Placa Bee 2.0 de la asignatura Arquitectura interna de Linux y Android [@bee-board]](img/bee20gen.png){width=70%}
 
@@ -101,7 +101,7 @@ La idea de este proyecto es la posible fusión del uso de la librería V-USB con
 
 ### Anillo de LEDs de colores
 
-Para probar el firmware, en una primera versión con ATTiny85 se ha hecho uso de la tira de LEDs circular fabricado por la empresa NeoPixel [@LED-strip]. Dichos LEDs se encuentran en disposición circular con colores RGB direccionables individualmente. Posteriormente, ha sido incorporado como periférico para el prototipo final de este proyecto, utilizando ATmega328p.
+Para probar el firmware, en una primera versión con ATTiny85 se ha hecho uso de la tira de LEDs circular diseñado por la empresa NeoPixel [@LED-strip]. Dichos LEDs se encuentran en disposición circular con colores RGB direccionables individualmente. Posteriormente, ha sido incorporado como periférico para el prototipo final de este proyecto, utilizando ATmega328p.
 
 ![Tira de LEDs circular de NeoPixel](img/LED-Strip.jpg){width=75% #fig:label3}
 
@@ -139,15 +139,15 @@ El funcionamiento de este protocolo es el siguiente: para poder determinar el da
 
 ### Display 7 segmentos
 
-Este periférico con soporte en el firmware es capaz de representar un número del 0 al 9, mediante segmentos verticales y horizontales que, según el número a mostrar, se encienden o apagan mostrando el número en cuestión. También cuenta con un punto a la derecha de los segmentos. La configuración de este display es de cátodo común, es decir, cuando se escribe un 1 se enciende el segmento deseado, y cuando se escribe un 0, se apaga.
+Este periférico se encuentra en la placa Bee 2.0, es capaz de representar un número del 0 al 9 mediante segmentos verticales y horizontales que, según el número a mostrar, se encienden o apagan mostrando el número en cuestión. También cuenta con un punto en la parte inferior derecha. La configuración hardware de este display es de cátodo común, es decir, cuando se escribe un 1 se enciende el segmento deseado, y cuando se escribe un 0, se apaga.
 
-![Diagrama del circuito del display 7 segmentos de la placa Bee 2.0 [@sevenseg]](img/d7seglin.png){width=50%}
+![Diagrama del circuito del display 7 segmentos de la placa Bee 2.0 [@sevenseg]](img/d7seglin.png){width=50% #fig:d7s}
 
-El diagrama anterior ilustra el circuito interno del display 7 segmentos. Se puede observar que se cuenta con dos registros, y para ello el sistema tiene 3 pines de entrada. Esto es una enorme ventaja, ya que si tuviéramos 8 pines de entrada para el display, a parte de la complejidad en el código que se añadiría, limitaría la posible interacción con otros dispositivos de E/S, al tener que estar constantemente enviando un 1 lógico en aquellos pines correspondientes a los segmentos que se quieren encender. Para ello, se ha implementado el sistema con dos registros, uno de desplazamiento y otro de salida, que se explican a continuación.
+La figura \ref{ #fig:d7s ilustra el circuito interno del display 7 segmentos. Se puede observar que se cuenta con dos registros, y para ello la placa Bee 2.0 cuenta con 3 pines de entrada. Esto es una enorme ventaja, ya que si tuviéramos 8 pines de entrada para el display, a parte de la complejidad en el código que se añadiría, limitaría la posible interacción con otros dispositivos de E/S, al tener que estar constantemente enviando un 1 lógico en aquellos pines correspondientes a los segmentos que se quieren encender. Para ello, el sistema emplea dos registros, uno de desplazamiento y otro de salida, que se explican a continuación.
 
 Entradas del registro de desplazamiento: 
 
-- **SDI** (Serial Data Input): es la entrada serie del registro, de 8 bits. Cada bit corresponde a un segmento. El bit menos significativo corresponde al punto.
+- **SDI** (Serial Data Input): es la entrada serie del registro, de 8 bits. En cada ciclo de reloj se propaga un bit que controla el estado de un segmento distinto. El bit menos significativo corresponde al punto, el más significativo al segmento horizontal superior.
 - **SRCLK** (Shift Register Clock): señal del reloj correspondiente al registro de desplazamiento. 
 - **Enable**. Esta señal debe estar a 1 para que el sistema realice la acción de desplazamiento y carga paralela, mediante los dos registros.
 
@@ -156,7 +156,7 @@ Entradas del registro de salida:
 - **RCLK** (Register Clock): señal del reloj correspondiente al registro de salida.
 - **Load**. Al igual que la señal de enable, tiene que estar a 1 para el sistema realice las acciones de desplazamiento y carga paralela.
 
-Para poder generar la salida deseada, con establecer un 1 en la señal de RCLK (que debe estar a 0 durante todo el proceso previo), se cargaría inmediatamente el número en el registro, y por lo tanto, en la salida de los segmentos del display. [@bee-board]
+Para poder generar la salida deseada, con establecer un 1 en la señal de RCLK (que debe estar a 0 durante todo el proceso previo), se cargaría inmediatamente el número en el registro, y por lo tanto, en la salida de los segmentos del display. La alteración de las señales SDI, SRCLK y RCLK se realiza mediante *bit banging*, es decir, es la propia CPU la que establece el valor del pin de forma temporizada permitiendo que la señal se mantenga un cierto tiempo en el valor lógico deseado.  [@bee-board]
 
 
 
@@ -174,6 +174,8 @@ En los siguientes apartados se explica la funcionalidad implementada en el firmw
 
 ### Buzzer
 
-Este buzzer utiliza una señal PWM para su funcionamiento. Cuando se recibe un 1 por dicho pin, éste empieza a emitir un sonido constante, cuando se deja de transmitir, no se emite ningún sonido. La explicación sobre la implementación de la funcionalidad de este periférico en el firmware y drivers se explica en los siguientes apartados de la memoria. 
+Este periférico se encuentra en la placa Bee 2.0, utiliza una señal PWM para su funcionamiento. PWM es una técnica que requiere de la manipulación del ancho de una señal periódica, para gestionar la energía que se envía al dispositivo. Para poder hacer sonar el buzzer, se requiere enviar pulsos de señal a una frecuencia constante. El hecho de modificar la amplitud de las ondas crea diferentes niveles de volumen. 
 
-Para poder entender el funcionamiento de este periférico, es preciso entender cómo funciona la señal PWM (Pulse Width Modulation, en castellano, modulación por ancho de pulso). El objetivo es convertir una señal digital (un 1 lógico) en una señal analógica, lo que se traduce en sonido para el Buzzer (una determinada frecuencia, generalmente entre los 2 KHz ~ 5 KHz). Para ello, se hace pasar dicha corriente por una componente interna que es la que produce el sonido.
+En el microcontrolador, existen registros específicos para general la señal PWM. Se debe configurar un timer adecuado, estableciendo la frecuencia de conteo y el modo de funcionamiento. Aplicado al ATmega328p, existe un módulo en el chip que se encarga de generar estas señales PWM. El encargado de generar la señal periódica es el propio timer, para ello se debe configurar una frecuencia adecuada, ya que sino el volumen podría ser muy bajo o muy alto. Para hacer sonar el buzzer, en cada ciclo se comparan los valores de los contadores, alcanzando un umbral que hace sonar el dispositivo. 
+
+Para conectar el buzzer a la placa NANO, se debe conectar la salida positiva de la placa Bee 2.0 (PWM1) a uno de los pines PWM de la placa NANO.
