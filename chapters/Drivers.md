@@ -12,19 +12,7 @@ Como se menciona en el párrafo anterior, el paquete de drivers contiene 5 ejemp
 
 ## Drivers USB en el kernel Linux
 
-Un componente muy importante en los drivers USB es la definición de la interfaz `usb_driver`, que debe implementar cualquier módulo para poder registrarse y administrar controladores que interactuen con periféricos USB. Esta estructura viene definida en `<linux/usb.h>`, y se deben implementar aquellos campos que requieran definir las funciones que interactúen con el dispositivo USB. Lo hemos definido como interfaz ya que muchos de sus campos son punteros a función. Estructuras similares son `file_operations` y `proc_ops`, de las que se hablarán más adelante.
-
-
-
-[AÑADIR REFERENCIAS: 
-
-https://jcsaezal.github.io/lin-ucm-docs/blinkdrv.html
-
-https://www.kernel.org/doc/html/latest/driver-api/usb/usb.html?highlight=usb_driver
-
-]
-
-
+Un componente muy importante en los drivers USB es la definición de la interfaz `usb_driver` [@apiusb-kernel], que debe implementar cualquier módulo para poder registrarse y administrar controladores que interactuen con periféricos USB. Esta estructura viene definida en `<linux/usb.h>`, y se deben implementar aquellos campos que requieran definir las funciones que interactúen con el dispositivo USB. Lo hemos definido como interfaz ya que muchos de sus campos son punteros a función. Estructuras similares son `file_operations` y `proc_ops`, de las que se hablarán más adelante.
 
 ```C
 struct usb_driver {
@@ -209,7 +197,7 @@ A continuación se explican los distintos campos de la estructura:
 
 Cabe destacar que sin la ejecución de `usb_set_intfdata(interface, dev)` en la función `pwnedDevice_probe()` mostrada anteriormente, no sería posible recuperar la estructura de estado desde las funciones del driver que implementan operaciones sobre ficheros especiales de caracteres, y por lo tanto no se podrían realizar transferencias de datos entre el dispositivo y el kernel, por ejemplo, en la función `pwnedDevice_write()`. 
 
-Como hemos adelantado en el párrafo anterior, otro de los aspectos importantes en drivers es poder interactuar con el driver desde el espacio de usuario. Para ello, es necesario registrar los dispositivos reconocidos (uno por cada dispositivo) en una clase del Linux Device Model (LDM). Es por ello que USB Core asigna major numbers diferentes para clases distintas, dentro de, por ejemplo, `input`, `usb`, `ttyACM`, `tty_usb`, etc. [REF: http://www.linux-usb.org/usb.devices.txt].
+Como hemos adelantado en el párrafo anterior, otro de los aspectos importantes en drivers es poder interactuar con el driver desde el espacio de usuario. Para ello, es necesario registrar los dispositivos reconocidos (uno por cada dispositivo) en una clase del Linux Device Model (LDM). Es por ello que USB Core asigna major numbers diferentes para clases distintas, dentro de, por ejemplo, `input`, `usb`, `ttyACM`, `tty_usb`, etc. [@linuxusb-devices].
 
 ```C
 extern int usb_register_dev(struct usb_interface *intf,
@@ -297,7 +285,7 @@ El segundo campo, `devnode`, se establece con la dirección de la función `set_
 
 El tercer campo, `fops`, se inicializa con la dirección que nos proporciona la variable `pwnedDevice_fops`. En la inicialización de esta variable, se asocian cuatro operaciones al controlador: `pwnedDevice_write()`, `pwnedDevice_read()`,  `pwnedDevice_open()` y `pwnedDevice_release()`. Estas operaciones se invocan cuando se ejecutan las llamadas al sistema `write()`, `read()``open()` y `close()` desde un programa de usuario en relación a cualquier archivo especial de caracteres asociado al controlador.
 
-Por último, el campo `minor_base` se inicializa con una macro definida al principio (`#define USB_MINOR_BASE    0`).
+Por último, el campo `minor_base` se inicializa con una macro definida al principio (`#define USB_MINOR_BASE    0`). [@blinkjc-description]
 
 
 
