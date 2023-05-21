@@ -107,23 +107,21 @@ Para probar el firmware, en una primera versión con ATTiny85 se ha hecho uso de
 
 Estos LEDs están conectados en serie. Todos los LEDs cuentan con un registro y un pequeño microcontrolador, y para su configuración se utiliza una sola línea de datos. Esta línea de datos usa un protocolo de comunicación específico llamado *One-Wire Protocol*, es un protocolo software que configura el color y el brillo de cada LED individual. Su funcionamiento se explica en los siguientes apartados. De esta forma, conseguimos hacer iluminar todos los LEDs del anillo a la vez, o crear una serie de patrones para que se vayan encendiendo poco a poco, con distintos colores. 
 
-La tira circular de LEDs se alimenta con una fuente de alimentación de 5V que proporciona la placa Digispark o Nano. Está gestionada por un microcontrolador, en nuestro caso originalmente el ATTiny85, posteriormente se usa el ATmega328p.
+La tira circular de LEDs se alimenta con una fuente de alimentación de 5V que proporciona la placa Digispark o Nano. Está gestionada por un microcontrolador, en nuestro caso originalmente el ATTiny85; posteriormente se usó el ATmega328p.
 
 
 
-#### Smart Shift Registers en los LEDs de NeoPixel
+#### Smart Shift Register en los LEDs de NeoPixel
 
-Cada LED individual en la tira de LEDs circular de NeoPixel contiene un registro, con un pequeño microcontrolador y un LED RGB (Red, Green, Blue). El microcontrolador de cada LED es el responsable de controlar el color y el brillo, y de comunicarse con los otros LED de la cadena.
+Cada LED individual en la tira de LEDs circular de NeoPixel contiene un registro, con un pequeño microcontrolador y un LED RGB (Red, Green, Blue). El microcontrolador de cada LED es el responsable de controlar el color y el brillo, y de comunicarse con los otros LED de la cadena. Cada chip utiliza un protocolo específico, llamado *One-Wire*, por ello a estos chips se les denomina *Smart Shift Register*.
 
 ![Disposición de los pines y del controlador en cada LED [@smsreg-video]](img/pines_neopixel.jpg){width=50% #fig:label3}
 
-El *Smart Shift Register* utiliza un protocolo de comunicación específico llamado *One-Wire Protocol*, se usa para poder recibir datos del microcontrolador. Su funcionamiento se explica en el siguiente apartado. 
-
-Dicho protocolo se basa en otro de más bajo nivel que hace uso de una sola línea de datos, para transmitir estos bits entre el microcontrolador y cada LED. Para enviar datos a cada LED utilizando cada registro, el microcontrolador envía una serie de bits, que el microcontrador del LED interpreta como una secuencia de comandos. Los comandos incluyen instrucciones para configurar el color y el brillo de cada LED individual, así como para configurar el tiempo y la sincronización de la cadena de LEDs.
+El *Smart Shift Register* utiliza un protocolo de comunicación específico llamado *One-Wire Protocol*, se usa para poder recibir datos del microcontrolador. Dicho protocolo se basa en otro de más bajo nivel que hace uso de una sola línea de datos, para transmitir estos bits entre el microcontrolador y cada LED. Para establece la configuración de cada LED, el microcontrolador envía una serie de bits, que el microcontrador del LED interpreta como una secuencia de comandos. Los comandos incluyen instrucciones para configurar el color y el brillo de cada LED individual, así como para configurar el tiempo y la sincronización de la cadena de LEDs.
 
 ![Posición de los bits dentro del controlador de cada LED [@smsreg-video]](img/onewire.png){width=70% #fig:label3}
 
-Cada LED cuenta con 24 *Shift Registers* que se van rellenando según se vayan recibiendo datos del microcontrolador principal (ATTiny o ATmega). Cuando se reciben 24 bits, éstos se agrupan en 3 *data latches* que el controlador de cada LED interpreta para ajustar el color o brillo de cada LED (se utiliza un grupo de 8 bits para controlar el color rojo, otro grupo de 8 bits para el color verde y otro grupo de 8 bits para el color azul). De esta forma, los bits correspondientes a la configuración del siguiente LED de la cadena pasa por el registro de desplazamiento anterior, que éste lo reenvía al siguiente hasta que se desplazan a los *data latches*. Cuando el registro de desplazamiento recibe la señal de reset, quiere decir que se pueden iluminar los LEDs al haber terminado el envío de datos de toda la cadena, se empezaría a partir de ese momento otra ronda de envío de datos. [@smsreg-video]
+Cada LED cuenta con 24 *Shift Registers* que se van rellenando según se vayan recibiendo datos del microcontrolador principal (ATTiny o ATmega). Cuando se reciben 24 bits, éstos se agrupan en 3 *data latches* que el controlador de cada LED interpreta para ajustar el color o brillo de cada LED (se utiliza un grupo de 8 bits para controlar el color rojo, otro grupo de 8 bits para el color verde y otro grupo de 8 bits para el color azul). De esta forma, los bits correspondientes a la configuración del siguiente LED de la cadena pasa por el registro de desplazamiento anterior, reenviándolos al siguiente hasta que se desplazan a su correspondiente *data latches*. Cuando el registro de desplazamiento recibe la señal de reset, quiere decir que se pueden iluminar los LEDs al haber terminado el envío a toda la cadena. A partir de ese momento, se empieza otra secuencia de datos. [@smsreg-video]
 
 
 
@@ -162,13 +160,11 @@ Para poder generar la salida deseada, con establecer un 1 en la señal de RCLK (
 
 ### Pantalla LCD OLED
 
-Otro de los periféricos con soporte en el firmware del proyecto es una pantalla LCD tipo OLED, en el que se muestran cadenas de texto. Para el desarrollo de la funcionalidad correspondiente a este periférico, nos hemos basado en otro proyecto que también hace uso de V-USB para implementar funcionalidad con una pantalla de las mismas características, en concreto para utilizarla para mostrar mensajes que se reciben a través del protocolo I2C. [@attiny-oled]
+[WORK IN PROGRESS] En este proyecto se da soporte a este periférico, que consta de una pantalla LCD tipo OLED, en el que se muestran cadenas de texto. Para el desarrollo de la funcionalidad correspondiente a este periférico, nos hemos basado en un proyecto similar que también hace uso de V-USB para implementar funcionalidad con una pantalla de las mismas características, en concreto para utilizarla para mostrar mensajes que se reciben a través del protocolo I2C. [@attiny-oled]
 
 ![Pantalla OLED utilizada en el proyecto](img/LCD_OLED.png){width=40%}
 
 Para la conexión del periférico con el microcontrolador, a través de las placas Digispark o NANO, se hace a través de los pines de I2C de ambas placas, en concreto a través de los pines de SDA y SCL.
-
-En los siguientes apartados se explica la funcionalidad implementada en el firmware y también los distintos drivers que hacen uso de este dispositivo. Este periférico utiliza el ReportID 3 del firmware para su funcionamiento.
 
 
 
