@@ -141,7 +141,7 @@ Este periférico se encuentra en la placa Bee 2.0, es capaz de representar un n�
 
 ![Diagrama del circuito del display 7 segmentos de la placa Bee 2.0 [@sevenseg]](img/d7seglin.png){width=50% #fig:d7s}
 
-La figura \ref{ #fig:d7s ilustra el circuito interno del display 7 segmentos. Se puede observar que se cuenta con dos registros, y para ello la placa Bee 2.0 cuenta con 3 pines de entrada. Esto es una enorme ventaja, ya que si tuviéramos 8 pines de entrada para el display, a parte de la complejidad en el código que se añadiría, limitaría la posible interacción con otros dispositivos de E/S, al tener que estar constantemente enviando un 1 lógico en aquellos pines correspondientes a los segmentos que se quieren encender. Para ello, el sistema emplea dos registros, uno de desplazamiento y otro de salida, que se explican a continuación.
+La figura \ref{ #fig:d7s } ilustra el circuito interno del display 7 segmentos. Se puede observar que se cuenta con dos registros, y para ello la placa Bee 2.0 cuenta con 3 pines de entrada. Esto es una enorme ventaja, ya que si tuviéramos 8 pines de entrada para el display, a parte de la complejidad en el código que se añadiría, limitaría la posible interacción con otros dispositivos de E/S, al tener que estar constantemente enviando un 1 lógico en aquellos pines correspondientes a los segmentos que se quieren encender. Para ello, el sistema emplea dos registros, uno de desplazamiento y otro de salida, que se explican a continuación.
 
 Entradas del registro de desplazamiento: 
 

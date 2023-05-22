@@ -21,8 +21,9 @@ pandoc_common:
   - chapters/Conclusiones.md
 ##- chapters/test_chapter.md
   - separators/backmatter.md
-## Include appendices here      
+## Include appendices here  
   - appendices/InglesObligatorio.md
+  - appendices/contribuciones.md    
   - appendices/flashCustomFirmware.md
   - appendices/monitorUSBTraffic.md
 ## Include this file if your document contains a bibliography  
