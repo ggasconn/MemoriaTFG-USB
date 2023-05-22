@@ -19,7 +19,6 @@ pandoc_common:
   - chapters/Firmware.md
   - chapters/Drivers.md
   - chapters/Conclusiones.md
-##- chapters/test_chapter.md
   - separators/backmatter.md
 ## Include appendices here  
   - appendices/InglesObligatorio.md
