@@ -30,6 +30,8 @@ A su vez, también estuve desarrollando los drivers que vienen dentro del paquet
 
 Como último retoque, una vez tuvimos el prototipo hardware funcionando, cree una pequeña placa prototipo con los componentes soldados quedando un dispositivo *USB* más compacto que cuando se encontraba todo conectado a la placa de desarrollo.
 
+En cuanto al desarrollo de esta memoria, mis principales contribuciones han sido los capítulos que tratan sobre *Tecnología USB, Proyecto V-USB y Firmware*, junto con algunas aportaciones tanto en la introducción como en las conclusiones, además de los apéndices que se ilustran de breves manuales sobre aspectos relavantes con los que hemos tenido que trabajar.
+
 Y estas han sido mis aportaciones al proyecto, junto con mucho tiempo de investigacion que ha acompañado a todas las etapas del desarrollo tanto software como hardware.
 
 
