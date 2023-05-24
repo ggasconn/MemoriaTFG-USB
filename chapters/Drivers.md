@@ -2,11 +2,9 @@
 
 # Drivers y casos prácticos
 
-En este capítulo se explica un punto muy importante en el proyecto, que es proporcionar a los usuarios de la placa un paquete de drivers que puedan tomar de ejemplo para desarrollar y aprender sobre su funcionamiento. 
+En este capítulo se describe el paquete de drivers desarrollados como ejemplo para este proyecto. Ya que este material tiene una finalidad docente y de aprendizaje, el funcionamiento de los drivers es sencillo, pero no por ello simple de implementar. Se ofrecen 5 drivers los cuales hacen uso de nuevas funciones y tipos de datos de la API que nos proporciona *USB core*, además de un driver específico que hace uso de la API asíncrona junto con transferencias tipo *INTERRUPT* *IN*. Con estos drivers se pretende que los usuarios puedan probar y experimentar el funcionamiento de las utilidades USB que nos ofrece el kernel Linux, trabajando con ambas APIs y usando diferentes tipos de transferencias.
 
-Ya que este material tiene una finalidad docente y de aprendizaje, el funcionamiento de los drivers es sencillo, pero no por ello simple de implementar. Se ofrecen 5 drivers los cuales hacen uso de nuevas funciones y tipos de datos de la API que nos proporciona *USB core*. Con estos drivers se pretende que los usuarios puedan probar y experimentar el funcionamiento de las utilidades USB que nos ofrece el kernel Linux, trabajando con ambas APIs y usando diferentes tipos de transferencias, con todo lo que conlleva.
-
-Como se menciona en el párrafo anterior, el paquete de drivers contiene 5 ejemplos diferentes, uno por cada plantilla de funcionamiento del firmware y otro que hace uso de la API asíncrona junto con transferencias tipo *INTERRUPT*. A continuación se describe a modo de introducción la API de USB del kernel de Linux, después se explica con detalle cada uno uno de ellos explicando su funcionamiento y arquitectura interna, con ejemplos de código.
+A continuación se describe a modo de introducción la API de USB del kernel de Linux, después se explica con detalle cada uno uno de ellos explicando su funcionamiento y arquitectura interna, con ejemplos de código.
 
 
 
@@ -49,9 +47,9 @@ Como se puede observar en la estructura `struct usb_driver`, hay diversos campos
 
 - `id_table`: Tabla de dispositivos compatibles con el driver, definidos mediante un *vendor-ID* y *product-ID*.
 
-- `probe`: Este campo define la función encargada de ejecutarse cuando se detecta un dispositivo compatible con el controlador USB al conectarloal host, se encarga de inicializarlo y prepararlo para su uso. Se le pasa a esta función el descriptor del dispositivo como parámetro de la función, `struct usb_interface *`.
+- `probe`: Este campo define la función encargada de ejecutarse cuando se detecta un dispositivo compatible con el controlador USB al conectarlo al host, se encarga de inicializarlo y prepararlo para su uso. Se pasa como parámetro a esta función el descriptor del dispositivo, de tipo`struct usb_interface *`.
 
-- `disconnect`: Esta función se ejecuta cuando se desconecta el dispositivo USB que previamente ha sido detectado y grestionado por el driver.
+- `disconnect`: Esta función se ejecuta cuando se desconecta el dispositivo USB que previamente ha sido gestionado por el driver.
 
   
 
@@ -197,7 +195,7 @@ A continuación se explican los distintos campos de la estructura:
 
 Cabe destacar que sin la ejecución de `usb_set_intfdata(interface, dev)` en la función `pwnedDevice_probe()` mostrada anteriormente, no sería posible recuperar la estructura de estado desde las funciones del driver que implementan operaciones sobre ficheros especiales de caracteres, y por lo tanto no se podrían realizar transferencias de datos entre el dispositivo y el kernel, por ejemplo, en la función `pwnedDevice_write()`. 
 
-Como hemos adelantado en el párrafo anterior, otro de los aspectos importantes en drivers es poder interactuar con el driver desde el espacio de usuario. Para ello, es necesario registrar los dispositivos reconocidos (uno por cada dispositivo) en una clase del Linux Device Model (LDM). Es por ello que USB Core asigna major numbers diferentes para clases distintas, dentro de, por ejemplo, `input`, `usb`, `ttyACM`, `tty_usb`, etc. [@linuxusb-devices].
+Como hemos adelantado en el párrafo anterior, otro de los aspectos importantes es poder interactuar con el driver desde el espacio de usuario. Para ello, es necesario registrar los dispositivos reconocidos (uno por cada dispositivo) en una clase del Linux Device Model (LDM), encargándose de la asignación de *major numbers* el propio kernel de Linux, y registrándolos en distintas clases dentro de, por ejemplo, `input`, `usb`, `ttyACM`, `tty_usb`, etc. [@linuxusb-devices].
 
 ```C
 extern int usb_register_dev(struct usb_interface *intf,
@@ -281,17 +279,15 @@ static struct usb_class_driver pwnedDevice_class = {
 
 Como puede observarse en la estructura `pwnedDevice_class`, el campo `name` denota un patrón. Según este patrón el nombre de los ficheros de dispositivo serán *pwnedDevice0*, *pwnedDevice1*, *pwnedDevice2*, etc.
 
-El segundo campo, `devnode`, se establece con la dirección de la función `set_device_permissions()` que se define anteriormente en el código. El valor de retorno de esta función indica a `Udev` dónde debe crear el archivo especial de dispositivo dentro de `/dev`. En este caso, la implementación especifica que la ruta será `/dev/usb`. Además, el parámetro de retorno `mode` se utiliza para indicar los permisos del archivo de dispositivo, que en esta implementación se establecen en `666` (permisos de lectura y escritura para todos).
+El segundo campo, `devnode`, se inicializa con la dirección de la función `set_device_permissions()` que se define anteriormente en el código. El valor de retorno de esta función indica a `udev` dónde debe crear el archivo especial de dispositivo dentro de `/dev`. En este caso, la implementación especifica que la ruta será `/dev/usb`. Además, el parámetro de retorno `mode` se utiliza para indicar los permisos del archivo de dispositivo, que en esta implementación se establecen en `666` (permisos de lectura y escritura para todos).
 
-El tercer campo, `fops`, se inicializa con la dirección que nos proporciona la variable `pwnedDevice_fops`. En la inicialización de esta variable, se asocian cuatro operaciones al controlador: `pwnedDevice_write()`, `pwnedDevice_read()`,  `pwnedDevice_open()` y `pwnedDevice_release()`. Estas operaciones se invocan cuando se ejecutan las llamadas al sistema `write()`, `read()``open()` y `close()` desde un programa de usuario en relación a cualquier archivo especial de caracteres asociado al controlador.
+El tercer campo, `fops`, se inicializa con la dirección que nos proporciona la variable `pwnedDevice_fops`. En la inicialización de esta variable, se asocian cuatro operaciones al controlador: `pwnedDevice_write()`, `pwnedDevice_read()`,  `pwnedDevice_open()` y `pwnedDevice_release()`. Estas operaciones se invocan cuando se ejecutan las llamadas al sistema `write()`, `read()`, `open()` y `close()` desde un programa de usuario en relación a cualquier archivo especial de caracteres asociado al controlador.
 
 Por último, el campo `minor_base` se inicializa con una macro definida al principio (`#define USB_MINOR_BASE    0`). [@blinkjc-description]
 
 
 
-## BasicInterrupt - Driver asíncrono con comunicación INTERRUPT IN
-
-### Descripción del funcionamiento 
+## BasicInterrupt - Driver asíncrono con comunicación INTERRUPT IN 
 
 Este módulo del kernel implementa un driver USB utilizando el endpoint de tipo *INTERRUPT IN* del dispositivo USB, así como la API asíncrona del kernel. [@drivers-linux]
 
@@ -301,7 +297,7 @@ El funcionamiento del módulo es muy sencillo. Al cargar el módulo, se ejecuta 
 dev->int_in_urb = usb_alloc_urb(0, GFP_KERNEL); // Memory allocate for URB
 ```
 
-Una vez cargado en el kernel, expone un dispositivo de caracteres que tiene implementada la operación de lectura. Si lanzamos una llamada `read()`, por ejemplo con `cat`, iniciaremos la rutina que envía el URB de tipo *INTERRUPT IN* al dispositivo pidiéndole que le rellene el buffer enviado con datos.
+Una vez cargado en el kernel, expone un dispositivo de caracteres que tiene implementada la operación de lectura. Cuando un proceso hace una opración de `read()` sobre el nodo, por ejemplo con `cat`, iniciaremos la rutina que envía el URB de tipo *INTERRUPT IN* al dispositivo pidiéndole que le rellene el buffer enviado con datos.
 
 ```C
 retval = usb_submit_urb(dev->int_in_urb, GFP_KERNEL);
@@ -365,7 +361,7 @@ Esta acción se hace a través de la función `usb_alloc_urb()` que devuelve un 
 
 ### Montaje de un URB
 
-Cuando el driver recibe una operación de lectura, `read()`, en la callback de lectura `pwnedDevice_read()` se rellena el URB reservado previamente con información y se lleva a la controladora USB para que sea enviado al dispositivo.
+Cuando el driver recibe una operación de lectura, `read()`, en la callback de lectura `pwnedDevice_read()` se rellena el URB reservado previamente, y se lleva a la controladora USB para que sea enviado al dispositivo.
 
 ```C
 /* Send URB. */
@@ -422,13 +418,13 @@ Este tipo de dispositivo tiene la limitación de que el tamaño máximo de trans
 
 Este driver ha sido desarrollado para interactuar con los periféricos que muestran al usuario información a través de pantallas. En este momento están soportados por el firmware el display de 7 segmentos y la pantalla OLED, por lo que el driver es capaz de enviar información a ambos.
 
-El driver utiliza la API síncrona que nos ofrece *USB Core* y todas las transferencias van sobre el tipo *CONTROL*.
+El driver utiliza la API síncrona que nos ofrece *USB Core* y todas las transferencias van sobre el tipo *CONTROL*. Este driver y los posteriores comparten las mismas funciones de inicialización, cambiando los *callbacks* para las operaciones de `read()` y `write()`.
 
 Una vez cargado el módulo que hace de driver en el kernel, este expone un dispositivo de caracteres bajo la ruta `/dev/usb/displaysx`, donde *x* hace referencia al índice del dispositivo que se encuentra conectado, ya que el driver soporta más de un dispositivo a la vez.
 
 ### Operación de lectura
 
-Cuando el dispositivo recibe una llamada `read()`, independientemente del origen, se ejecuta la callback `displays_read()`. Como la plantilla *DISPLAYS* no puede ofrecer ninguna información útil de lectura sobre sus periféricos, cuando una operación de este tipo llega al dispositivo devuelve una frase de 33 bytes a modo de respuesta.
+Cuando el dispositivo recibe una llamada `read()`, independientemente del origen, se ejecuta la función `displays_read()`. Como el perfil *DISPLAYS* no implementa ninguna información útil de lectura sobre sus periféricos, cuando una operación de este tipo llega al dispositivo devuelve una frase de 33 bytes a modo de respuesta.
 
 ```C
 static ssize_t displays_read(struct file *file, char *user_buffer,
@@ -481,6 +477,7 @@ static ssize_t displays_write(struct file *file, const char *user_buffer,
 
     // ...
 	char* strcfg = NULL;
+    char *buffer;
 	
 	if ((strcfg=kmalloc(count + 1, GFP_KERNEL)) == NULL)
 		return -ENOMEM;
@@ -523,7 +520,7 @@ static ssize_t displays_write(struct file *file, const char *user_buffer,
 
 ## LedPartyDriver
 
-*LedPartyDriver* es el driver USB encargado de la comunicación con los periféricos cuando el dispositivo se encuentra flasheado con la plantilla *LED_PARTY*.
+*LedPartyDriver* es el driver USB encargado de la comunicación con los periféricos cuando el dispositivo se encuentra flasheado con el perfil *LED_PARTY*.
 
 Permite enviar comandos para controlar el anillo de led, ya sea el anillo completo o  un led concreto.
 
@@ -576,9 +573,9 @@ R: 0 G: 0 B: 0
 
 ### Operación de escritura
 
-Este driver soporta dos diferentes comandos de escritura a través de la función `write()`.
+Este driver soporta dos comandos de escritura diferentes a través de la función `write()`.
 
-Cuando la función de callback `ledParty_write()`es ejecutada con el comando *setFullColor* seguido de una combinación de color separada por dos puntos, *R:G:B*, se envía una transferencia de tipo *CONTROL* con el color indicado al *ReportID* 1 y el anillo cambia de color por completo.
+Cuando la función `ledParty_write()` es ejecutada con el comando *setFullColor* seguido de una combinación de color separada por dos puntos, *R:G:B*, se envía una transferencia de tipo *CONTROL* con el color indicado al *ReportID* 1 y el anillo cambia de color por completo.
 
 Otro de los comandos disponibles es *setLedColor* seguido del número de led a cambiar y el color, *nLed:R:G:B*. Este comando envía la información al *ReportID* 2, que cambia el led indicado por el color que recibe en la transferencia. A continuación se ilustra la implementación de esta función.
 
@@ -635,7 +632,7 @@ static ssize_t ledParty_write(struct file *file, const char *user_buffer,
 
 ## PWMDriver
 
-Este driver es compatible cuando el dispositivo se encuentra flasheado con la plantilla *PWM*. Esta plantilla expone un led y un buzzer capaces de ser controlados mediante señales *PWM* generadas por el microcontrolador, y el driver permite comunicar el host con estos dispositivos.
+Este driver es compatible cuando el dispositivo se encuentra flasheado con la plantilla *PWM*. Esta plantilla expone un led y un zumbador capaces de ser controlados mediante señales *PWM* generadas por el microcontrolador, y el driver permite comunicar el host con estos dispositivos.
 
 ### Operación de lectura
 
