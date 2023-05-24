@@ -21,10 +21,11 @@ pandoc_common:
   - chapters/Conclusiones.md
   - separators/backmatter.md
 ## Include appendices here  
-  - appendices/InglesObligatorio.md
   - appendices/contribuciones.md    
   - appendices/flashCustomFirmware.md
   - appendices/monitorUSBTraffic.md
+  - appendices/Introduction.md
+  - appendices/Conclusions.md
 ## Include this file if your document contains a bibliography  
   - separators/bibliography.md
 pandoc_targets:

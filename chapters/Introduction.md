@@ -9,13 +9,13 @@ En este capítulo introductorio se presenta la motivación de este proyecto, y s
 
 ## Motivación
 
-El protocolo USB es ampliamente usado en todo el mundo para la interacción con periféricos de muy diversa naturaleza. Cualquier usuario puede conectar un dispositivo a su ordenador. Al hacerlo, el *driver* correspondiente instalado en el sistema reconoce el dispositivo y permite realizar las funciones para las que este ha sido desarrollado. Para lograr esta simplicidad de uso, el desarrollador del *driver* y el fabricante del dispositivo USB tienen que lidiar con la complejidad del protocolo USB. 
+El protocolo USB se usa ampliamente en todo el mundo para la interacción con periféricos de muy diversa naturaleza. Cualquier usuario puede conectar un dispositivo a su ordenador. Al hacerlo, el *driver* correspondiente instalado en el sistema reconoce el dispositivo y permite realizar las funciones para las que este ha sido desarrollado. Para lograr esta simplicidad de uso, el desarrollador del *driver* y el fabricante del dispositivo USB tienen que lidiar con la complejidad del protocolo USB. 
 
-En las titulaciones actuales de Informática, el tiempo limitado que puede dedicarse a describir aspectos de bajo nivel de entrada-salida unido a la complejidad de la tecnología y especificación USB dificulta a los estudiantes la adquisición de conocimientos sobre diseño de dispositivos USB y desarrollo de *drivers* para estos. Para desarrollar contenidos prácticos sobre estos aspectos se ha disponer además de hardware USB suficientemente sencillo, versátil y de bajo coste, lo cual puede constituir un reto significativo.
+En las titulaciones actuales de grado en Informática, el tiempo limitado que puede dedicarse a describir aspectos de bajo nivel de entrada-salida unido a la complejidad de la tecnología y especificación USB dificulta a los estudiantes la adquisición de conocimientos sobre diseño de dispositivos USB y desarrollo de *drivers* para estos. Para desarrollar contenidos prácticos sobre estos aspectos se ha disponer además de hardware USB suficientemente sencillo, versátil y de bajo coste, lo cual puede constituir un reto significativo.
 
-En la Facultad de Informática de la Universidad Complutense de Madrid una de las pocas asignaturas que aborda el desarrollo de drivers USB es la asignatura "Arquitectura Interna de Linux y Android", optativa común ofertada a estudiantes de distintas titulaciones de grado. En esta memoria nos referiremos a esta asignatura como "LIN", ya que este es el nombre corto empleado administrativamente en la Facultad de Informática para referirse a ella. En las prácticas de laboratorio de LIN se hace uso del dispostitivo Blinkstick Strip [@blinkstick-strip], un dispositivo USB sencillo que cuenta con 8 LEDs de colores cuyo estado puede alterarse individualmente. La simplicidad de este dispositivo permite elaborar prácticas para familiarizarse con el desarrollo de *drivers* USB, especialmente aquellos implementados a nivel del kernel del sistema operativo. 
+En la Facultad de Informática de la Universidad Complutense de Madrid una de las pocas asignaturas que aborda el desarrollo de *drivers* USB es la asignatura *Arquitectura Interna de Linux y Android*, optativa común ofertada a estudiantes de distintas titulaciones de grado. En esta memoria nos referiremos a esta asignatura como "LIN", ya que este es el nombre corto empleado administrativamente en la Facultad de Informática para referirse a ella. En las prácticas de laboratorio de LIN se hace uso del dispostitivo Blinkstick Strip [@blinkstick-strip], un dispositivo USB sencillo que cuenta con 8 LEDs de colores cuyo estado puede alterarse individualmente. La simplicidad de este dispositivo permite elaborar prácticas para familiarizarse con el desarrollo de *drivers* USB, especialmente aquellos implementados a nivel del kernel del sistema operativo. 
 
-Blinkstick Strip, no obstante, tiene varias limitaciones. En primer lugar, este dispositivo es tan sencillo que impide explorar el potencial de USB en profundidad. Al fin y al cabo, solo permite alterar el estado de cada uno de los LEDs mediante el envío de mensajes de control sencillos al dispositivo. En consecuencia, las prácticas correspondientes no posibilitan la experimentación con otras modalidades de transferencia de datos recogidas por la especificación USB, y emplean un subconjunto muy reducido de las llamadas de API para desarrollo de *drivers* USB. En segundo lugar, su escasa versatilidad no justifica su precio (alrededor de 20€ por unidad) para posibilitar una adopción a gran escala del dispositivo en distintas asignaturas y titulaciones de grado en la facultad. Por último, aunque el firmware del Blinkstick Strip está disponible de forma gratuita, su fabricante no proporciona documentación sobre cómo realizar modificaciones del mismo empleando la platforma hardware comercial. Esto constituye una barrera para la utilización del dispositivo para prácticas de diseño de *firmware*, donde es preciso realizar programación *bare metal*. 
+Blinkstick Strip, no obstante, tiene varias limitaciones. En primer lugar, este dispositivo es tan sencillo que impide explorar el potencial de USB en profundidad. Al fin y al cabo, solo permite alterar el estado de cada uno de los LEDs mediante el envío de mensajes de control sencillos al dispositivo. En consecuencia, las prácticas correspondientes no posibilitan la experimentación con otras modalidades de transferencia de datos recogidas por la especificación USB, y, por tanto, emplean un subconjunto muy reducido de las llamadas de API para desarrollo de *drivers* USB. En segundo lugar, su escasa versatilidad no justifica su precio (alrededor de 20€ por unidad) para posibilitar una adopción a gran escala del dispositivo en distintas asignaturas y titulaciones de grado en la facultad. Por último, aunque el firmware del Blinkstick Strip está disponible de forma gratuita, su fabricante no proporciona documentación sobre cómo realizar modificaciones del mismo empleando la platforma hardware comercial. Esto constituye una barrera para la utilización del dispositivo para prácticas de diseño de *firmware*, donde es preciso realizar programación *bare metal*. 
 
 Con independencia del protocolo o tecnología de entrada-salida empleada, disponer de una plataforma hardware suficientemente flexible es un aspecto clave en prácticas de laboratorio centradas en la interacción con periféricos. En particular, la capacidad de añadir nuevos dispositivos de entrada-salida al sistema sin requerir incorporar mucho cableado adicional permite desarrollar un gran número de prácticas de laboratorio para así poder satisfacer las necesidades de distintas asignaturas. Asimismo, esto posibilita la introducción de pequeñas variaciones en los contenidos prácticos de una misma asignatura a lo largo del tiempo. Estos factores permiten extender el ciclo de vida de una plataforma hardware orientada a docencia, y con ello reducir sustancialmente el coste de equipamiento de laboratorio. 
 
@@ -40,27 +40,19 @@ Para poder estudiar todo el protocolo USB y la interacción entre el dispositivo
 
 ## Objetivos
 
-El objetivo principal de este proyecto ha sido construir una infraestructura hardware software de bajo coste que permita el prototipado de dispositivos USB y el desarrollo de drivers para estos dispositivos.  Nuestra infraestructura está basada en microcontroladores AVR de Atmel [@avr-atmel], y en el proyecto V-USB [@v-usb], que proporciona un *firmware* genérico para implementar soporte de USB por software. Nuestro proyecto extiende V-USB para facilitar la creación de *firmware* USB que  gestione múltiples periféricos simultáneamente. Aunque existen otras alternativas al uso del  framework de  V-USB (p.ej. el uso de microcontroladores con soporte de USB por hardware), la infraestructura propuesta no solo tiene bajo coste, sino que también ofrece gran versatilidad para el desarrollo de software de bajo nivel. En particular, permite experimentar tanto con el desarrollo de drivers USB en sistemas provistos de sistema operativo, así como como la implementación de *firmware USB* para la gestión de hardware, empleando programación *bare metal*.  En este TFG se ha realizado desarrollo en ambos ámbitos.  
+El objetivo principal de este proyecto ha sido construir una infraestructura hardware software de bajo coste que permita el prototipado de dispositivos USB y el desarrollo de drivers para estos dispositivos.  Nuestra infraestructura está basada en microcontroladores AVR de Atmel [@avr-atmel], y en el proyecto V-USB [@v-usb], que proporciona un *firmware* genérico para implementar soporte de USB por software. Nuestro proyecto extiende V-USB para facilitar la creación de *firmware* USB que  gestione múltiples periféricos simultáneamente. Aunque existen otras alternativas al uso del  framework de  V-USB (p.ej. el uso de microcontroladores con soporte de USB por hardware), la infraestructura propuesta no solo tiene bajo coste, sino que también ofrece gran versatilidad para el desarrollo de software de bajo nivel. En particular, permite experimentar tanto con el desarrollo de *drivers* USB en sistemas provistos de sistema operativo, así como como la implementación de *firmware USB* para la gestión de hardware, empleando programación *bare metal*.  En este TFG se ha realizado desarrollo en ambos ámbitos.  
 
-Otro objetivo del proyecto es proporcionar un conjunto de drivers USB que ilustren la interacción con dispositivos de distinta naturaleza, como conjuntos de LEDs RGB, pantallas LCD, displays 7 segmentos, zumbadores o sensores de tempera. Para ello la infraestructura propuesta se acompaña de una colección de drivers que emplean una amplia colección de funciones de la API proporcionada por el kernel Linux para el desarrollo de drivers USB. Estos drivers se implementan como módulos cargables del kernel Linux, para así servir de base para futuras prácticas de la asignatura LIN. Aunque el desarrollo de drivers USB en espacio de usuario con *libusb* [@libusb] queda fuera del ámbito de este TFG, los drivers del kernel proporcionados son fácilmente adaptables a esta biblioteca. 
+Otro objetivo del proyecto es proporcionar un conjunto de *drivers* USB que ilustren la interacción con dispositivos de distinta naturaleza, como conjuntos de LEDs RGB, pantallas LCD, displays 7 segmentos, zumbadores o sensores de temperatura. Para ello la infraestructura propuesta se acompaña de una colección de drivers que emplean una amplia colección de funciones de la API proporcionada por el kernel Linux para el desarrollo de drivers USB. Estos *drivers* se implementan como módulos cargables del kernel Linux, para así servir de base para futuras prácticas de la asignatura LIN. Aunque el desarrollo de *drivers* USB en espacio de usuario con *libusb* [@libusb] queda fuera del ámbito de este TFG, los drivers del kernel proporcionados sirven de base para la creación de controladores en espacio de usuario desarrollados con esta biblioteca. 
 
 Finalmente, dada la flexibilidad proporcionada por la placa Bee [@bee-repo;@bee-board], en este proyecto se han estudiado formas de emplear dicha placa como base para la implementación de dispositivos USB. Nótese que la Facultad de Informática ya ha adquirido un buen número de estas placas para distintas asignaturas, por lo que la reutilización de este hardware como bloque básico de la infraestructura USB permite amortizar aún más la inversión realizada. 
 
 
 
-<!-- 
-
-Para la realización del proyecto, se han contemplado distintas alternativas, en lugar de usar la librería V-USB. Entre ellas, la posibilidad de utilizar dispositivos hardware que implementen de fábrica la gestión del protocolo USB, pero las ventajas de esta librería son superiores, así como los conocimientos que podamos adquirir trabajando en C con los elementos de bajo nivel de este protocolo, que de otra forma no podríamos haber adquirido.¡
-
-
-
--->
-
-
-
 ## Plan de trabajo
 
-En este proyecto se han desarrollado dos prototipos hardware de la infraestructura. El primer prototipo está basado en el microcontrolador ATTiny85 --mismo chip empleado por el dispositivo Blinkstick Strip. El segundo prototipo hace uso del microcontrolador ATMega328p, que supera las limitaciones del anterior microcontrolador, descritas en detalle en el capítulo \ref{ #cap:hw }. Teniendo esto en cuenta, se llevó a cabo un plan de trabajo, que consta de las siguientes tareas (ver Fig \ref{fig:gantt}):
+En este proyecto se han desarrollado dos prototipos hardware de la infraestructura. El primer prototipo está basado en el microcontrolador ATTiny85 --mismo chip empleado por el dispositivo Blinkstick Strip. El segundo prototipo supera las limitaciones del anterior (descritas en detalle en el capítulo \ref{cap:hw}), y emplea el microcontrolador ATMega328p. Durante el proyecto ha sido preciso familiarizarse con la programación sobre los dos citados microcontroladores --integrados en las placas Digispark [@digisparkboard-image] y Nano [@atmegaboard-image], respectivamente--, así como con una amplia colección de dispositivos de entrada-salida empleados en los prototipos. Entre estos dispositivos se incluye un anillo circular de LEDs RGB, un zumbador (o *buzzer* ), una pantalla OLED y un display 7 segmentos (integrado en la placa Bee [@bee-repo]).
+
+Teniendo esto en cuenta, se llevó a cabo un plan de trabajo, que consta de las siguientes tareas (ver Fig \ref{fig:gantt}):
 
 
 
@@ -77,67 +69,67 @@ https://www.uv.es/wikibase/doc/cas/pandoc_manual_2.7.3.wiki?82
 
 T1
 
-:	Estudio de los diferentes periféricos y placa Digispark bajo entorno Arduino
+:	Estudio de la placa Digispark y análisis del control de los diferentes periféricos bajo entorno Arduino
 
 T2
 
-: Estudio del dispositivo *Blinkstick Strip* y su firmware de código abierto
+: Estudio del dispositivo *Blinkstick Strip* y de su firmware de código abierto
 
 T3
 
-: Estudio de la librería V-USB
+: Análisis en profundidad del *firmware* del proyecto V-USB
 
 T4
 
-: Creación de un firmware de prueba para testear V-USB en la placa Digispark
+: Desarrollo de primera versión del firmware V-USB sobre la placa Digispark (sin soporte completo de périféricos)
 
 T5
 
-: Estudio de las funciones de E/S utilzando los registros del ATTiny85
+: Estudio de las funciones de E/S utilzando los registros del microcontrolador ATTiny85
 
 T6
 
-:	Diseño e Implementación del firmware
+: Ampliación de la funcionalidad  del firmware V-USB desarrollado en T4 con soporte de control de dispositivos básicos 
 
 T7
 
-: Desarrollo y puesta en marcha del diodo led a nivel de registros
+: Desarrollo del control a nivel de registros (sin usar entorno Arduino) del Diodo LED de la placa Digispark 
 
 T8
 
-: Desarrollo y puesta en marcha del anillo de led a nivel de registros
+: Desarrollo del control a nivel de registros del anillo circular de LEDs
 
 T9
 
-: Desarrollo y puesta en marcha del buzzer a nivel de registros
+: Desarrollo del control a nivel de registros del *buzzer*
 
 T10
 
-: Desarrollo y puesta en marcha del display 7 segmentos a nivel de registros
+: Desarrollo del control a nivel de registros del display 7 segmentos
 
 T11
 
-: Estudio del circuito del conector micro USB
+: Estudio de alternativas de diseño de circuitería extra asociada al conector micro USB requerido por el segundo prototipo
 
 T12
 
-: Diseño del prototipo hardware
+: Diseño del prototipo hardware basado en ATMega328p
 
 T13
 
-: Adaptación del circuito USB a Arduino Nano usando ATMega328p
+: Integración de placa Nano (con ATMega328p) con circuito del conector micro USB   
 
 T14
 
-: Modificación del firmware para funcionar con chip ATTMega328p
+: Modificación del firmware para funcionar con chip ATMega328p
 
 T15
 
-: Adaptación de herramienta de debug a nuestro prototipo
+: Adaptación de herramienta de depuración a nuestro prototipo
 
 T16
 
-: Desarrollo y puesta en marcha de la pantalla OLED a nivel de registros
+: Desarrollo del control a nivel de registros de la pantalla OLED 
 
 T17
 
@@ -149,7 +141,7 @@ T18
 
 T19
 
-: Diseño del firmware para la utilización de perfiles
+: Refactorización del *firmware* de V-USB para la utilización de perfiles
 
 T20
 
@@ -157,25 +149,25 @@ T20
 
 T21
 
-: Migración de la implementación del led a PWM
+: Migración de la implementación del controlador de LED a PWM
 
 T22
 
-: Migración de la implementación del buzzer a PWM
+: Migración de la implementación del controlador del buzzer a PWM
 
 T23
 
-: Montaje del prototipo final en placa perforada
+: Montaje del prototipo final (basado en ATMega328p) en placa perforada
 
 T24
 
-: Redacción de la memoria final
+: Redacción de la memoria del TFG
 
 
-Para el desarrollo de este proyecto, se han mantenido distintas reuniones con los directores de proyecto y los desarrolladores, la frecuencia de las mismas ha ido incrementando de manera exponencial conforme ha ido avanzado el desarrollo. Estas reuniones han servido para resolver problemas de diseño, plantear las diferentes fases y solucionar múltiples dudas y limitaciones que han ido apareciendo durante todo el proyecto.
+Durante el desarrollo del proyecto se han mantenido distintas reuniones con los directores del TFG. La frecuencia de las mismas se ha ido incrementando de forma gradual conforme ha ido avanzado el desarrollo. Estas reuniones han servido para resolver problemas de diseño, plantear las diferentes fases y solucionar múltiples dudas y limitaciones que han ido surgiendo durante todo el proyecto.
 
 
-Para la integración tanto del código como de la memoria final, se han utilizado repositorios compartidos en la plataforma GitHub.
+Para la gestión tanto del código como de las fuentes de la memoria del proyecto se han utilizado repositorios compartidos en la plataforma GitHub.
 
 
 
@@ -203,5 +195,10 @@ El resto de esta memoria se ha dividido en los siguientes capítulos:
 
   -->
 
-Finalmente, esta memoria consta de tres apéndices. En el primero se describen las instrucciones para poder analizar los paquetes URBs de USB con el software Wireshark. En el segundo apéndice se proporciona una guía que detalla el proceso para poder *flashear* el firmware en la placa del prototipo. **El tercer y último apéndice enumera las contribuciones aportadas por cada integrante de este Trabajo Fin de Grado al proyecto.**
+Al final de esta memoria pueden encontrarse también los siguientes cinco apéndices:
+
+*  El **apéndice A** enumera las contribuciones aportadas por cada integrante de este Trabajo Fin de Grado al proyecto. 
+* En el **apéndice B**  se describen las instrucciones para poder analizar los paquetes URBs de USB con el software Wireshark. 
+* En el **apéndice C** se proporciona una guía que detalla el proceso para poder *flashear* el firmware en la placa del prototipo. 
+* Finalmente los **apéndices D y E** recogen la traducción al inglés de este capítulo introductorio así como de las conclusiones.
 
