@@ -332,9 +332,11 @@ A pesar de que la API síncrona es más sencilla de usar también es mucho más 
 En este proyecto, se abordan ambas APIs para comparar los métodos de uso y dotar a los usuarios del dispositivo de diferentes ejemplos de uso de estas interfaces de programación que nos ofrece el kernel Linux.
 
 
-## Blinkstick Strip
 
-El desarrollo de este TFG está muy enfocado en la docencia, ya que lo que se pretende es conseguir un dispositivo que sea barato de producir y muy versátil para poder desarrollar diversos tipos de drivers y aprender el funcionamiento de las diferentes partes que se involucran en este campo.
+
+## Blinkstick Strip {#sec:blinkstick}
+
+El desarrollo de este TFG está muy enfocado a la docencia, ya que lo que se pretende es conseguir un dispositivo que sea barato de producir y muy versátil para poder desarrollar diversos tipos de drivers y aprender el funcionamiento de las diferentes partes que se involucran en este campo.
 
 Actualmente, en la asignatura optativa *Arquitectura Interna de Linux y Android*, se está usando un dispositivo llamado *Blinkstick* Strip [@blinkstick-page] para impartir este tipo de lecciones donde los alumnos aprenden a desarrollar drivers para el kernel Linux.
 
