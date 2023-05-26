@@ -42,16 +42,16 @@ Among the aspects that have demanded more work we could highlight the following:
 In short, we consider that it has been a very complete project since we have worked with both software and hardware, creating an infrastructure that we hope will add a lot of value to USB learning.
 
 
-## Trabajo futuro
+## Future work
 
-Gracias a la flexibilidad que ofrece la infraestructura desarrollada, el trabajo que se puede realizar en un futuro es realmente extenso. A continuación se enumeran algunas de las líneas de trabajo futuro:
+Thanks to the flexibility offered by the developed infrastructure, the work that can be done in the future is really extensive. Some of the lines of future work are listed below:
 
-1. **Ampliar periféricos soportados**. Ya que la infraestructura permite la rápida integración de nuevos periféricos, esta sería una muy buena opción para extender nuestro trabajo. Se podrían integrar dispositivos que utilicen protocolos o transferencias diferentes para comunicarse con el *host* y así ampliar el espectro de prácticas que los docentes pueden elaborar usando el dispositivo.
+1. **Expand supported peripherals**. Since the infrastructure allows the rapid integration of new peripherals, this would be a very good option to extend our work. Devices that use different protocols or transfers to communicate with the *host* could be integrated and thus broaden the spectrum of practices that teachers can elaborate using the device.
 
-2. **Desarrollo de controladores más avanzados.** Al igual que con los periféricos, también se pueden seguir desarrollando *drivers* USB más avanzados. Nótese que los *drivers* proporcionados con la infraestructura propuesta están pensados para un público que se está iniciando en el mundo del desarrollo de *drivers* y su objetivo es ilustrar de manera sencilla el funcionamiento de la *API USB* del kernel Linux.
+2. **Development of more advanced drivers.** As with peripherals, more advanced USB *drivers* can also be further developed. Note that the *drivers* provided with the proposed infrastructure are intended for an audience that is just getting started in the world of *driver* development and are intended to illustrate in a simple way the operation of the *USB API* of the Linux kernel.
 
-3. **Integrar nuevos estándares USB.** Otro campo donde se podría avanzar es creando nuevo hardware que permita soportar estándares USB más recientes como los *USB 3.X* o incluso USB 4.0. Esto permitiría desarrollar controladores que manejen transferencias masivas de datos ya que la velocidad de estos estándares maneja sin problemas este gran flujo de bytes.
+3. **Integrating new USB standards **Another area where progress could be made is by creating new hardware to support newer USB standards such as *USB 3.X* or even USB 4.0. This would allow the development of drivers that handle massive data transfers since the speed of these standards can handle this large flow of bytes without problems.
 
-4. **Experimentar con microcontroladores con soporte USB por hardware.** Para dar soporte a otros estándares de USB se podrían utilizar microcontroladores con soporte de USB por hardware. Esto garantizaría un mayor rendimiento y capacidad de procesamiento, ya que estos microcontroladores liberan a la *CPU* principal de la mayor parte de la gestión de la comunicación USB.
+4. **Experiment with microcontrollers with hardware USB support **To support other USB standards, microcontrollers with hardware USB support could be used. This would guarantee higher performance and processing power, since these microcontrollers relieve the main *CPU* of most of the USB communication handling.
 
-5. **Mejorar la configuración de perfiles.** A pesar de que la configuración de perfiles de hardware (selección de periféricos activos) ya es extremadamente sencilla, podrían pensarse nuevas formas de configurarlos, pero sin requerir conocimientos profundos de C y de la estructura del *firmware*. Por ejemplo, podría desarrollarse una aplicación con interfaz gráfica de usuario (GUI), que permita elegir cómodamente qué dispositivos se han de gestionar por el *firmware*, y se pueda compilar y cargar automáticamente el *firmware* con la configuración escogida en la plataforma USB.
+5. **Improve the configuration of profiles.** Although the configuration of hardware profiles (selection of active peripherals) is already extremely simple, new ways of configuring them could be thought of, but without requiring in-depth knowledge of C and the *firmware* structure. For example, a GUI application could be developed, which allows to comfortably choose which devices are to be managed by the *firmware*, and can automatically compile and load the *firmware* with the chosen configuration on the USB platform.
