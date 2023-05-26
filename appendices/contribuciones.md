@@ -16,9 +16,7 @@ Después de esto, comencé a investigar sobre cómo podíamos incluir dentro del
 
 Una vez implementado el anillo, me puse con la función de lectura. Esta función es la que se ejecuta cuando el ordenador pide al dispositivo un cierto número de datos y tuve que aprender cómo funciona *V-USB* por dentro y cómo gestiona este tipo de llamadas para finalmente implementar con éxito la función y hacer que cuando el dispositivo reciba una lectura devuelva la cadena *Hello World! I'm pwnedDevice ;)*.
 
-Después de la función de lectura empecé a implementar la integración en el firmware de un sensor de temperatura, esta investigación me llevo mucho tiempo y finalmente me fue imposible integrar este periférico dentro de *V-USB*. Actualmente desconocemos el problema que ocasiona mezclar el sensor de temperatura con el *framework V-USB*, ya que sin este último, el sensor funciona como se espera.
-
-Siguiendo con la implementación de periféricos, decidí integrar una pantalla *OLED* pequeña. Esta implementación si tuvo éxito y realicé las modificaciones necesarias en el firmware para que esta pequeña pantalla funcionara sin problemas.
+Después de la función de lectura empecé a implementar la integración en el firmware de un sensor de temperatura, esta investigación me llevo mucho tiempo y finalmente me fue imposible integrar este periférico dentro de *V-USB*. Actualmente desconocemos el problema que ocasiona mezclar el sensor de temperatura con el *framework V-USB*, ya que sin este último, el sensor funciona como se espera. Al mismo tiempo, ayudé a Javier a integrar una pantalla *OLED* en el proyecto, realizando las modificaciones necesarias en el firmware para dotar de funcionalidad a esta pequeña pantalla.
 
 A continuación, estuve aprendiendo a usar los timers internos del microcontrolador que terminamos usando, el *ATMega328p*. Esto me llevó un tiempo puesto que era mi primera vez trabajando con hardware de este tipo, pero finalmente conseguí generar diferentes señales *PWM* con las que pude controlar el buzzer y el diodo *LED*, haciendo sonar incluso una canción de cumpleaños feliz.
 

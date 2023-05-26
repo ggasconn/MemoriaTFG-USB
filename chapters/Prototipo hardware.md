@@ -53,13 +53,13 @@ Este microcontrolador se ha utilizado para el desarrollo del primer prototipo de
 - **Periféricos**: Cuenta con 6 pines configurables para E/S de propósito general (GPIOs). También cuenta con dos temporizadores (Timers) de 8 bits, y 4 salidas de PWM de 8 bits para generar señales analógicas. Una característica a mencionar es que tiene soporte para comunicación serie, a través de un módulo USART (Universal Synchronous/Asynchronous Receiver/Transmitter).
 - **Interrupciones y oscilador interno**: Este chip tiene soporte para interrupciones sobre eventos externos, también cuenta con un oscilador (calibrado de fábrica) de 8 MHz. 
 
-Un factor destacable de este microchip es que necesita muy poca energía para funcionar, por lo que diseñar un sistema en el que se haga uso de una batería puede permitirnos aprovechar al máximo su duración. La figura 4.1 detalla el esquema con la posición de cada pin en el ATTiny85. [@avr-attiny85] [@attiny85-datasheet] [@attiny85-desc]
+Un factor destacable de este microchip es que necesita muy poca energía para funcionar, por lo que diseñar un sistema en el que se haga uso de una batería puede permitirnos aprovechar al máximo su duración. La figura \ref{fig:label41} detalla el esquema con la posición de cada pin en el ATTiny85. [@avr-attiny85] [@attiny85-datasheet] [@attiny85-desc]
 
-![Pinout ATTiny85 [@pinoutatiny-page]](img/attiny85_pines.png){width=90% #fig:label3}
+![Pinout ATTiny85 [@pinoutatiny-page]](img/attiny85_pines.png){width=90% #fig:label41}
 
-La placa elegida que integra este microchip es la placa Digispark [@digispark-board]. Su tamaño de 25 mm x 18 mm, incorpora un regulador de voltaje y un LED de encendido. Está basada en el microcontrolador ATTiny85, y cuenta con una interfaz USB. Una característica importante de esta placa es que viene preprogramada con un cargador de arranque que permite programar firmware directamente al chip a través del propio puerto USB usando el IDE de Arduino (llamado Micronucleous, basado en USB HID). Con ello se puede programar código desde el entorno de Arduino fácilmente a la placa sin necesidad de un programador independiente [@setup-digispark]. En la figura 4.2 se muestran la disposición de los pines en la placa Digispark.
+La placa elegida que integra este microchip es la placa Digispark [@digispark-board]. Su tamaño de 25 mm x 18 mm, incorpora un regulador de voltaje y un LED de encendido. Está basada en el microcontrolador ATTiny85, y cuenta con una interfaz USB. Una característica importante de esta placa es que viene preprogramada con un cargador de arranque que permite programar firmware directamente al chip a través del propio puerto USB usando el IDE de Arduino (llamado Micronucleous, basado en USB HID). Con ello se puede programar código desde el entorno de Arduino fácilmente a la placa sin necesidad de un programador independiente [@setup-digispark]. En la figura \ref{fig:label42} se muestran la disposición de los pines en la placa Digispark.
 
-![Pinout de la placa Digispark [@digisparkpin-image]](img/Digispark_Pinout.png){width=55% #fig:label2}
+![Pinout de la placa Digispark [@digisparkpin-image]](img/Digispark_Pinout.png){width=55% #fig:label42}
 
 
 
@@ -78,13 +78,13 @@ Para nuestro proyecto, las dos ventajas fundamentales del ATmega328p frente al A
 - Mayor frecuencia de reloj, lo que permite realizar tareas más complicadas sin entorpecer el protocolo USB.
 - Mayor capacidad de pines de E/S, que nos permiten manejar un mayor número de periféricos simultáneamente.
 
-La figura 4.3 muestra la posición de los pines en el chip.
+La figura \ref{fig:44} muestra la posición de los pines en el chip.
 
-![Pinout ATmega328p [@atmegapinout-image]](img/atmega_pinout.png){width=55%}
+![Pinout ATmega328p [@atmegapinout-image]](img/atmega_pinout.png){width=55% #fig:44}
 
-Para el prototipo final del proyecto, hacemos uso de la placa NANO que incorpora el microchip ATmega328p. Además de los 14 pines de E/S mencionados anteriormente, contamos con 8 pines de entrada analógica y 6 pines PWM. Cuenta también con un puerto USB utilizado en este proyecto como salida de puerto serie (para depuración del firmware), y un botón de reset para reiniciar la placa [@nano-info]. El uso de esta placa es una opción muy interesante para la creación de prototipos, ya que se puede integrar fácilmente en circuitos breadboard o perfboard [@nano-pinout]. La figura 4.4 muestra la disposición de los pines en la placa NANO.
+Para el prototipo final del proyecto, hacemos uso de la placa NANO que incorpora el microchip ATmega328p. Además de los 14 pines de E/S mencionados anteriormente, contamos con 8 pines de entrada analógica y 6 pines PWM. Cuenta también con un puerto USB utilizado en este proyecto como salida de puerto serie (para depuración del firmware), y un botón de reset para reiniciar la placa [@nano-info]. El uso de esta placa es una opción muy interesante para la creación de prototipos, ya que se puede integrar fácilmente en circuitos breadboard o perfboard [@nano-pinout]. La figura \ref{fig:60} muestra la disposición de los pines en la placa NANO.
 
-![Pinout de la placa NANO [@nanopinout-image]](img/nanopinout.png){width=70%}
+![Pinout de la placa NANO [@nanopinout-image]](img/nanopinout.png){width=70% #fig:60}
 
 
 
@@ -97,9 +97,9 @@ En este apartado se describen los distintos elementos hardware a los que se ha d
 
 ### Placa Bee 2.0
 
-Como punto de partida en el proyecto, se han estudiado los componentes y el funcionamiento de los distintos elementos hardware de la placa *Bee 2.0*, diseñada para la asignatura *Arquitectura Interna de Linux y Android*.
+Como punto de partida en el proyecto, se han estudiado los componentes y el funcionamiento de los distintos elementos hardware de la placa *Bee 2.0*, diseñada para la asignatura *Arquitectura Interna de Linux y Android*. La placa puede observarse en la figura \ref{fig:45}.
 
-![Placa Bee 2.0 de la asignatura Arquitectura interna de Linux y Android [@bee-board]](img/bee20gen.png){width=70%}
+![Placa Bee 2.0 de la asignatura Arquitectura interna de Linux y Android [@bee-board]](img/bee20gen.png){width=70% #fig:45}
 
 La idea de este proyecto es impulsar todo el potencial que ofrece esta placa, al utilizar un firmware de base que permite implementar cualquier funcionalidad utilizando todos los periféricos que la componen. Sus componentes son: un diodo LED RGB con sus correspondientes resistencias, tres pulsadores, tres diodos de color rojo (también interconectados mediante resistencias, para evitar posibles daños), un display 7 segmentos, un zumbador *buzzer* pasivo, conversores ADC (analógico-digital) y DAC (digital-analógico), y salida UART (puerto serie). Dispone de varios pines para poder conectar periféricos externos, así como dos salidas de voltaje a 3.3V y 5V. Originalmente, esta placa se utiliza junto a una Raspberry PI en la asignatura de LIN, utilizando para el desarrollo de sus prácticas los siguientes periféricos: Display 7 segmentos, zumbador *buzzer*, los tres diodos y un pulsador. El utilizar conjuntamente esta placa con nuestro firmware posibilita la elaboración de prácticas con cualquier periférico de los mencionados anteriormente, y no sólo limitando su funcionalidad a estos últimos.
 
@@ -108,9 +108,9 @@ La idea de este proyecto es impulsar todo el potencial que ofrece esta placa, al
 
 ### Anillo de LEDs de colores
 
-Este periférico (externo a la placa Bee 2.0) cuenta con 12 LEDs conectados en serie dispuestos de forma circular, con comunicación unidireccional. La empresa encargada de su diseño es NeoPixel [@LED-strip]. Dichos LEDs están compuestos microcontrolador y un registro asociado a cada uno, con colores RGB direccionables individualmente. Cada controlador está compuesto por un registro especial, que gestiona la configuración de color e intensidad de cada LED. El dispositivo, probado originalmente con ATTiny85, es el siguiente:
+Este periférico (externo a la placa Bee 2.0) cuenta con 12 LEDs conectados en serie dispuestos de forma circular, con comunicación unidireccional. La empresa encargada de su diseño es NeoPixel [@LED-strip]. Dichos LEDs están compuestos microcontrolador y un registro asociado a cada uno, con colores RGB direccionables individualmente. Cada controlador está compuesto por un registro especial, que gestiona la configuración de color e intensidad de cada LED. El dispositivo, probado originalmente con ATTiny85, se puede observar en la figura \ref{fig:46}:
 
-![Tira de LEDs circular de NeoPixel](img/LED-Strip.jpg){width=75% #fig:label3}
+![Tira de LEDs circular de NeoPixel](img/LED-Strip.jpg){width=75% #fig:46}
 
 Para transmitir información de color e intensidad a cada LED, se utiliza una sola línea de datos en todo el dispositivo. Esta línea de datos usa un protocolo de comunicación específico llamado *One-Wire Protocol*. Mediante este protocolo, se puede implementar funcionalidad para poder iluminar todos los LEDs del anillo a la vez, o crear una serie de patrones para que se vayan encendiendo en distinto orden y con distintos colores. 
 
@@ -120,11 +120,11 @@ La tira circular de LEDs se alimenta con una fuente de alimentación de 5V que p
 
 #### Smart Shift Register en los LEDs de NeoPixel
 
-Cada LED RGB individual contiene un un pequeño microcontrolador y un registro. Dicho microcontrolador es el responsable de controlar el color y el brillo, y de comunicarse con los otros LEDs de la cadena. Todos los chips que componen cada LED de este dispositivo utilizan el protocolo *One-Wire* para su comunicación, y tienen un componente clave llamado *Smart Shift Register*, que se explica a continuación.
+Cada LED RGB individual contiene un un pequeño microcontrolador y un registro. Dicho microcontrolador es el responsable de controlar el color y el brillo, y de comunicarse con los otros LEDs de la cadena. Todos los chips que componen cada LED de este dispositivo utilizan el protocolo *One-Wire* para su comunicación, y tienen un componente clave llamado *Smart Shift Register*, que se explica a continuación. 
 
-![Arquitectura de cada LED [@smsreg-video]](img/pines_neopixel.jpg){width=50% #fig:label3}
+![Arquitectura de cada LED [@smsreg-video]](img/pines_neopixel.jpg){width=50% #fig:47}
 
-Cada microcontrolador se comporta como registro de desplazamiento, recibiendo los bits por el pin DIN y sacando los bits de acarreo por el pin DOUT. De este modo, al recibir datos por uno de los pines, los bits que salen son los transmitidos al siguiente controlador de la cadena. Cada registro *Smart Shift Register* está compuesto por los siguientes elementos:
+Cada microcontrolador se comporta como registro de desplazamiento, recibiendo los bits por el pin DIN y sacando los bits de acarreo por el pin DOUT. La arquitectura de cada LED se puede observar en la figura \ref{fig:47}. De este modo, al recibir datos por uno de los pines, los bits que salen son los transmitidos al siguiente controlador de la cadena. Cada registro *Smart Shift Register* está compuesto por los siguientes elementos:
 
 - **Bit de control de datos**: Este bit está dedicado a controlar la transferencia de datos. Mediante este bit, el controlador puede gestionar la información sobre configuración de colores e intensidad recibida.
 - **Registros de color**: Dentro de cada *Smart Shift Register*, existen subregistros dedicados a cada color (R-G-B). Su función es almacenar los valores de brillo y determinar el color resultante del LED.
@@ -132,9 +132,9 @@ Cada microcontrolador se comporta como registro de desplazamiento, recibiendo lo
 - **Sincronización**: Su implementación permite operar con la señal de reloj del microcontrolador principal, para evitar fallos y desfases en la comunicación.
 - **Multiplexación/Almacenamiento**: Este registro también se encarga de transmitir los bits de cada LED secuencialmente en la cadena a la siguiente componente, almacenando la información y transmitiéndola en el instante adecuado. 
 
-Cuando el *smart shift register* recibe la información en forma de bits, se encarga de ajustar los registros internos para poder establecer los colores del LED en cuestión. Este proceso se repite para los 12 LEDs que componen el anillo circular, como se puede observar en la figura 4.8.
+Cuando el *smart shift register* recibe la información en forma de bits, se encarga de ajustar los registros internos para poder establecer los colores del LED en cuestión. Este proceso se repite para los 12 LEDs que componen el anillo circular, como se puede observar en la figura \ref{fig:48}.
 
-![Flujo de bits dentro del controlador de cada LED [@smsreg-video]](img/onewire.png){width=70% #fig:label3}
+![Flujo de bits dentro del controlador de cada LED [@smsreg-video]](img/onewire.png){width=70% #fig:48}
 
 Cada registro en la cadena de LEDs cuenta con una posible configuración de 24 bits, agrupándose en grupos de 8 bits recogidos en 3 *data latches* o registros, que el controlador interpreta para ajustar el color o brillo de cada LED (se utiliza un grupo de 8 bits para controlar el color rojo, otro grupo de 8 bits para el color verde y otro grupo de 8 bits para el color azul). Cuando se han recibido todos los datos, el microcontrolador de cada LED se encarga de excitarlo para iluminarlo. Cuando el registro de desplazamiento recibe la señal de *reset*, quiere decir que se pueden iluminar los LEDs al haber terminado el envío a toda la cadena. A partir de ese momento, se empieza otra secuencia de datos. [@smsreg-video]
 
@@ -144,9 +144,9 @@ Cada registro en la cadena de LEDs cuenta con una posible configuración de 24 b
 
 El protocolo *One-Wire* (o también conocido como *1-Wire*) permite la transmisión de 1's o 0's en cadena, pudiendo transmitir la información a cada LED contando con una única línea de datos.
 
-El funcionamiento de este protocolo es el siguiente: para poder determinar el dato, se mide los tiempos de transmisión entre el flanco de subida y bajada. Si el tiempo entre el flanco de subida y el flanco de bajada es mayor que el tiempo transcurrido hasta el siguiente flanco de subida, el resultado es un voltaje alto (TH) o un 1 lógico. Por el contrario, si el tiempo entre el primer flanco de subida y el flanco de bajada es menor que el tiempo transcurrido hasta el el siguiente flanco de subida, el resultado es un voltaje bajo (LW) o un 0 lógico. En la figura 4.9 se ilustra este funcionamiento.
+El funcionamiento de este protocolo es el siguiente: para poder determinar el dato, se mide los tiempos de transmisión entre el flanco de subida y bajada. Si el tiempo entre el flanco de subida y el flanco de bajada es mayor que el tiempo transcurrido hasta el siguiente flanco de subida, el resultado es un voltaje alto (TH) o un 1 lógico. Por el contrario, si el tiempo entre el primer flanco de subida y el flanco de bajada es menor que el tiempo transcurrido hasta el el siguiente flanco de subida, el resultado es un voltaje bajo (LW) o un 0 lógico. En la figura \ref{fig:49} se ilustra este funcionamiento.
 
-![Cálculo de cada dato según los flancos de subida o bajada en 1-Wire [@smsreg-video]](img/1wireTHTL.png){width=50%}
+![Cálculo de cada dato según los flancos de subida o bajada en 1-Wire [@smsreg-video]](img/1wireTHTL.png){width=50% #fig:49}
 
 
 
@@ -175,9 +175,9 @@ Para poder generar la salida deseada, con establecer un 1 en la señal de RCLK (
 
 ### Pantalla LCD OLED
 
-Este periférico es externo a la paca Bee 2.0, consta de una pantalla LCD tipo OLED (formado por un cristal líquido), en el que se permite mostrar cadenas de texto. Para poder ser gestionada mediante el microcontrolador principal, se utiliza el protocolo I2C [@attiny-oled]. El dispositivo en cuestión es el siguiente:
+Este periférico es externo a la paca Bee 2.0, consta de una pantalla LCD tipo OLED (formado por un cristal líquido), en el que se permite mostrar cadenas de texto. Para poder ser gestionada mediante el microcontrolador principal, se utiliza el protocolo I2C [@attiny-oled]. El dispositivo en cuestión es el mostrado en la figura \ref{fig:50}:
 
-![Pantalla OLED utilizada en el proyecto](img/LCD_OLED.png){width=40%}
+![Pantalla OLED utilizada en el proyecto](img/LCD_OLED.png){width=40% #fig:50}
 
 El protocolo I2C permite la comunicación serie mediante dos cables para transferencias entre el microcontrolador (o maestro) y el periférico (o esclavo). Para poder establecer la comunicación, es necesario tener en cuenta los siguientes puntos en la conexión y comunicación utilizando I2C:
 

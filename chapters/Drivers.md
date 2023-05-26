@@ -12,31 +12,31 @@ A continuación se describe a modo de introducción la API de USB del kernel de 
 
 Un componente muy importante en los drivers USB es la definición de la interfaz `usb_driver` [@apiusb-kernel], que debe implementar cualquier módulo para poder registrarse y administrar controladores que interactuen con periféricos USB. Esta estructura viene definida en `<linux/usb.h>`, y se deben implementar aquellos campos que requieran definir las funciones que interactúen con el dispositivo USB. Lo hemos definido como interfaz ya que muchos de sus campos son punteros a función. Estructuras similares son `file_operations` y `proc_ops`, de las que se hablarán más adelante.
 
-```C
-1     struct usb_driver {
-2         const char *name;
-3         int (*probe) (struct usb_interface *intf,
-4                   const struct usb_device_id *id);
-5         void (*disconnect) (struct usb_interface *intf);
-6         int (*unlocked_ioctl) (struct usb_interface *intf, unsigned int code,
-7                 void *buf);
-8         int (*suspend) (struct usb_interface *intf, pm_message_t message);
-9         int (*resume) (struct usb_interface *intf);
-10        int (*reset_resume)(struct usb_interface *intf);
-11
-12        int (*pre_reset)(struct usb_interface *intf);
-13        int (*post_reset)(struct usb_interface *intf);
-14
-15        const struct usb_device_id *id_table;
-16        const struct attribute_group **dev_groups;
-17
-18        struct usb_dynids dynids;
-19        struct usbdrv_wrap drvwrap;
-20        unsigned int no_dynamic_id:1;
-21        unsigned int supports_autosuspend:1;
-22        unsigned int disable_hub_initiated_lpm:1;
-23        unsigned int soft_unbind:1;
-24    };
+```{.c .numberLines}
+struct usb_driver {
+    const char *name;
+    int (*probe) (struct usb_interface *intf,
+              const struct usb_device_id *id);
+    void (*disconnect) (struct usb_interface *intf);
+    int (*unlocked_ioctl) (struct usb_interface *intf, unsigned int code,
+            void *buf);
+    int (*suspend) (struct usb_interface *intf, pm_message_t message);
+    int (*resume) (struct usb_interface *intf);
+    int (*reset_resume)(struct usb_interface *intf);
+
+    int (*pre_reset)(struct usb_interface *intf);
+    int (*post_reset)(struct usb_interface *intf);
+
+    const struct usb_device_id *id_table;
+    const struct attribute_group **dev_groups;
+
+    struct usb_dynids dynids;
+    struct usbdrv_wrap drvwrap;
+    unsigned int no_dynamic_id:1;
+    unsigned int supports_autosuspend:1;
+    unsigned int disable_hub_initiated_lpm:1;
+    unsigned int soft_unbind:1;
+};
 ```
 
 Como se puede observar en la estructura `struct usb_driver`, hay diversos campos para poder implementar funciones que doten de funcionalidad al driver, o simplemente para configuración. No es necesario implementar todas las entradas, solamente aquellas que se requieran para garantizar el funcionamiento mínimo del dispositivo (como ya ocurre con la gestión de las entradas en `/proc`). Las entradas más importantes que los drivers USB deben implementar son las siguientes:
@@ -53,134 +53,125 @@ Como se puede observar en la estructura `struct usb_driver`, hay diversos campos
 
 En nuestros drivers, definimos cuatro campos básicos de la interfaz `usb_driver`, como se muestra a continuación:
 
-```C
-1    static struct usb_driver pwnedDevice_driver = {
-2        .name =		"pwnedDevice",
-3        .probe =	pwnedDevice_probe,
-4        .disconnect =	pwnedDevice_disconnect,
-5        .id_table =	pwnedDevice_table,
-6    };
+```{.c .numberLines}
+static struct usb_driver pwnedDevice_driver = {
+	.name =		"pwnedDevice",
+	.probe =	pwnedDevice_probe,
+	.disconnect =	pwnedDevice_disconnect,
+	.id_table =	pwnedDevice_table,
+};
 ```
 
 En la estructura `usb_driver` definimos punteros a función en `.probe` y `.disconnect` (líneas 3 y 4) para implementar las funciones `pwnedDevice_probe()` y `pwnedDevice_disconnect()`:
 
-```C
-     /*
-      * Invoked when the USB core detects a new
-      * pwnedDevicestick device connected to the system.
-      */
-1     static int pwnedDevice_probe(struct usb_interface *interface,
-2                             const struct usb_device_id *id) {
-3         struct usb_pwnedDevice *dev;
-4         int retval = -ENOMEM;
-5
-6         /*
-7          * Allocate memory for a usb_pwnedDevice structure.
-8          * This structure represents the device state.
-9          * The driver assigns a separate structure to each pwnedDevicestick device
-10         *
-11         */
-12        dev = kmalloc(sizeof(struct usb_pwnedDevice), GFP_KERNEL);
-13
-14        if (!dev) {
-15            dev_err(&interface->dev, "Out of memory\n");
-16            goto error;
-17        }
-18
-19        /* Initialize the various fields in the usb_pwnedDevice structure */
-20        kref_init(&dev->kref);
-21        dev->udev = usb_get_dev(interface_to_usbdev(interface));
-22        dev->interface = interface;
-23
-24        /* save our data pointer in this interface device */
-25        usb_set_intfdata(interface, dev);
-26
-27        /* we can register the device now, as it is ready */
-28        retval = usb_register_dev(interface, &pwnedDevice_class);
-29        if (retval) {
-30            /* something prevented us from registering this driver */
-31            dev_err(&interface->dev,
-32                "Not able to get a minor for this device.\n");
-33            usb_set_intfdata(interface, NULL);
-34            goto error;
-35        }
-36
-37        /* let the user know what node this device is now attached to */	
-38        dev_info(&interface->dev,
-39             "PwnedDevice now available via pwnedDevice%d",
-40             interface->minor);
-41        return 0;
-42
-43    error:
-44        if (dev)
-45            /* this frees up allocated memory */
-46            kref_put(&dev->kref, pwnedDevice_delete);
-47        return retval;
-48    }
+```{.c .numberLines}
+static int pwnedDevice_probe(struct usb_interface *interface,
+		      			const struct usb_device_id *id) {
+	struct usb_pwnedDevice *dev;
+	int retval = -ENOMEM;
+
+	/*
+ 	 * Allocate memory for a usb_pwnedDevice structure.
+	 * This structure represents the device state.
+	 * The driver assigns a separate structure to each pwnedDevicestick device
+ 	 *
+	 */
+	dev = kmalloc(sizeof(struct usb_pwnedDevice), GFP_KERNEL);
+
+	if (!dev) {
+		dev_err(&interface->dev, "Out of memory\n");
+		goto error;
+	}
+
+	/* Initialize the various fields in the usb_pwnedDevice structure */
+	kref_init(&dev->kref);
+	dev->udev = usb_get_dev(interface_to_usbdev(interface));
+	dev->interface = interface;
+
+	/* save our data pointer in this interface device */
+	usb_set_intfdata(interface, dev);
+
+	/* we can register the device now, as it is ready */
+	retval = usb_register_dev(interface, &pwnedDevice_class);
+	if (retval) {
+		/* something prevented us from registering this driver */
+		dev_err(&interface->dev,
+			"Not able to get a minor for this device.\n");
+		usb_set_intfdata(interface, NULL);
+		goto error;
+	}
+
+	/* let the user know what node this device is now attached to */	
+	dev_info(&interface->dev,
+		 "PwnedDevice now available via pwnedDevice%d",
+		 interface->minor);
+	return 0;
+
+error:
+	if (dev)
+		/* this frees up allocated memory */
+		kref_put(&dev->kref, pwnedDevice_delete);
+	return retval;
+}
 ```
 
 Como hemos mencionado previamente, esta función es la encargada de reservar memoria e inicializar los campos de la estructura del dispositivo, como podemos observar en el código anterior entre las líneas 12 y 22. Destacar que a esta función tiene como parámetro el descriptor del dispositivo, que se utilizará para poder registrarlo posteriormente. La función invocada cuando se desconecta el dispositivo previamente gestionado por el driver es la siguiente:
 
-```C
-      /*
-      * Invoked when a pwnedDevicestick device is 
-      * disconnected from the system.
-      */
-1     static void pwnedDevice_disconnect(struct usb_interface *interface) {
-2         struct usb_pwnedDevice *dev;
-3         int minor = interface->minor;
-4
-5         dev = usb_get_intfdata(interface);
-6         usb_set_intfdata(interface, NULL);
-7 
-8         /* give back our minor */
-9         usb_deregister_dev(interface, &pwnedDevice_class);
-10
-11        /* prevent more I/O from starting */
-12        dev->interface = NULL;
-13
-14        /* decrement our usage count */
-15        kref_put(&dev->kref, pwnedDevice_delete);
-16
-17        dev_info(&interface->dev, "PwnedDevice device #%d has been disconnected", minor);
-18    }
+```{.c .numberLines}
+static void pwnedDevice_disconnect(struct usb_interface *interface) {
+	struct usb_pwnedDevice *dev;
+	int minor = interface->minor;
+
+	dev = usb_get_intfdata(interface);
+	usb_set_intfdata(interface, NULL);
+
+	/* give back our minor */
+	usb_deregister_dev(interface, &pwnedDevice_class);
+
+	/* prevent more I/O from starting */
+	dev->interface = NULL;
+
+	/* decrement our usage count */
+	kref_put(&dev->kref, pwnedDevice_delete);
+
+	dev_info(&interface->dev, "PwnedDevice device #%d has been disconnected", minor);
+}
 ```
 
 En la última función, en la línea 15, se decrementa el contador de referencias del dispositivo. Puede llegar a eliminarlo si el valor de este contador es 0. Esta función también es encargada de invalidar la interfaz del dispositivo.
 
 A continuación se muestran las funciones encargadas de la inicialización del módulo `pwnedDevicedrv_module_init()` y de eliminar su registro mediante la función `pwnedDevicedrv_module_cleanup()`. 
 
-```C
-1     /* Module initialization */
-2     int pwnedDevicedrv_module_init(void) {
-3        return usb_register(&pwnedDevice_driver);
-4     }
-5
-6     /* Module cleanup function */
-7     void pwnedDevicedrv_module_cleanup(void) {
-8       usb_deregister(&pwnedDevice_driver);
-9     }
-10
-11    module_init(pwnedDevicedrv_module_init);
-12    module_exit(pwnedDevicedrv_module_cleanup);
+```{.c .numberLines}
+/* Module initialization */
+int pwnedDevicedrv_module_init(void) {
+   return usb_register(&pwnedDevice_driver);
+}
+
+/* Module cleanup function */
+void pwnedDevicedrv_module_cleanup(void) {
+   usb_deregister(&pwnedDevice_driver);
+}
+
+module_init(pwnedDevicedrv_module_init);
+module_exit(pwnedDevicedrv_module_cleanup);
 ```
 
 Para llevar a cabo el registro del módulo, se invoca la función `usb_register()` en la línea 3, que acepta como parámetro un puntero a la interfaz `usb_driver`, definida mediante la variable `pwnedDevice_driver`. En el caso de que se produzca correctamente el registro, se devuelve 0. En caso contrario, un número negativo con el código de error. Para la descarga del módulo, se ejecuta `usb_deregister()` en la línea 8, que se encarga de la limpieza del módulo, aceptando un puntero a la interfaz `usb_driver`.
 
 En la instanciación de `usb_driver`, a parte de la definición de los campos explicados previamente, se ha definido otro para los dispositivos compatibles (`.id_table =	pwnedDevice_table`, línea 5 en la estructura definida al comienzo de la sección). La implementación de esta tabla es la siguiente:
 
-```C
-1    /* Define these values to match your devices */
-2    #define VENDOR_ID	0X20A0
-3    #define PRODUCT_ID	0X41E5
-4
-5    /* table of devices that work with this driver */
-6    static const struct usb_device_id pwnedDevice_table[] = {
-7        { USB_DEVICE(VENDOR_ID,  PRODUCT_ID) },
-8        { }					/* Terminating entry */
-9    };
-10
-11    MODULE_DEVICE_TABLE(usb, pwnedDevice_table);
+```{.c .numberLines}
+/* Define these values to match your devices */
+#define VENDOR_ID	0X20A0
+#define PRODUCT_ID	0X41E5
+
+/* table of devices that work with this driver */
+static const struct usb_device_id pwnedDevice_table[] = {
+	{ USB_DEVICE(VENDOR_ID, PRODUCT_ID) },
+	{ }					/* Terminating entry */
+};
+MODULE_DEVICE_TABLE(usb, pwnedDevice_table);
 ```
 
 La tabla `pwnedDevice_table[]` definida en la linea 6 del código anterior almacena todos los identificadores de dispositivos `usb_device_id` que el driver puede gestionar. Cada posición del array es un descriptor del dispositivo, que se inicializa mediante la macro `USB_DEVICE()` definida en la línea 7, cuyos parámetros son el identificador del fabricante `VENDOR_ID` y el identificador del producto `PRODUCT_ID`, definidos en las líneas 2 y 3. Cada vez que un dispositivo se conecta al host con los valores de `VENDOR_ID` y `PRODUCT_ID` definidos anteriormente, se consulta la tabla `pwnedDevice_table[]` que contiene esta información y posteriormente se ejecuta la función `probe()` del driver USB (en nuestro caso `pwnedDevice_probe()`). 
@@ -189,13 +180,13 @@ La tabla `pwnedDevice_table[]` definida en la linea 6 del código anterior almac
 
 Otro de los campos importantes de un driver es la estructura de estado, ya que con esta estructura se permite la conexión simultánea de varios dispositivos del mismo tipo (asociando a cada uno una estructura que represente su estado). En nuestros drivers, hemos definido la siguiente estructura:
 
-```C
-1    /* Structure to hold all of our device specific stuff */
-2    struct usb_pwnedDevice {
-3        struct usb_device	*udev;			/* the usb device for this device */
-4        struct usb_interface	*interface;		/* the interface for this device */
-5        struct kref		kref;
-6    };
+```{.c .numberLines}
+/* Structure to hold all of our device specific stuff */
+struct usb_pwnedDevice {
+	struct usb_device	*udev;			/* the usb device for this device */
+	struct usb_interface	*interface;		/* the interface for this device */
+	struct kref		kref;
+};
 ```
 A continuación se explican los distintos campos de la estructura:
 
@@ -214,7 +205,7 @@ Cabe destacar que sin la ejecución de `usb_set_intfdata(interface, dev)` en la 
 
 Como hemos adelantado en el párrafo anterior, otro de los aspectos importantes es poder interactuar con el driver desde el espacio de usuario. Para ello, es necesario registrar los dispositivos reconocidos (uno por cada dispositivo) en una clase del Linux Device Model (LDM), encargándose de la asignación de *major numbers* el propio kernel de Linux, y registrándolos en distintas clases dentro de, por ejemplo, `input`, `usb`, `ttyACM`, `tty_usb`, etc. [@linuxusb-devices].
 
-```C
+```{.c .numberLines}
 extern int usb_register_dev(struct usb_interface *intf,
             		struct usb_class_driver *class_driver);
 ```
@@ -229,13 +220,13 @@ La clase `usb` en Linux abarca la mayoría de los dispositivos USB. Estos dispos
 
 La estructura `usb_class_driver` se define como sigue:
 
-```C
-1    struct usb_class_driver {
-2        char *name;
-3        char *(*devnode)(struct device *dev, umode_t *mode);
-4        const struct file_operations *fops;
-5        int minor_base;
-6    };
+```{.c .numberLines}
+struct usb_class_driver {
+    char *name;
+    char *(*devnode)(struct device *dev, umode_t *mode);
+    const struct file_operations *fops;
+    int minor_base;
+};
 ```
 
 - `name`, línea 2: Es una cadena de caracteres que contiene el nombre del dispositivo y también se utiliza para codificar el nombre de su archivo especial asociado.
@@ -252,46 +243,46 @@ La estructura `usb_class_driver` se define como sigue:
 
 El siguiente fragmento de código muestra la definición de la estructura global de tipo `struct usb_class_driver`, que se pasa como parámetro a la función `usb_register_dev()` a través de la línea 28 en `pwnedDevice_probe()`:
 
-```C
-1     #define USB_MINOR_BASE    0
-2
-3     /*
-4     * Operations associated with the character device 
-5     * exposed by driver
-6     * 
-7     */
-8     static const struct file_operations pwnedDevice_fops = {
-9        .owner =	THIS_MODULE,
-10        .write =	pwnedDevice_write,	 	/* write() operation on the file */
-11        .read =		pwnedDevice_read,			/* read() operation on the file */
-12        .open =		pwnedDevice_open,			/* open() operation on the file */
-13        .release =	pwnedDevice_release, 		/* close() operation on the file */
-14    };
-15
-16    /* 
-17     * Return permissions and pattern enabling udev 
-18     * to create device file names under /dev
-19     * 
-20     * For each pwnedDevicestick connected device a character device file
-21     * named /dev/usb/pwnedDevicestick<N> will be created automatically  
-22     */
-23    char* set_device_permissions(struct device *dev, umode_t *mode) {
-24        if (mode)
-25            (*mode)=0666; /* RW permissions */
-26        return kasprintf(GFP_KERNEL, "usb/%s", dev_name(dev)); /* Return formatted string */
-27    }
-28
-29
-30    /*
-31     * usb class driver info in order to get a minor number from the usb core,
-32     * and to have the device registered with the driver core
-33     */
-34    static struct usb_class_driver pwnedDevice_class = {
-35        .name =		"pwnedDevice%d",  /* Pattern used to create device files */	
-36        .devnode=	set_device_permissions,	
-37        .fops =		&pwnedDevice_fops,
-38        .minor_base =	USB_MINOR_BASE,
-39    };
+```{.c .numberLines}
+#define USB_MINOR_BASE    0
+
+/*
+* Operations associated with the character device 
+* exposed by driver
+* 
+*/
+static const struct file_operations pwnedDevice_fops = {
+    .owner =	THIS_MODULE,
+    .write =	pwnedDevice_write,	 	/* write() operation on the file */
+    .read =		pwnedDevice_read,			/* read() operation on the file */
+    .open =		pwnedDevice_open,			/* open() operation on the file */
+    .release =	pwnedDevice_release, 		/* close() operation on the file */
+};
+
+/* 
+ * Return permissions and pattern enabling udev 
+ * to create device file names under /dev
+ * 
+ * For each pwnedDevicestick connected device a character device file
+ * named /dev/usb/pwnedDevicestick<N> will be created automatically  
+ */
+char* set_device_permissions(struct device *dev, umode_t *mode) {
+    if (mode)
+        (*mode)=0666; /* RW permissions */
+    return kasprintf(GFP_KERNEL, "usb/%s", dev_name(dev)); /* Return formatted string */
+}
+
+
+/*
+ * usb class driver info in order to get a minor number from the usb core,
+ * and to have the device registered with the driver core
+ */
+static struct usb_class_driver pwnedDevice_class = {
+    .name =		"pwnedDevice%d",  /* Pattern used to create device files */	
+    .devnode=	set_device_permissions,	
+    .fops =		&pwnedDevice_fops,
+    .minor_base =	USB_MINOR_BASE,
+};
 ```
 
 Como puede observarse en la estructura `pwnedDevice_class` definida desde la línea 34 hasta la 39, el campo `name` denota un patrón. Según este patrón el nombre de los ficheros de dispositivo serán *pwnedDevice0*, *pwnedDevice1*, *pwnedDevice2*, etc.
@@ -310,127 +301,127 @@ Este módulo del kernel implementa un driver USB utilizando el endpoint de tipo 
 
 El funcionamiento del módulo es muy sencillo. Al cargar el módulo, se ejecuta la función `pwnedDevice_probe()` del driver, que reserva espacio para las distintas estructuras del driver, utilizadas para la interfaz y los paquetes URBs, así como el descubrimiento de endpoints. 
 
-```C
-1     /*
-2      * Invoked when the USB core detects a new
-3      * pwnedDevicestick device connected to the system.
-4      */
-5     static int pwnedDevice_probe(struct usb_interface *interface,
-6                   const struct usb_device_id *id)
-7     {
-8         struct usb_pwnedDevice *dev;
-9         struct usb_host_interface *iface_desc;
-10        struct usb_endpoint_descriptor *endpoint;
-11        int retval = -ENOMEM;
-12        int i;
-13
-14        /*
-15         * Allocate memory for a usb_pwnedDevice structure.
-16         * This structure represents the device state.
-17         * The driver assigns a separate structure to each pwnedDevicestick device
-18         *
-19         */
-20        dev = kmalloc(sizeof(struct usb_pwnedDevice), GFP_KERNEL);
-21
-22        if (!dev) {
-23            dev_err(&interface->dev, "Out of memory\n");
-24            goto error;
-25        }
-26
-27        /* Initialize the various fields in the usb_pwnedDevice structure */
-28        kref_init(&dev->kref);
-29        dev->udev = usb_get_dev(interface_to_usbdev(interface));
-30        dev->interface = interface;
-31
-32        iface_desc = interface->cur_altsetting;
-33
-34        for (i = 0; i < iface_desc->desc.bNumEndpoints; ++i) {
-35            endpoint = &iface_desc->endpoint[i].desc;
-36
-37            if (((endpoint->bEndpointAddress & USB_ENDPOINT_DIR_MASK)
-38                 == USB_DIR_IN)
-39                && ((endpoint->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK)
-40                    == USB_ENDPOINT_XFER_INT))
-41                dev->int_in_endpoint = endpoint;
-42        }
-43
-44        if (! dev->int_in_endpoint) {
-45            pr_err("could not find interrupt in endpoint");
-46            goto error;
-47        }
-48
-49
-50        /* Request IN URB */
-51        dev->int_in_urb = usb_alloc_urb(0, GFP_KERNEL);
-52        if (!dev->int_in_urb) {
-53            printk(KERN_INFO "Error allocating URB");
-54            retval = -ENOMEM;
-55            goto error;
-56        }
-57
-58        /* save our data pointer in this interface device */
-59        usb_set_intfdata(interface, dev);
-60
-61        /* we can register the device now, as it is ready */
-62        retval = usb_register_dev(interface, &pwnedDevice_class);
-63        if (retval) {
-64            /* something prevented us from registering this driver */
-65            dev_err(&interface->dev,
-66                "Not able to get a minor for this device.\n");
-67            usb_set_intfdata(interface, NULL);
-68            goto error;
-69        }
-70
-71        /* let the user know what node this device is now attached to */	
-72        dev_info(&interface->dev,
-73             "PwnedDevice now available via pwnedDevice-%d",
-74             interface->minor);
-75        return 0;
-76
-77    error:
-78        if (dev->int_in_urb)
-79            usb_free_urb(dev->int_in_urb);
-80
-81        if (dev)
-82            /* this frees up allocated memory */
-83            kref_put(&dev->kref, pwnedDevice_delete);
-84
-85        return retval;
-86    }
+```{.c .numberLines}
+/*
+ * Invoked when the USB core detects a new
+ * pwnedDevicestick device connected to the system.
+ */
+static int pwnedDevice_probe(struct usb_interface *interface,
+		      const struct usb_device_id *id)
+{
+	struct usb_pwnedDevice *dev;
+	struct usb_host_interface *iface_desc;
+	struct usb_endpoint_descriptor *endpoint;
+	int retval = -ENOMEM;
+	int i;
+
+	/*
+ 	 * Allocate memory for a usb_pwnedDevice structure.
+	 * This structure represents the device state.
+	 * The driver assigns a separate structure to each pwnedDevicestick device
+ 	 *
+	 */
+	dev = kmalloc(sizeof(struct usb_pwnedDevice), GFP_KERNEL);
+
+	if (!dev) {
+		dev_err(&interface->dev, "Out of memory\n");
+		goto error;
+	}
+
+	/* Initialize the various fields in the usb_pwnedDevice structure */
+	kref_init(&dev->kref);
+	dev->udev = usb_get_dev(interface_to_usbdev(interface));
+	dev->interface = interface;
+
+	iface_desc = interface->cur_altsetting;
+
+	for (i = 0; i < iface_desc->desc.bNumEndpoints; ++i) {
+		endpoint = &iface_desc->endpoint[i].desc;
+
+		if (((endpoint->bEndpointAddress & USB_ENDPOINT_DIR_MASK)
+		     == USB_DIR_IN)
+		    && ((endpoint->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK)
+		        == USB_ENDPOINT_XFER_INT))
+			dev->int_in_endpoint = endpoint;
+	}
+
+	if (! dev->int_in_endpoint) {
+		pr_err("could not find interrupt in endpoint");
+		goto error;
+	}
+
+
+	/* Request IN URB */
+	dev->int_in_urb = usb_alloc_urb(0, GFP_KERNEL);
+	if (!dev->int_in_urb) {
+		printk(KERN_INFO "Error allocating URB");
+		retval = -ENOMEM;
+		goto error;
+	}
+
+	/* save our data pointer in this interface device */
+	usb_set_intfdata(interface, dev);
+
+	/* we can register the device now, as it is ready */
+	retval = usb_register_dev(interface, &pwnedDevice_class);
+	if (retval) {
+		/* something prevented us from registering this driver */
+		dev_err(&interface->dev,
+			"Not able to get a minor for this device.\n");
+		usb_set_intfdata(interface, NULL);
+		goto error;
+	}
+
+	/* let the user know what node this device is now attached to */	
+	dev_info(&interface->dev,
+		 "PwnedDevice now available via pwnedDevice-%d",
+		 interface->minor);
+	return 0;
+
+error:
+	if (dev->int_in_urb)
+		usb_free_urb(dev->int_in_urb);
+
+	if (dev)
+		/* this frees up allocated memory */
+		kref_put(&dev->kref, pwnedDevice_delete);
+
+	return retval;
+}
 ```
 
-En la línea 51 del anterior código, se puede observar la reserva de memoria que se hace para el URB una vez inicializados todos sus campos, y después de haber realizado la búsqueda de endpoints mediante el bucle definido entre las líneas 34 y 42.
+La línea 51 del anterior código realiza la llamada a la función para la reserva de memoria del URB una vez inicializados todos sus campos, y después de haber realizado la búsqueda de endpoints mediante el bucle definido entre las líneas 34 y 42.
 
 Una vez cargado en el kernel, expone un dispositivo de caracteres que tiene implementada la operación de lectura. Cuando un proceso hace una operación de `read()` sobre el nodo, por ejemplo con `cat`, iniciaremos la rutina que envía el URB de tipo *INTERRUPT IN* al dispositivo pidiéndole que le rellene el buffer enviado con datos, como se puede observar en el siguiente fragmento de código. El envío del URB se hace efectivo a través de la llamada a la función `usb_submit_urb()` de la línea 21.
 
-```C
-1     static ssize_t pwnedDevice_read(struct file *file, char *user_buffer,
-2                   size_t count, loff_t *ppos)
-3     {
-4         struct usb_pwnedDevice *dev;
-5         int retval = 0;
-6
-7         dev = file->private_data;
-8 
-9         if (*ppos > 0)
-10            return 0;
-11
-12        /* Send URB. */
-13        usb_fill_int_urb(dev->int_in_urb, dev->udev,
-14                         usb_rcvintpipe(dev->udev,
-15                                        dev->int_in_endpoint->bEndpointAddress),
-16                         dev->int_in_buffer,
-17                         le16_to_cpu(0x0008),
-18                         pwnedDevice_int_in_callback,
-19                         dev,
-20                         dev->int_in_endpoint->bInterval);
-21        retval = usb_submit_urb(dev->int_in_urb, GFP_KERNEL);
-22
-23        if (retval != 0)
-24            return retval;
-25
-26        return 0; // No bytes returned. Async USB API used.
-27    }
+```{.c .numberLines}
+static ssize_t pwnedDevice_read(struct file *file, char *user_buffer,
+			  size_t count, loff_t *ppos)
+{
+	struct usb_pwnedDevice *dev;
+	int retval = 0;
+
+	dev = file->private_data;
+	
+	if (*ppos > 0)
+		return 0;
+
+	/* Send URB. */
+	usb_fill_int_urb(dev->int_in_urb, dev->udev,
+	                 usb_rcvintpipe(dev->udev,
+	                                dev->int_in_endpoint->bEndpointAddress),
+	                 dev->int_in_buffer,
+	                 le16_to_cpu(0x0008),
+	                 pwnedDevice_int_in_callback,
+	                 dev,
+	                 dev->int_in_endpoint->bInterval);
+	retval = usb_submit_urb(dev->int_in_urb, GFP_KERNEL);
+
+	if (retval != 0)
+		return retval;
+
+	return 0; // No bytes returned. Async USB API used.
+}
 ```
 
 Como se usa la API asíncrona de USB la llamada a `read()` devuelve siempre 0 bytes, ya que no se sabe con exactitud cuándo se va a devolver el *URB* relleno con datos y al ser una función no bloqueante no esperamos a que llegue. El resultado de esta solicitud de datos al dispositivo se retorna a través de la función de callback, que se invoca una vez el URB vuelve desde el dispositivo al host. La cabecera de la función es la siguiente: `pwnedDevice_int_in_callback(struct urb *urb)`, función explicada más adelante.
@@ -443,7 +434,7 @@ El descubrimiento de endpoints es de lo primero que se hace cuando un driver ha 
 
 Cuando el *USB Core* asigna el driver al dispositivo lo primero que se ejecuta es la función `pwnedDevice_probe()`, que ejecuta todas las tareas necesarias de inicialización, entre ellas el descubrimiento de endpoints, que se realiza entre las líneas 28 y 47.
 
-```C
+```{.c .numberLines}
 static int pwnedDevice_probe(struct usb_interface *interface,
 		      const struct usb_device_id *id);
 ```
@@ -470,25 +461,25 @@ Al usarse la API asíncrona después del envío que realiza el driver, no hay ni
 
 Dentro de la función se realizan dos tareas sencillas. Lo primero es comprobar el estado de la transferencia, ya que en caso de haberse producido algún fallo los datos devueltos puede que no sean coherentes. Esta tarea se realiza entre las líneas 7 y 14 del siguiente código. En caso de que todo haya ido bien, se extraen los datos del buffer que previamente se reservó para rellenarse con información por el dispositivo, y se muestra por la salida de información del kernel usando `printk()`, tarea realizada en las líneas 16 y 17.
 
-```C
-1     /*
-2     * Callback function. Executed when INT IN URB returns back with data.
-3     */
-4     static void pwnedDevice_int_in_callback(struct urb *urb) {
-5         struct usb_pwnedDevice *dev = urb->context;
-6 
-7         if (urb->status) {  // Status of transfer
-8             if (urb->status == -ENOENT ||
-9                 urb->status == -ECONNRESET ||
-10                urb->status == -ESHUTDOWN) {
-11                printk(KERN_INFO "Error on callback!");
-12                return;
-13            }
-14        }
-15
-16        if (urb->actual_length > 0)
-17            printk(KERN_INFO "Transfered data: %s\n", dev->int_in_buffer);	
-18    }
+```{.c .numberLines}
+/*
+* Callback function. Executed when INT IN URB returns back with data.
+*/
+static void pwnedDevice_int_in_callback(struct urb *urb) {
+	struct usb_pwnedDevice *dev = urb->context;
+
+	if (urb->status) {
+		if (urb->status == -ENOENT ||
+		    urb->status == -ECONNRESET ||
+		    urb->status == -ESHUTDOWN) {
+			printk(KERN_INFO "Error on callback!");
+			return;
+		}
+	}
+
+	if (urb->actual_length > 0)
+		printk(KERN_INFO "Transfered data: %s\n", dev->int_in_buffer);	
+}
 ```
 
 Este tipo de dispositivo tiene la limitación de que el tamaño máximo de transferencia mediante *INTERRUPT* es de 8 bytes, esta limitación la impone el estándar *USB* para dispositivos *Low-Speed.*
@@ -507,63 +498,63 @@ Una vez cargado el módulo que hace de driver en el kernel, este expone un dispo
 
 Cuando el dispositivo recibe una llamada `read()`, independientemente del origen, se ejecuta la función `displays_read()`. Como el perfil *DISPLAYS* no implementa ninguna información útil de lectura sobre sus periféricos, cuando una operación de este tipo llega al dispositivo devuelve una frase de 33 bytes a modo de respuesta. El mensaje llega a través del URB que se recibe en la función `usb_control_msg_recv()` de la línea 23, copiándose al espacio de usuario de forma segura mediante la llamada `copy_to_user()` de la línea 41.
 
-```C
-1     static ssize_t displays_read(struct file *file, char *user_buffer,
-2                                 size_t count, loff_t *ppos) {
-3         struct usb_pwnedDevice *dev;
-4         int retval = 0;
-5         unsigned char* message;	
-6         int nr_bytes = 0;
-7         unsigned int wValue = 0;
-8         int msgSize = 0;
-9
-10        dev = file->private_data;
-11
-12        if (*ppos>0)
-13            return 0;
-14
-15        message = kmalloc(MAX_LEN_MESSAGE, GFP_DMA);
-16
-17        /* zero fill*/
-18        memset(message, 0, MAX_LEN_MESSAGE);
-19
-20        wValue = 0x1;
-21        msgSize = 33;
-22
-23        retval = usb_control_msg_recv(dev->udev,	
-24                                        0, 
-25                                        USB_REQ_CLEAR_FEATURE, 
-26                                        USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_DEVICE,
-27                                        wValue,	/* wValue = Descriptor index */
-28                                        0x0, 	/* wIndex = Endpoint # */
-29                                        message,	/* Pointer to the message */ 
-30                                        msgSize, /* message's size in bytes */
-31                                        0, /* Dale lo necesario*/
-32                                        GFP_DMA);
-33
-34        if (retval)
-35            goto out_error;
-36
-37        message[33]='\n';
-38        message[34]='\0';
-39        nr_bytes = strlen(message + 1); // Remove reportID
-40
-41        if (copy_to_user(user_buffer, message + 1, strlen(message + 1))){
-42            retval=-EFAULT;
-43            goto out_error;
-44        }
-45
-46        kfree(message);
-47        (*ppos) += nr_bytes;
-48
-49        return nr_bytes;
-50
-51    out_error:
-52        if (message)
-53            kfree(message);
-54
-55        return retval;	
-56    }
+```{.c .numberLines}
+static ssize_t pwnedDevice_read(struct file *file, char *user_buffer,
+			  				size_t count, loff_t *ppos) {
+	struct usb_pwnedDevice *dev;
+	int retval = 0;
+	unsigned char* message;	
+	int nr_bytes = 0;
+	unsigned int wValue = 0;
+	int msgSize = 0;
+
+	dev = file->private_data;
+	
+	if (*ppos>0)
+		return 0;
+
+	message = kmalloc(MAX_LEN_MESSAGE, GFP_DMA);
+
+	/* zero fill*/
+	memset(message, 0, MAX_LEN_MESSAGE);
+
+	wValue = 0x1;
+	msgSize = 33;
+
+	retval = usb_control_msg_recv(dev->udev,	
+									0, 
+									USB_REQ_CLEAR_FEATURE, 
+									USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_DEVICE,
+									wValue,	/* wValue = Descriptor index */
+									0x0, 	/* wIndex = Endpoint # */
+									message,	/* Pointer to the message */ 
+									msgSize, /* message's size in bytes */
+									0, /* Dale lo necesario*/
+									GFP_DMA);
+
+	if (retval)
+		goto out_error;
+
+	message[33]='\n';
+	message[34]='\0';
+	nr_bytes = strlen(message + 1); // Remove reportID
+	
+	if (copy_to_user(user_buffer, message + 1, strlen(message + 1))){
+		retval=-EFAULT;
+		goto out_error;
+	}
+
+	kfree(message);
+	(*ppos) += nr_bytes;
+
+	return nr_bytes;
+
+out_error:
+	if (message)
+		kfree(message);
+
+	return retval;	
+}
 ```
 
 A continuación se muestra la salida de la *shell* cuando se ejecuta la operación de lectura sobre el fichero en `/dev`
@@ -581,77 +572,77 @@ Las operaciones de escritura se ejecutan cuando el dispositivo recibe una llamad
 
 En caso de recibir como datos el comando *oled* seguido de una frase, esta frase será enviada al dispositivo mediante el *ReportID* 3 y automáticamente será mostrada en la pantalla OLED (línea 28). Por el contrario, si como datos de la llamada viene el comando *7s* seguido de un dígito en hexadecimal, este será enviado al display de 7 segmentos (línea 32).
 
-```C
-1     static ssize_t displays_write(struct file *file, const char *user_buffer,
-2                                 size_t count, loff_t *ppos) {
-3 
-4         struct usb_pwnedDevice *dev;
-5         int retval = 0;
-6         unsigned int digit = 0;
-7         char* strcfg = NULL;
-8         unsigned int wValue = 0;
-9         int dataSize = 0;
-10        char *buffer;
-11
-12        dev = file->private_data;
-13
-14        if ((strcfg=kmalloc(count + 1, GFP_KERNEL)) == NULL)
-15            return -ENOMEM;
-16
-17        if (copy_from_user(strcfg, user_buffer, count)){
-18            retval=-EFAULT;
-19            goto out_error;
-20        }
-21        strcfg[count] = '\0';
-22
-23        if ((buffer = kmalloc(MAX_LEN_MESSAGE, GFP_KERNEL)) == NULL) {
-24            retval = -ENOMEM;
-25            goto out_error;
-26        }
-27
-28        if (strstr(strcfg, "oled ") != NULL) {
-29            strcpy(buffer, strcfg + 5); // Remove oled command
-30            dataSize = count - 5;
-31            wValue = 3;
-32        } else if (sscanf(strcfg,"7s %x", &digit) == 1) {
-33            buffer[0] = 4; // ReportID
-34            buffer[1] = digit;
-35            dataSize = 2;
-36            wValue = 4;
-37        }
-38
-39        if (wValue != 0) {
-40            retval = usb_control_msg(dev->udev,	
-41                                    usb_sndctrlpipe(dev->udev, 00), /* Specify endpoint #0 */
-42                                    USB_REQ_SET_CONFIGURATION, 
-43                                    USB_DIR_OUT| USB_TYPE_CLASS | USB_RECIP_INTERFACE,
-44                                    wValue,	/* wValue */
-45                                    0, 	/* wIndex=Endpoint # */
-46                                    buffer,	/* Pointer to the message */ 
-47                                    dataSize, /* message's size in bytes */
-48                                    0);
-49        }
-50
-51        if (retval < 0 && retval != -EPIPE){
-52            printk(KERN_ALERT "Executed with retval=%d\n",retval);
-53            goto out_error;		
-54        }
-55
-56        goto ok_path;
-57
-58    ok_path:
-59        kfree(strcfg);
-60        kfree(buffer);
-61        (*ppos)+=count;
-62        return count;
-63
-64    out_error:
-65        if (strcfg)
-66            kfree(strcfg);
-67        if (buffer)
-68            kfree(buffer);
-69        return retval;	
-70    }
+```{.c .numberLines}
+static ssize_t pwnedDevice_write(struct file *file, const char *user_buffer,
+			  				size_t count, loff_t *ppos) {
+    
+	struct usb_pwnedDevice *dev;
+	int retval = 0;
+	unsigned int digit = 0;
+	char* strcfg = NULL;
+	unsigned int wValue = 0;
+	int dataSize = 0;
+	char *buffer;
+
+	dev = file->private_data;
+	
+	if ((strcfg=kmalloc(count + 1, GFP_KERNEL)) == NULL)
+		return -ENOMEM;
+
+	if (copy_from_user(strcfg, user_buffer, count)){
+		retval=-EFAULT;
+		goto out_error;
+	}
+	strcfg[count] = '\0';
+
+	if ((buffer = kmalloc(MAX_LEN_MESSAGE, GFP_KERNEL)) == NULL) {
+		retval = -ENOMEM;
+		goto out_error;
+	}
+
+	if (strstr(strcfg, "oled ") != NULL) {
+		strcpy(buffer, strcfg + 5); // Remove oled command
+		dataSize = count - 5;
+		wValue = 3;
+	} else if (sscanf(strcfg,"7s %x", &digit) == 1) {
+		buffer[0] = 4; // ReportID
+		buffer[1] = digit;
+		dataSize = 2;
+		wValue = 4;
+	}
+
+	if (wValue != 0) {
+		retval = usb_control_msg(dev->udev,	
+								usb_sndctrlpipe(dev->udev, 00), /* Specify endpoint #0 */
+								USB_REQ_SET_CONFIGURATION, 
+								USB_DIR_OUT| USB_TYPE_CLASS | USB_RECIP_INTERFACE,
+								wValue,	/* wValue */
+								0, 	/* wIndex=Endpoint # */
+								buffer,	/* Pointer to the message */ 
+								dataSize, /* message's size in bytes */
+								0);
+	}
+	
+	if (retval < 0 && retval != -EPIPE){
+		printk(KERN_ALERT "Executed with retval=%d\n",retval);
+		goto out_error;		
+	}
+
+	goto ok_path;
+
+ok_path:
+	kfree(strcfg);
+	kfree(buffer);
+	(*ppos)+=count;
+	return count;
+
+out_error:
+	if (strcfg)
+		kfree(strcfg);
+	if (buffer)
+		kfree(buffer);
+	return retval;	
+}
 ```
 
 
@@ -668,63 +659,63 @@ Cuando este driver recibe una operación de lectura, lanza una transferencia de 
 
 El dispositivo transfiere un buffer de 4 bytes de datos donde los 3 últimos son el color del anillo codificado en *RGB*. Con esta información, el driver construye la cadena, *R: valor G: valor B: valor*, y la devuelve al usuario (mediante la función `sprintf()` de la línea 38).
 
-```C
-1    static ssize_t ledParty_read(struct file *file, char *user_buffer,
-2                                 size_t count, loff_t *ppos) {
-3
-4         struct usb_pwnedDevice *dev;
-5         int retval = 0;
-6         unsigned char* message;	
-7         int nr_bytes = 0;
-8         unsigned int wValue = 0;
-9         int msgSize = 0;
-10
-11        dev = file->private_data;
-12
-13        if (*ppos>0)
-14            return 0;
-15
-16        message = kmalloc(MAX_LEN_MESSAGE, GFP_DMA);
-17
-18        /* zero fill*/
-19        memset(message, 0, MAX_LEN_MESSAGE);
-20
-21        wValue = 0x2;
-22        msgSize = 4;
-23
-24        retval = usb_control_msg_recv(dev->udev,	
-25                                        0, 
-26                                        USB_REQ_CLEAR_FEATURE, 
-27                                        USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_DEVICE,
-28                                        wValue,	/* wValue = Descriptor index */
-29                                        0x0, 	/* wIndex = Endpoint # */
-30                                        message,	/* Pointer to the message */ 
-31                                        msgSize, /* message's size in bytes */
-32                                        0, /* Dale lo necesario*/
-33                                        GFP_DMA);
-34
-35        if (retval)
-36            goto out_error;
-37
-38        sprintf(message, "R: %d G: %d B: %d \n", message[1], message[2], message[3]);
-39        nr_bytes = strlen(message);
-40
-41        if (copy_to_user(user_buffer, message, strlen(message))){
-42            retval=-EFAULT;
-43            goto out_error;
-44        }
-45
-46        kfree(message);
-47        (*ppos) += nr_bytes;
-48
-49        return nr_bytes;
-50
-51    out_error:
-52        if (message)
-53            kfree(message);
-54
-55        return retval;	
-56    }
+```{.c .numberLines}
+static ssize_t ledParty_read(struct file *file, char *user_buffer,
+			  				size_t count, loff_t *ppos) {
+    
+	struct usb_pwnedDevice *dev;
+	int retval = 0;
+	unsigned char* message;	
+	int nr_bytes = 0;
+	unsigned int wValue = 0;
+	int msgSize = 0;
+
+	dev = file->private_data;
+	
+	if (*ppos>0)
+		return 0;
+
+	message = kmalloc(MAX_LEN_MESSAGE, GFP_DMA);
+
+	/* zero fill*/
+	memset(message, 0, MAX_LEN_MESSAGE);
+
+	wValue = 0x2;
+	msgSize = 4;
+
+	retval = usb_control_msg_recv(dev->udev,	
+									0, 
+									USB_REQ_CLEAR_FEATURE, 
+									USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_DEVICE,
+									wValue,	/* wValue = Descriptor index */
+									0x0, 	/* wIndex = Endpoint # */
+									message,	/* Pointer to the message */ 
+									msgSize, /* message's size in bytes */
+									0, /* Dale lo necesario*/
+									GFP_DMA);
+
+	if (retval)
+		goto out_error;
+
+	sprintf(message, "R: %d G: %d B: %d \n", message[1], message[2], message[3]);
+	nr_bytes = strlen(message);
+
+	if (copy_to_user(user_buffer, message, strlen(message))){
+		retval=-EFAULT;
+		goto out_error;
+	}
+
+	kfree(message);
+	(*ppos) += nr_bytes;
+
+	return nr_bytes;
+
+out_error:
+	if (message)
+		kfree(message);
+
+	return retval;	
+}
 ```
 
 Cuando se ejecuta la operación de lectura sobre el fichero en `/dev`, la salida que se muestra es la siguiente:
@@ -742,85 +733,85 @@ Este driver soporta dos comandos de escritura diferentes a través de la funció
 
 Cuando la función `ledParty_write()` es ejecutada con el comando *setFullColor* seguido de una combinación de color separada por dos puntos, *R:G:B*, se envía una transferencia de tipo *CONTROL* con el color indicado al *ReportID* 1 y el anillo cambia de color por completo, puede observarse esta implementación entre las líneas 28 y 35. Otro de los comandos disponibles es *setLedColor* (líneas de la 36 a la 44), seguido del número de LED a cambiar y el color, *nLed:R:G:B*. Este comando envía la información al *ReportID* 2, que cambia el led indicado por el color que recibe en la transferencia.
 
-```C
-1    static ssize_t ledParty_write(struct file *file, const char *user_buffer,
-2                                size_t count, loff_t *ppos) {
-3
-4         struct usb_pwnedDevice *dev;
-5         int retval = 0;
-6         int r,g,b,led = 0;
-7         char* strcfg = NULL;
-8         unsigned int wValue = 0;
-9         int dataSize = 0;
-10        char *buffer;
-11
-12        dev = file->private_data;
-13
-14        if ((strcfg=kmalloc(count + 1, GFP_KERNEL)) == NULL)
-15            return -ENOMEM;
-16
-17        if (copy_from_user(strcfg, user_buffer, count)){
-18            retval=-EFAULT;
-19            goto out_error;
-20        }
-21        strcfg[count] = '\0';
-22
-23        if ((buffer = kmalloc(MAX_LEN_MESSAGE, GFP_KERNEL)) == NULL) {
-24            retval = -ENOMEM;
-25            goto out_error;
-26        }
-27
-28        if (sscanf(strcfg,"setFullColor %d:%d:%d", &r, &g, &b) == 3 
-29                && (r >= 0 && r <= 255) && (g >= 0 && g <= 255) && (b >= 0 && b <= 255)) {		
-30            buffer[0] = 1; // ReportID
-31            buffer[1] = r;
-32            buffer[2] = g;
-33            buffer[3] = b;
-34            dataSize = 4;
-35            wValue = 1;
-36        } else if (sscanf(strcfg,"setLedColor %d:%d:%d:%d", &led, &r, &g, &b) == 4 
-37                && (r >= 0 && r <= 255) && (g >= 0 && g <= 255) && (b >= 0 && b <= 255) && (led >= 0 && led <= LED_SIZE)) {
-38            buffer[0] = 2; // ReportID
-39            buffer[1] = led;
-40            buffer[2] = r;
-41            buffer[3] = g;
-42            buffer[4] = b;
-43            dataSize = 5;
-44            wValue = 2;
-45        }
-46
-47        if (wValue != 0) {
-48            retval = usb_control_msg(dev->udev,	
-49                                    usb_sndctrlpipe(dev->udev, 00), /* Specify endpoint #0 */
-50                                    USB_REQ_SET_CONFIGURATION, 
-51                                    USB_DIR_OUT| USB_TYPE_CLASS | USB_RECIP_INTERFACE,
-52                                    wValue,	/* wValue */
-53                                    0, 	/* wIndex=Endpoint # */
-54                                    buffer,	/* Pointer to the message */ 
-55                                    dataSize, /* message's size in bytes */
-56                                    0);
-57        }
-58
-59        if (retval < 0 && retval != -EPIPE){
-60            printk(KERN_ALERT "Executed with retval=%d\n",retval);
-61            goto out_error;		
-62        }
-63
-64        goto ok_path;
-65
-66    ok_path:
-67        kfree(strcfg);
-68        kfree(buffer);
-69        (*ppos)+=count;
-70        return count;
-71
-72    out_error:
-73        if (strcfg)
-74            kfree(strcfg);
-75        if (buffer)
-76            kfree(buffer);
-77        return retval;	
-78    }
+```{.c .numberLines}
+static ssize_t ledParty_write(struct file *file, const char *user_buffer,
+			  				size_t count, loff_t *ppos) {
+    
+	struct usb_pwnedDevice *dev;
+	int retval = 0;
+	int r,g,b,led = 0;
+	char* strcfg = NULL;
+	unsigned int wValue = 0;
+	int dataSize = 0;
+	char *buffer;
+
+	dev = file->private_data;
+	
+	if ((strcfg=kmalloc(count + 1, GFP_KERNEL)) == NULL)
+		return -ENOMEM;
+
+	if (copy_from_user(strcfg, user_buffer, count)){
+		retval=-EFAULT;
+		goto out_error;
+	}
+	strcfg[count] = '\0';
+
+	if ((buffer = kmalloc(MAX_LEN_MESSAGE, GFP_KERNEL)) == NULL) {
+		retval = -ENOMEM;
+		goto out_error;
+	}
+
+	if (sscanf(strcfg,"setFullColor %d:%d:%d", &r, &g, &b) == 3 
+			&& (r >= 0 && r <= 255) && (g >= 0 && g <= 255) && (b >= 0 && b <= 255)) {		
+		buffer[0] = 1; // ReportID
+		buffer[1] = r;
+		buffer[2] = g;
+		buffer[3] = b;
+		dataSize = 4;
+		wValue = 1;
+	} else if (sscanf(strcfg,"setLedColor %d:%d:%d:%d", &led, &r, &g, &b) == 4 
+			&& (r >= 0 && r <= 255) && (g >= 0 && g <= 255) && (b >= 0 && b <= 255) && (led >= 0 && led <= LED_SIZE)) {
+		buffer[0] = 2; // ReportID
+		buffer[1] = led;
+		buffer[2] = r;
+		buffer[3] = g;
+		buffer[4] = b;
+		dataSize = 5;
+		wValue = 2;
+	}
+
+	if (wValue != 0) {
+		retval = usb_control_msg(dev->udev,	
+								usb_sndctrlpipe(dev->udev, 00), /* Specify endpoint #0 */
+								USB_REQ_SET_CONFIGURATION, 
+								USB_DIR_OUT| USB_TYPE_CLASS | USB_RECIP_INTERFACE,
+								wValue,	/* wValue */
+								0, 	/* wIndex=Endpoint # */
+								buffer,	/* Pointer to the message */ 
+								dataSize, /* message's size in bytes */
+								0);
+	}
+	
+	if (retval < 0 && retval != -EPIPE){
+		printk(KERN_ALERT "Executed with retval=%d\n",retval);
+		goto out_error;		
+	}
+
+	goto ok_path;
+
+ok_path:
+	kfree(strcfg);
+	kfree(buffer);
+	(*ppos)+=count;
+	return count;
+
+out_error:
+	if (strcfg)
+		kfree(strcfg);
+	if (buffer)
+		kfree(buffer);
+	return retval;	
+}
 ```
 
 
@@ -831,67 +822,67 @@ Este driver es compatible cuando el dispositivo se encuentra flasheado con la pl
 
 ### Operación de lectura
 
-Al igual que en *DisplaysDriver*, este módulo no dispone de información relevante de lectura desde el microcontrolador. Por ello cuando llega una operación `read()` a la función de  `pwm_read()`, se envía una transferencia de tipo *CONTROL* al dispositivo que devuelve una cadena a modo de respuesta.
+Al igual que en *DisplaysDriver*, este módulo no dispone de información relevante de lectura desde el microcontrolador. Por ello cuando llega una operación `read()` a la función de  `pwm_read()`, se envía una transferencia de tipo *CONTROL* al dispositivo que devuelve una cadena a modo de respuesta (tal y como se puede observar en la línea 24).
 
-```C
-1     static ssize_t pwm_read(struct file *file, char *user_buffer,
-2                                 size_t count, loff_t *ppos) {
-3
-4         struct usb_pwnedDevice *dev;
-5         int retval = 0;
-6         unsigned char* message;	
-7         int nr_bytes = 0;
-8         unsigned int wValue = 0;
-9         int msgSize = 0;
-10
-11        dev = file->private_data;
-12
-13        if (*ppos>0)
-14            return 0;
-15
-16        message = kmalloc(MAX_LEN_MESSAGE, GFP_DMA);
-17
-18        /* zero fill*/
-19        memset(message, 0, MAX_LEN_MESSAGE);
-20
-21        wValue = 0x1;
-22        msgSize = 33;
-23
-24        retval = usb_control_msg_recv(dev->udev,	
-25                                        0, 
-26                                        USB_REQ_CLEAR_FEATURE, 
-27                                        USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_DEVICE,
-28                                        wValue,	/* wValue = Descriptor index */
-29                                        0x0, 	/* wIndex = Endpoint # */
-30                                        message,	/* Pointer to the message */ 
-31                                        msgSize, /* message's size in bytes */
-32                                        0, /* Dale lo necesario*/
-33                                        GFP_DMA);
-34
-35        if (retval)
-36            goto out_error;
-37
-38        message[33]='\n';
-39        message[34]='\0';
-30        nr_bytes = strlen(message + 1); // Remove reportID
-31
-32        if (copy_to_user(user_buffer, message + 1, strlen(message + 1))){
-33            retval=-EFAULT;
-34            goto out_error;
-35        }
-36
-37
-38        kfree(message);
-39        (*ppos) += nr_bytes;
-40
-41        return nr_bytes;
-42
-43    out_error:
-44        if (message)
-45            kfree(message);
-46
-47        return retval;	
-48    }
+```{.c .numberLines}
+static ssize_t pwm_read(struct file *file, char *user_buffer,
+			  				size_t count, loff_t *ppos) {
+    
+	struct usb_pwnedDevice *dev;
+	int retval = 0;
+	unsigned char* message;	
+	int nr_bytes = 0;
+	unsigned int wValue = 0;
+	int msgSize = 0;
+
+	dev = file->private_data;
+	
+	if (*ppos>0)
+		return 0;
+
+	message = kmalloc(MAX_LEN_MESSAGE, GFP_DMA);
+
+	/* zero fill*/
+	memset(message, 0, MAX_LEN_MESSAGE);
+
+	wValue = 0x1;
+	msgSize = 33;
+
+	retval = usb_control_msg_recv(dev->udev,	
+									0, 
+									USB_REQ_CLEAR_FEATURE, 
+									USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_DEVICE,
+									wValue,	/* wValue = Descriptor index */
+									0x0, 	/* wIndex = Endpoint # */
+									message,	/* Pointer to the message */ 
+									msgSize, /* message's size in bytes */
+									0, /* Dale lo necesario*/
+									GFP_DMA);
+
+	if (retval)
+		goto out_error;
+
+	message[33]='\n';
+	message[34]='\0';
+	nr_bytes = strlen(message + 1); // Remove reportID
+	
+	if (copy_to_user(user_buffer, message + 1, strlen(message + 1))){
+		retval=-EFAULT;
+		goto out_error;
+	}
+
+
+	kfree(message);
+	(*ppos) += nr_bytes;
+
+	return nr_bytes;
+
+out_error:
+	if (message)
+		kfree(message);
+
+	return retval;	
+}
 ```
 
 
@@ -904,89 +895,89 @@ El primero de ellos es *blinkLed* seguido de un *booleano* que indica si se dese
 
 El segundo comando que soporta el driver es *buzzer* seguido de la frecuencia deseada, indicando a continuación si se quiere parar (1) o reanudar (0) el sonido. Igual que el comando anterior, envía una transferencia de tipo *CONTROL* pero esta vez al *ReportID* 6. Esta función del driver es muy útil de usar ya que escribiendo un programa de usuario, como el que se puede encontrar en el directorio `scripts` del proyecto, se pueden generar melodías haciendo variar las frecuencias y tiempos de vibración del buzzer. Su implementación en este driver se encuentra entre las líneas 33 y 48.
 
-```C
-1     static ssize_t pwm_write(struct file *file, const char *user_buffer,
-2                                 size_t count, loff_t *ppos) {
-3
-4         struct usb_pwnedDevice *dev;
-5         int retval = 0;
-6         int freq,stop = 0;
-7         char* strcfg = NULL;
-8         unsigned int wValue = 0;
-9         int dataSize = 0;
-10        char *buffer;
-11
-12        dev = file->private_data;
-13
-14        if ((strcfg=kmalloc(count + 1, GFP_KERNEL)) == NULL)
-15            return -ENOMEM;
-16
-17        if (copy_from_user(strcfg, user_buffer, count)){
-18            retval=-EFAULT;
-19            goto out_error;
-20        }
-21        strcfg[count] = '\0';
-22
-23        if ((buffer = kmalloc(MAX_LEN_MESSAGE, GFP_KERNEL)) == NULL) {
-24            retval = -ENOMEM;
-25            goto out_error;
-26        }
-27
-28        if (sscanf(strcfg,"blinkLed %d", &stop) == 1) {
-29            buffer[0] = 5; // ReportID
-30            buffer[1] = stop;
-31            dataSize = 2;
-32            wValue = 5;
-33        } else if (sscanf(strcfg,"buzzer %d %d", &freq, &stop) == 2) {
-34            buffer[0] = 6; // ReportID
-35
-36            if (stop) {
-37                buffer[1] = 1;
-38                dataSize = 2;
-39            } else {
-40                buffer[1] = 0;
-41                buffer[2] = (freq >> 24) & 0xFF;
-42                buffer[3] = (freq >> 16) & 0xFF;
-43                buffer[4] = (freq >> 8) & 0xFF;
-44                buffer[5] = freq & 0xFF;
-45                dataSize = 6;
-46            }
-47
-48            wValue = 6;
-49        }
-50
-51        if (wValue != 0) {
-52            retval = usb_control_msg(dev->udev,	
-53                                    usb_sndctrlpipe(dev->udev, 00), /* Specify endpoint #0 */
-54                                    USB_REQ_SET_CONFIGURATION, 
-55                                    USB_DIR_OUT| USB_TYPE_CLASS | USB_RECIP_INTERFACE,
-56                                    wValue,	/* wValue */
-57                                    0, 	/* wIndex=Endpoint # */
-58                                    buffer,	/* Pointer to the message */ 
-59                                    dataSize, /* message's size in bytes */
-60                                    0);
-61        }
-62
-63        if (retval < 0 && retval != -EPIPE){
-64            printk(KERN_ALERT "Executed with retval=%d\n",retval);
-65            goto out_error;		
-66        }
-67
-68        goto ok_path;
-69
-70    ok_path:
-71        kfree(strcfg);
-72        kfree(buffer);
-73        (*ppos)+=count;
-74        return count;
-75
-76    out_error:
-77        if (strcfg)
-78            kfree(strcfg);
-79        if (buffer)
-80            kfree(buffer);
-81        return retval;	
-82    }
+```{.c .numberLines}
+static ssize_t pwm_write(struct file *file, const char *user_buffer,
+			  				size_t count, loff_t *ppos) {
+    
+	struct usb_pwnedDevice *dev;
+	int retval = 0;
+	int freq,stop = 0;
+	char* strcfg = NULL;
+	unsigned int wValue = 0;
+	int dataSize = 0;
+	char *buffer;
+
+	dev = file->private_data;
+	
+	if ((strcfg=kmalloc(count + 1, GFP_KERNEL)) == NULL)
+		return -ENOMEM;
+
+	if (copy_from_user(strcfg, user_buffer, count)){
+		retval=-EFAULT;
+		goto out_error;
+	}
+	strcfg[count] = '\0';
+
+	if ((buffer = kmalloc(MAX_LEN_MESSAGE, GFP_KERNEL)) == NULL) {
+		retval = -ENOMEM;
+		goto out_error;
+	}
+
+	if (sscanf(strcfg,"blinkLed %d", &stop) == 1) {
+		buffer[0] = 5; // ReportID
+		buffer[1] = stop;
+		dataSize = 2;
+		wValue = 5;
+	} else if (sscanf(strcfg,"buzzer %d %d", &freq, &stop) == 2) {
+		buffer[0] = 6; // ReportID
+
+		if (stop) {
+			buffer[1] = 1;
+			dataSize = 2;
+		} else {
+			buffer[1] = 0;
+			buffer[2] = (freq >> 24) & 0xFF;
+			buffer[3] = (freq >> 16) & 0xFF;
+			buffer[4] = (freq >> 8) & 0xFF;
+			buffer[5] = freq & 0xFF;
+			dataSize = 6;
+		}
+
+		wValue = 6;
+	}
+
+	if (wValue != 0) {
+		retval = usb_control_msg(dev->udev,	
+								usb_sndctrlpipe(dev->udev, 00), /* Specify endpoint #0 */
+								USB_REQ_SET_CONFIGURATION, 
+								USB_DIR_OUT| USB_TYPE_CLASS | USB_RECIP_INTERFACE,
+								wValue,	/* wValue */
+								0, 	/* wIndex=Endpoint # */
+								buffer,	/* Pointer to the message */ 
+								dataSize, /* message's size in bytes */
+								0);
+	}
+	
+	if (retval < 0 && retval != -EPIPE){
+		printk(KERN_ALERT "Executed with retval=%d\n",retval);
+		goto out_error;		
+	}
+
+	goto ok_path;
+
+ok_path:
+	kfree(strcfg);
+	kfree(buffer);
+	(*ppos)+=count;
+	return count;
+
+out_error:
+	if (strcfg)
+		kfree(strcfg);
+	if (buffer)
+		kfree(buffer);
+	return retval;	
+}
 ```
 
 
@@ -995,201 +986,201 @@ El segundo comando que soporta el driver es *buzzer* seguido de la frecuencia de
 
 Este driver es el más potente de todos, es una combinación de todos los anteriores. Funciona cuando el dispositivo se encuentra flasheado con la plantilla *ALL_DEVICES*. Permite controlar todos los periféricos, así como acceder a las dos operaciones de lectura que ofrece el dispositivo, gestionado mediante compilación condicional que define la macro `#define GET_OPERATION`, que puede tomar los valores 0 o 1, definidos según las macros `GET_LED` y `GET_MSG`. Las implementaciones de `pwnedDevice_read()` y `pwnedDevice_write()`, como hemos mencionado, representan una combinación de todos los drivers explicados en las secciones anteriores. A continuación se muestra la implementación correspondiente a `pwnedDevice_read()`:
 
-```C
-1     static ssize_t pwnedDevice_read(struct file *file, char *user_buffer,
-2                                 size_t count, loff_t *ppos) {
-3         struct usb_pwnedDevice *dev;
-4         int retval = 0;
-5         unsigned char* message;	
-6         int nr_bytes = 0;
-7         unsigned int wValue = 0;
-8         int msgSize = 0;
-9
-10        dev = file->private_data;
-11
-12        if (*ppos>0)
-13            return 0;
-14
-15        message = kmalloc(MAX_LEN_MESSAGE, GFP_DMA);
-16
-17        /* zero fill*/
-18        memset(message, 0, MAX_LEN_MESSAGE);
-19
-20        #if GET_OPERATION == GET_LED
-21            wValue = 0x2;
-22            msgSize = 4;
-23        #elif GET_OPERATION == GET_MSG
-24            wValue = 0x1;
-25            msgSize = 33;
-26        #endif
-27
-28        retval = usb_control_msg_recv(dev->udev,	
-29                                        0, 
-30                                        USB_REQ_CLEAR_FEATURE, 
-31                                        USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_DEVICE,
-32                                        wValue,	/* wValue = Descriptor index */
-33                                        0x0, 	/* wIndex = Endpoint # */
-34                                        message,	/* Pointer to the message */ 
-35                                        msgSize, /* message's size in bytes */
-36                                        0, /* Dale lo necesario*/
-37                                        GFP_DMA);
-38
-39        if (retval)
-40            goto out_error;
-41
-42        #if GET_OPERATION == GET_LED
-43            sprintf(message, "R: %d G: %d B: %d \n", message[1], message[2], message[3]);
-44            nr_bytes = strlen(message);
-45
-46            if (copy_to_user(user_buffer, message, strlen(message))){
-47                retval=-EFAULT;
-48                goto out_error;
-49            }
-50        #elif GET_OPERATION == GET_MSG
-51            message[33]='\n';
-52            message[34]='\0';
-53            nr_bytes = strlen(message + 1); // Remove reportID
-54
-55            if (copy_to_user(user_buffer, message + 1, strlen(message + 1))){
-56                retval=-EFAULT;
-57                goto out_error;
-58            }
-59        #endif
-60
-61
-62        kfree(message);
-63        (*ppos) += nr_bytes;
-64
-65        return nr_bytes;
-66
-67    out_error:
-68        if (message)
-69            kfree(message);
-70
-71        return retval;	
-72    }
+```{.c .numberLines}
+static ssize_t pwnedDevice_read(struct file *file, char *user_buffer,
+			  				size_t count, loff_t *ppos) {
+	struct usb_pwnedDevice *dev;
+	int retval = 0;
+	unsigned char* message;	
+	int nr_bytes = 0;
+	unsigned int wValue = 0;
+	int msgSize = 0;
+
+	dev = file->private_data;
+	
+	if (*ppos>0)
+		return 0;
+
+	message = kmalloc(MAX_LEN_MESSAGE, GFP_DMA);
+
+	/* zero fill*/
+	memset(message, 0, MAX_LEN_MESSAGE);
+
+	#if GET_OPERATION == GET_LED
+		wValue = 0x2;
+		msgSize = 4;
+	#elif GET_OPERATION == GET_MSG
+		wValue = 0x1;
+		msgSize = 33;
+	#endif
+
+	retval = usb_control_msg_recv(dev->udev,	
+									0, 
+									USB_REQ_CLEAR_FEATURE, 
+									USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_DEVICE,
+									wValue,	/* wValue = Descriptor index */
+									0x0, 	/* wIndex = Endpoint # */
+									message,	/* Pointer to the message */ 
+									msgSize, /* message's size in bytes */
+									0, /* Dale lo necesario*/
+									GFP_DMA);
+
+	if (retval)
+		goto out_error;
+
+	#if GET_OPERATION == GET_LED
+		sprintf(message, "R: %d G: %d B: %d \n", message[1], message[2], message[3]);
+		nr_bytes = strlen(message);
+	
+		if (copy_to_user(user_buffer, message, strlen(message))){
+			retval=-EFAULT;
+			goto out_error;
+		}
+	#elif GET_OPERATION == GET_MSG
+		message[33]='\n';
+		message[34]='\0';
+		nr_bytes = strlen(message + 1); // Remove reportID
+		
+		if (copy_to_user(user_buffer, message + 1, strlen(message + 1))){
+			retval=-EFAULT;
+			goto out_error;
+		}
+	#endif
+
+
+	kfree(message);
+	(*ppos) += nr_bytes;
+
+	return nr_bytes;
+
+out_error:
+	if (message)
+		kfree(message);
+
+	return retval;	
+}
 ```
 
 
 
 La implementación de la función `pwnedDevice_write()` se encuentra en el siguiente fragmento de código.
 
-```C
-1     static ssize_t pwnedDevice_write(struct file *file, const char *user_buffer,
-2                                 size_t count, loff_t *ppos) {
-3         struct usb_pwnedDevice *dev;
-4         int retval = 0;
-5         int r,g,b,led = 0;
-6         int freq,stop = 0;
-7         unsigned int digit = 0;
-8         char* strcfg = NULL;
-9         unsigned int wValue = 0;
-10        int dataSize = 0;
-11        char *buffer;
-12
-13        dev = file->private_data;
-14
-15        if ((strcfg=kmalloc(count + 1, GFP_KERNEL)) == NULL)
-16            return -ENOMEM;
-17
-18        if (copy_from_user(strcfg, user_buffer, count)){
-19            retval=-EFAULT;
-20            goto out_error;
-21        }
-22        strcfg[count] = '\0';
-23
-24        if ((buffer = kmalloc(MAX_LEN_MESSAGE, GFP_KERNEL)) == NULL) {
-25            retval = -ENOMEM;
-26            goto out_error;
-27        }
-28
-29        if (sscanf(strcfg,"setFullColor %d:%d:%d", &r, &g, &b) == 3 
-30                && (r >= 0 && r <= 255) && (g >= 0 && g <= 255) && (b >= 0 && b <= 255)) {		
-31            buffer[0] = 1; // ReportID
-32            buffer[1] = r;
-33            buffer[2] = g;
-34            buffer[3] = b;
-35            dataSize = 4;
-36            wValue = 1;
-37            printk(KERN_INFO ">> Full led %d %d %d", r, g, b);
-38        } else if (sscanf(strcfg,"setLedColor %d:%d:%d:%d", &led, &r, &g, &b) == 4 
-39                && (r >= 0 && r <= 255) && (g >= 0 && g <= 255) && (b >= 0 && b <= 255) && (led >= 0 && led <= LED_SIZE)) {
-40            buffer[0] = 2; // ReportID
-41            buffer[1] = led;
-42            buffer[2] = r;
-43            buffer[3] = g;
-44            buffer[4] = b;
-45            dataSize = 5;
-46            wValue = 2;
-47            printk(KERN_INFO ">> Led %d %d %d %d", led, r, g, b);
-48        } else if (strstr(strcfg, "oled ") != NULL) {
-49            strcpy(buffer, strcfg + 5); // Remove oled command
-50            dataSize = count - 5;
-51            wValue = 3;
-52            printk(KERN_INFO ">> oled %s", buffer);
-53        } else if (sscanf(strcfg,"7s %x", &digit) == 1) {
-54            buffer[0] = 4; // ReportID
-55            buffer[1] = digit;
-56            dataSize = 2;
-57            wValue = 4;
-58            printk(KERN_INFO ">> 7s %x", digit);
-59        } else if (sscanf(strcfg,"blinkLed %d", &stop) == 1) {
-60            buffer[0] = 5; // ReportID
-61            buffer[1] = stop;
-62            dataSize = 2;
-63            wValue = 5;
-64            printk(KERN_INFO ">> LED %d", stop);
-65        } else if (sscanf(strcfg,"buzzer %d %d", &freq, &stop) == 2) {
-66            buffer[0] = 6; // ReportID
-67
-68            if (stop) {
-69                buffer[1] = 1;
-70                dataSize = 2;
-71            } else {
-72                buffer[1] = 0;
-73                buffer[2] = (freq >> 24) & 0xFF;
-74                buffer[3] = (freq >> 16) & 0xFF;
-75                buffer[4] = (freq >> 8) & 0xFF;
-76                buffer[5] = freq & 0xFF;
-77                dataSize = 6;
-78            }
-79
-80            wValue = 6;
-81            printk(KERN_INFO ">> Buzzer %d %d", freq, stop);
-82        }
-83
-84        if (wValue != 0) {
-85            retval = usb_control_msg(dev->udev,	
-86                                    usb_sndctrlpipe(dev->udev, 00), /* Specify endpoint #0 */
-87                                    USB_REQ_SET_CONFIGURATION, 
-88                                    USB_DIR_OUT| USB_TYPE_CLASS | USB_RECIP_INTERFACE,
-89                                    wValue,	/* wValue */
-90                                    0, 	/* wIndex=Endpoint # */
-91                                    buffer,	/* Pointer to the message */ 
-92                                    dataSize, /* message's size in bytes */
-93                                    0);
-94        }
-95
-96        if (retval < 0 && retval != -EPIPE){
-97            printk(KERN_ALERT "Executed with retval=%d\n",retval);
-98            goto out_error;		
-99        }
-100
-101       goto ok_path;
-102
-103   ok_path:
-104       kfree(strcfg);
-105       kfree(buffer);
-106       (*ppos)+=count;
-107       return count;
-108
-109   out_error:
-110       if (strcfg)
-111           kfree(strcfg);
-112       if (buffer)
-113           kfree(buffer);
-114       return retval;	
-115   }
+```{.c .numberLines}
+static ssize_t pwnedDevice_write(struct file *file, const char *user_buffer,
+			  				size_t count, loff_t *ppos) {
+	struct usb_pwnedDevice *dev;
+	int retval = 0;
+	int r,g,b,led = 0;
+	int freq,stop = 0;
+	unsigned int digit = 0;
+	char* strcfg = NULL;
+	unsigned int wValue = 0;
+	int dataSize = 0;
+	char *buffer;
+
+	dev = file->private_data;
+	
+	if ((strcfg=kmalloc(count + 1, GFP_KERNEL)) == NULL)
+		return -ENOMEM;
+
+	if (copy_from_user(strcfg, user_buffer, count)){
+		retval=-EFAULT;
+		goto out_error;
+	}
+	strcfg[count] = '\0';
+
+	if ((buffer = kmalloc(MAX_LEN_MESSAGE, GFP_KERNEL)) == NULL) {
+		retval = -ENOMEM;
+		goto out_error;
+	}
+
+	if (sscanf(strcfg,"setFullColor %d:%d:%d", &r, &g, &b) == 3 
+			&& (r >= 0 && r <= 255) && (g >= 0 && g <= 255) && (b >= 0 && b <= 255)) {		
+		buffer[0] = 1; // ReportID
+		buffer[1] = r;
+		buffer[2] = g;
+		buffer[3] = b;
+		dataSize = 4;
+		wValue = 1;
+		printk(KERN_INFO ">> Full led %d %d %d", r, g, b);
+	} else if (sscanf(strcfg,"setLedColor %d:%d:%d:%d", &led, &r, &g, &b) == 4 
+			&& (r >= 0 && r <= 255) && (g >= 0 && g <= 255) && (b >= 0 && b <= 255) && (led >= 0 && led <= LED_SIZE)) {
+		buffer[0] = 2; // ReportID
+		buffer[1] = led;
+		buffer[2] = r;
+		buffer[3] = g;
+		buffer[4] = b;
+		dataSize = 5;
+		wValue = 2;
+		printk(KERN_INFO ">> Led %d %d %d %d", led, r, g, b);
+	} else if (strstr(strcfg, "oled ") != NULL) {
+		strcpy(buffer, strcfg + 5); // Remove oled command
+		dataSize = count - 5;
+		wValue = 3;
+		printk(KERN_INFO ">> oled %s", buffer);
+	} else if (sscanf(strcfg,"7s %x", &digit) == 1) {
+		buffer[0] = 4; // ReportID
+		buffer[1] = digit;
+		dataSize = 2;
+		wValue = 4;
+		printk(KERN_INFO ">> 7s %x", digit);
+	} else if (sscanf(strcfg,"blinkLed %d", &stop) == 1) {
+		buffer[0] = 5; // ReportID
+		buffer[1] = stop;
+		dataSize = 2;
+		wValue = 5;
+		printk(KERN_INFO ">> LED %d", stop);
+	} else if (sscanf(strcfg,"buzzer %d %d", &freq, &stop) == 2) {
+		buffer[0] = 6; // ReportID
+
+		if (stop) {
+			buffer[1] = 1;
+			dataSize = 2;
+		} else {
+			buffer[1] = 0;
+			buffer[2] = (freq >> 24) & 0xFF;
+			buffer[3] = (freq >> 16) & 0xFF;
+			buffer[4] = (freq >> 8) & 0xFF;
+			buffer[5] = freq & 0xFF;
+			dataSize = 6;
+		}
+
+		wValue = 6;
+		printk(KERN_INFO ">> Buzzer %d %d", freq, stop);
+	}
+
+	if (wValue != 0) {
+		retval = usb_control_msg(dev->udev,	
+								usb_sndctrlpipe(dev->udev, 00), /* Specify endpoint #0 */
+								USB_REQ_SET_CONFIGURATION, 
+								USB_DIR_OUT| USB_TYPE_CLASS | USB_RECIP_INTERFACE,
+								wValue,	/* wValue */
+								0, 	/* wIndex=Endpoint # */
+								buffer,	/* Pointer to the message */ 
+								dataSize, /* message's size in bytes */
+								0);
+	}
+	
+	if (retval < 0 && retval != -EPIPE){
+		printk(KERN_ALERT "Executed with retval=%d\n",retval);
+		goto out_error;		
+	}
+
+	goto ok_path;
+
+ok_path:
+	kfree(strcfg);
+	kfree(buffer);
+	(*ppos)+=count;
+	return count;
+
+out_error:
+	if (strcfg)
+		kfree(strcfg);
+	if (buffer)
+		kfree(buffer);
+	return retval;	
+}
 ```
 
 
