@@ -86,7 +86,14 @@ Para el prototipo final del proyecto, hacemos uso de la placa NANO que incorpora
 
 ![Pinout de la placa NANO [@nanopinout-image]](img/nanopinout.png){width=70% #fig:60}
 
+Para integrar el conector *Micro USB* en esta placa, es necesario montar un pequeño circuito con algunos componentes que permiten regular el voltaje de las líneas de datos al establecido para la comunicación USB por el estandar. En la figura \ref{fig:atmegaCircuit} podemos ver el circuito al completo que consta de:
 
+- Conector *MicroUSB*
+- 1x Resistencia *1.5k*
+- 1x Resistencia *1M*
+- 2x Resistencias *68 Ohm*
+
+![Esquema del circuito del conector MicroUSB](img/atmegaCircuit.png){width=70% #fig:atmegaCircuit}
 
 ## Periféricos soportados por el proyecto
 
