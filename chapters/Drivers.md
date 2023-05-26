@@ -1,6 +1,6 @@
 <!-- Leave a blank line before the title -->
 
-# Drivers y casos prácticos
+# Drivers y casos prácticos {#sec:drivers}
 
 En este capítulo se describe el paquete de drivers desarrollados como ejemplo para este proyecto. Ya que este material tiene una finalidad docente y de aprendizaje, el funcionamiento de los drivers es sencillo, pero no por ello simple de implementar. Se ofrecen 5 drivers los cuales hacen uso de nuevas funciones y tipos de datos de la API que nos proporciona *USB core*, además de un driver específico que hace uso de la API asíncrona junto con transferencias tipo *INTERRUPT* *IN*. Con estos drivers se pretende que los usuarios puedan probar y experimentar el funcionamiento de las utilidades USB que nos ofrece el kernel Linux, trabajando con ambas APIs y usando diferentes tipos de transferencias.
 

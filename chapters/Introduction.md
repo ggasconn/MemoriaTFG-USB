@@ -21,21 +21,6 @@ Con independencia del protocolo o tecnología de entrada-salida empleada, dispon
 
 La placa Bee [@bee-repo;@bee-board] desarrollada por el Prof. Christian Tenllado es un claro ejemplo de sistema diseñado para la construcción de plataformas hardware flexibles. Se trata de una placa de expansión para sistemas basados en el *pinout* del mini PC Raspberry Pi (v1-v4) que está provista de un conjunto de dispositivos periféricos sencillos, y permite la ampliación de estos mediante circuitos de polarización genéricos. Esta placa, utilizada en sus distintas versiones en asignaturas de grado de las Facultades de Informática y de Ciencias Físicas en la UCM, a pesar de no proporcionar soporte para USB, ha supuesto una gran inspiración para la realización de este TFG.  
 
- 
-
-<!--
-
-muy valorados en sectores estratégicos. para iniciarse en el desarrollo de este tipo de drivers es preciso disponer de hardware suficientemente sencillo y de bajo coste.  
-
-Para que todo esto se pueda dar, el protocolo USB tiene una complejidad enorme en cuanto a paquetes de comunicación entre la CPU y el dispositivo o la controladora USB, a parte de necesitar un driver instalado en el sistema operativo para que pueda interpretarlo. A pesar de lo sencillo que pueda parecer el hardware (2 cables de datos), hay muchos elementos en la comunicación USB que tienen lugar para que el dispositivo pueda ser reconocido.
-
-Para poder estudiar todo el protocolo USB y la interacción entre el dispositivo y la CPU, en este proyecto hemos desarrollado un firmware en C que se comunica con diferentes sensores y dispositivos, utilizando un microcontrolador AVR. Así como un conjunto de drivers de ejemplo para mostrar el funcionamiento y la comunicación entre el ordenador y el dispositivo.
-
-
-
--->
-
-
 
 
 ## Objetivos
@@ -167,7 +152,9 @@ T24
 Durante el desarrollo del proyecto se han mantenido distintas reuniones con los directores del TFG. La frecuencia de las mismas se ha ido incrementando de forma gradual conforme ha ido avanzado el desarrollo. Estas reuniones han servido para resolver problemas de diseño, plantear las diferentes fases y solucionar múltiples dudas y limitaciones que han ido surgiendo durante todo el proyecto.
 
 
-Para la gestión tanto del código como de las fuentes de la memoria del proyecto se han utilizado repositorios compartidos en la plataforma GitHub.
+Para la gestión tanto del código como de las fuentes de la memoria del proyecto se han utilizado repositorios compartidos en la plataforma GitHub. Los enlaces a ambos repositorios son:
+* **Código fuente**. https://github.com/ggasconn/TFG_USB
+* **Memoria**. https://github.com/ggasconn/MemoriaTFG-USB/
 
 
 
@@ -187,13 +174,6 @@ El resto de esta memoria se ha dividido en los siguientes capítulos:
 
 - El **capítulo 7** recoge las principales conclusiones del TFG y enumera las líneas de trabajo futuro
 
-  
-
-  <!--
-
-   se hace una reflexión sobre el posible uso de este proyecto para otros tipos de trabajos y pruebas, así como su integración en la asignatura de Arquitectura Interna de Linux y Android, impartida en esta facultad.
-
-  -->
 
 Al final de esta memoria pueden encontrarse también los siguientes cinco apéndices:
 

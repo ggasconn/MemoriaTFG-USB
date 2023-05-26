@@ -12,25 +12,25 @@ Aunque originalmente este protocolo fue diseñado para usarse en ordenadores, ho
 
 ## Subsistema USB en Linux
 
-*USB Core* es el subsistema software que implementa todo el estándar USB en el kernel Linux. Este subsistema está segmentado en tres partes claramente diferenciadas, como se puede observar en la figura \ref{fig:usb-core}, que trabajan en conjunto para reconocer los dispositivos USB y conectarlos con el usuario, entre muchas otras tareas.
+*USB Core* es el subsistema software que implementa todo el estándar USB en el kernel Linux. El *stack USB* completo está segmentado en tres partes claramente diferenciadas, como se puede observar en la figura \ref{fig:usb-core}, que trabajan en conjunto para reconocer los dispositivos USB y conectarlos con el usuario, entre muchas otras tareas.
 
 ![Arquitectura del subsistema USB en Linux. [@usb-core-image]](img/usb-core.png){width=80% #fig:usb-core}
 
 El propósito principal de *USB Core* es abstraer el hardware lo máximo posible y ofrecer al desarrollador una *API* con la que poder trabajar con estos dispositivos, provista de estructuras de datos, macros y funciones que restan complejidad a la integración de nuevos dispositivos con el kernel Linux.
 
-Como vemos en la figura \ref{fig:usb-core}, la parte más cercana a los dispositivos USB son las controladoras de host USB (*USB host controller*). Estas controladoras son las encargadas de la comunicación directa con el dispositivo USB y son manejadas por drivers implementados en el kernel Linux. Como veremos en la sección [REF], hay diferentes tipos de controladoras USB, aunque su funcionamiento es similar.
+Como vemos en la figura \ref{fig:usb-core}, la parte más cercana a los dispositivos USB son las controladoras de host USB (*USB host controller*). Estas controladoras son las encargadas de la comunicación directa con el dispositivo USB y son manejadas por drivers implementados en el kernel Linux. Como veremos en la sección \ref{sec:usbController}, hay diferentes tipos de controladoras USB, aunque su funcionamiento es similar.
 
 En la siguiente capa encontramos toda la parte software dentro del kernel Linux, como vemos en la figura \ref{fig:usb-core}, podemos diferenciar tres partes clave dentro de esta capa:
 
-- *Drivers para dispositivos USB*, son los controladores más cercanos al usuario. Abstraen el dispositivo USB y proveen al usuario de una manera de comunicarse con él a través de diferentes operaciones soportadas por el driver. En el capítulo Drivers USB [REF] se pueden encontrar muchos más detalles sobre estos controladores.
+- *Drivers para dispositivos USB*, son los controladores más cercanos al usuario. Abstraen el dispositivo USB y proveen al usuario de una manera de comunicarse con él a través de diferentes operaciones soportadas por el driver. En el capítulo Drivers USB \ref{sec:drivers} se pueden encontrar muchos más detalles sobre estos controladores.
 
 - *USB Core*, podemos catalogarlo como el núcleo de todo. Acerca al usuario los dispositivos USB abstrayendo el hardware lo máximo posible. Como hemos hablado antes, ofrece una API para desarrolladores que es la que permite controlar los dispositivos sin necesidad de conocer el hardware en detalle. También integra la comunicación con los drivers que manejan la controladora de host, encargada de la comunicación con el dispositivo.
 
-- *Drivers para controladoras de host*, como vamos a ver en la sección dedicada a ello [REF] hay diversos tipos de controladoras de host y cada una es manejada por un driver diferente. Estos drivers son una parte esencial para garantizar el funcionamiento de los dispositivos USB en Linux, ya que se encargan de manejar las conexiones y transferencias a más bajo nivel con los dispositivos, actuando como intermediario entre el propio hardware y el kernel.
+- *Drivers para controladoras de host*, como vamos a ver en la sección dedicada a ello \ref{sec:usbController} hay diversos tipos de controladoras de host y cada una es manejada por un driver diferente. Estos drivers son una parte esencial para garantizar el funcionamiento de los dispositivos USB en Linux, ya que se encargan de manejar las conexiones y transferencias a más bajo nivel con los dispositivos, actuando como intermediario entre el propio hardware y el kernel.
 
   
 
-## Controladoras de Host USB
+## Controladoras de Host USB {#sec:usbController}
 
 Las controladoras de Host USB son el hardware encargado de conectarse con los dispositivos USB físicamente y manejan todos los aspectos de más bajo nivel en la comunicación y conexión de estos. 
 
@@ -90,15 +90,17 @@ Los descriptores de dispositivo son el tipo de descriptor más general, contiene
 
 Algunos de los campos más importantes que contiene este descriptor son los siguientes:
 
-| Parámetro       | Descripción del valor                                        |
-| :-------------- | :----------------------------------------------------------- |
-| bLenght         | Contiene un número con el tamaño del descriptor.             |
-| bDescriptorType | Indica el tipo de descriptor que es. En este caso, device.   |
-| bcdUSB          | Indica el estandar USB con el que funciona el dispositivo.   |
-| bMaxPacketSize  | Indica el tamaño máximo de paquete que soporta el dispositivo |
-| idVendor        | Indica el VendorID asignado por la organización USB-IF.      |
-| idProduct       | Es el identificador del producto dentro del VendorID.        |
-| iSerialNumber   | Contiene el número de serie del dispositivo.                 |
+\begin{tabular}{l l}
+\hline
+Parámetro & Descripción del valor. \\ \hline
+bLenght & Contiene un número con el tamaño del descriptor. \\
+bDescriptorType & Indica el tipo de descriptor que es. En este caso, device. \\
+bcdUSB & Indica el estandar USB con el que funciona el dispositivo. \\
+bMaxPacketSize & Indica el tamaño máximo de paquete que soporta el dispositivo. \\
+idVendor & Indica el VendorID asignado por la organización USB-IF. \\
+idProduct & Es el identificador del producto dentro del VendorID. \\
+iSerialNumber & Contiene el número de serie del dispositivo. \\ \hline
+\end{tabular} 
 
 
 
@@ -110,42 +112,46 @@ Los dispositivos USB pueden tener diferentes modos de trabajo, que se representa
 
 Dentro del descriptor tenemos múltiples parámetros de entre los que podemos destacar:
 
-| Parámetro           | Descripción del valor                                        |
-| ------------------- | ------------------------------------------------------------ |
-| bLenght             | Contiene un número con el tamaño del descriptor.             |
-| bDescriptorType     | Indica el tipo de descriptor que es. En este caso, configuration. |
-| bNumInterfaces      | Indica el número de interfaces del dispositivo.              |
-| bConfigurationValue | Portará el valor de la configuración que elija el host.      |
-| iConfiguration      | Indica el identificador de la configuración.                 |
-| bMaxPower           | Indica la corriente máxima que puede consumir.               |
-
+\begin{tabular}{l l}
+\hline
+Parámetro & Descripción del valor. \\ \hline
+bLenght & Contiene un número con el tamaño del descriptor. \\
+bDescriptorType & Indica el tipo de descriptor que es. En este caso, configuration. \\
+bNumInterfaces & Indica el número de interfaces del dispositivo. \\
+bConfigurationValue & Portará el valor de la configuración que elija el host. \\
+iConfiguration & Indica el identificador de la configuración. \\
+bMaxPower & Indica la corriente máxima que puede consumir. \\ \hline
+\end{tabular}
 
 
 ### Interface descriptors
 
 Los descriptores de tipo interfaz podrían verse como una manera de agrupar los diferentes endpoints que son responsables de alguna funcionalidad del dispositivo. Los dispositivos USB pueden tener múltiples interfaces, el límite máximo de interfaces es de 16 IN y 16 OUT. De los diferentes parámetros del descriptor destacamos:
 
-| Parámetro        | Descripción del valor                                        |
-| ---------------- | ------------------------------------------------------------ |
-| bLenght          | Contiene un número con el tamaño del descriptor.             |
-| bDescriptorType  | Indica el tipo de descriptor que es. En este caso, interface. |
-| bInterfaceNumber | Contiene el número de la interfaz                            |
-| bNumEndpoints    | Indica el número de endpoints disponibles en la interfaz     |
-| bInterfaceClass  | Indica el tipo de interfaz, es una clase asignada por USB-IF |
+\begin{tabular}{l l}
+\hline
+Parámetro & Descripción del valor. \\ \hline
+bLenght & Contiene un número con el tamaño del descriptor. \\
+bDescriptorType & Indica el tipo de descriptor que es. En este caso, interface. \\
+bInterfaceNumber & Contiene el número de la interfaz. \\
+bNumEndpoints & Indica el número de endpoints disponibles en la interfaz. \\
+bInterfaceClass & Indica el tipo de interfaz, es una clase asignada por USB-IF. \\  \hline
+\end{tabular}
 
 ### Endpoint descriptors
 
 Los descriptores de endpoints contienen información acerca del tipo de transferencia, la dirección de los datos, el tamaño máximo de paquete o el intervalo de polling. Destacamos los siguientes parámetros:
 
-| Parámetro        | Descripción del valor                                        |
-| ---------------- | ------------------------------------------------------------ |
-| bLenght          | Contiene un número con el tamaño del descriptor.             |
-| bDescriptorType  | Indica el tipo de descriptor que es. En este caso, endpoint. |
-| bEndpointAddress | Contiene la dirección del endpoint.                          |
-| bmAttributes     | Lleva una máscara de bits que indican diferentes parámetros. |
-| wMaxPacketSize   | Indica el tamaño máximo de paquete.                          |
-| bInterval        | Intervalo de polling, expresado en frames o micro-frames.    |
-
+\begin{tabular}{l l}
+\hline
+Parámetro & Descripción del valor. \\ \hline
+bLenght & Contiene un número con el tamaño del descriptor. \\
+bDescriptorType & Indica el tipo de descriptor que es. En este caso, endpoint. \\
+bEndpointAddress & Contiene la dirección del endpoint. \\
+bmAttributes & Lleva una máscara de bits que indican diferentes parámetros. \\
+wMaxPacketSize & Indica el tamaño máximo de paquete. \\
+bInterval & Intervalo de polling, expresado en frames o micro-frames. \\ \hline
+\end{tabular}
 
 
 ### String descriptors
@@ -154,21 +160,25 @@ Estos descriptores son opcionales y contienen información legible en formato UN
 
 Al estar codificado en UNICODE, estos descriptores soportan varios idiomas. Cuando se pide uno de estos descriptores, la petición incluye un descriptor que contiene los idiomas que se solicitan.
 
-| Parámetro       | Descripción del valor                                      |
-| --------------- | ---------------------------------------------------------- |
-| bLenght         | Contiene un número con el tamaño del descriptor.           |
-| bDescriptorType | Indica el tipo de descriptor que es. En este caso, string. |
-| wLANGID[0]      | Código representando el idioma solicitado                  |
-| ...             | ...                                                        |
-| wLANGID[n]      | Código representando el idioma solicitado                  |
+\begin{tabular}{l l}
+\hline
+Parámetro & Descripción del valor. \\ \hline
+bLenght & Contiene un número con el tamaño del descriptor. \\
+bDescriptorType & Indica el tipo de descriptor que es. En este caso, string. \\
+wLANGID[0] & Código representando el idioma solicitado. \\
+... & .... \\
+wLANGID[n] & Código representando el idioma solicitado. \\ \hline
+\end{tabular}
 
 Una vez elegido el idioma, el texto viene en un descriptor como el siguiente:
 
-| Parámetro       | Descripción del valor                                      |
-| --------------- | ---------------------------------------------------------- |
-| bLenght         | Contiene un número con el tamaño del descriptor.           |
-| bDescriptorType | Indica el tipo de descriptor que es. En este caso, string. |
-| bString         | Cadena con el contenido solicitado                         |
+\begin{tabular}{l l}
+\hline
+Parámetro & Descripción del valor. \\ \hline
+bLenght & Contiene un número con el tamaño del descriptor. \\ 
+bDescriptorType & Indica el tipo de descriptor que es. En este caso, string. \\ 
+bString & Cadena con el contenido solicitado. \\ \hline
+\end{tabular}
 
 ### Jerarquía de descriptores
 
@@ -298,7 +308,7 @@ Cuando se emplea la *API* asíncrona, cada vez que se envía uno de estos paquet
 
 En la API USB integrada en el kernel Linux los URBs se pueden manejar de manera muy natural, esto es posible gracias a la estructura que nos ofrecen,  `struct urb`, que encapsula todos los datos que pueden llevar estos paquetes. Para la gestión de esta estructura, el kernel también nos ofrece funciones de las cuales podemos destacar las siguientes:
 
-- `usb_alloc_urb()`, permite reservar memoria donde alojar un URB. Esta memoria luego será compartida con el controlador USB para que envíe el paquete al dispositivo.
+- `usb_alloc_urb()`, permite reservar memoria donde alojar un URB. Esta memoria luego será compartida con el controlador USB hardware para que envíe el paquete al dispositivo.
 
 - `usb_fill_control_urb() / usb_fill_int_urb() / usb_fill_bulk_urb()`, son las funciones que, dependiendo del tipo de endpoint, nos permiten rellenar los datos que viajarán en el paquete.
 

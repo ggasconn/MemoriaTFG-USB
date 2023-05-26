@@ -1,6 +1,6 @@
 <!-- Leave a blank line before the title -->
 
-# Firmware: Diseño del código
+# Firmware: Diseño del código {#sec:firmware}
 
 El firmware es el código fuente que se ejecuta dentro del microcontrolador responsable de controlar los periféricos con los que interactúa, así como de gestionar un extremo de la comunicación USB. En este capítulo se describen con detalle las partes y características más importantes del firmware, así como las librerías auxiliares utlizadas para los periféricos
 
@@ -262,7 +262,7 @@ Estas librerías son:
 - `oled/`, se encarga de controlar el display OLED mediante el protocolo de comunicación *i2c* que solo usa dos líneas de datos para la transmisión de la información. [@wagiminator-profile]
 - `light_ws2812/`, esta librería implementa el protocolo *one-wire* que nos permite controlar el anillo de led. [@ws2812-library]
 
-## Depuración del código del microcontrolador
+## Depuración del código del microcontrolador {#sec:debug}
 
 La depuración en microcontroladores de este tipo puede llegar a ser todo un reto. Tenemos que tener en cuenta que un chip de esta clase no es más que una diminuta compleja pieza de hardware que ejecuta el código que previamente le ha sido cargado en una memoria flash, siendo imposible trazarlo como se podría hacer en otro entorno más depurable como puede ser *GDB*.
 

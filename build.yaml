@@ -6,7 +6,8 @@ pandoc_common:
   - teaching_md
   input_files:
   - settings.yaml
-## Put preambles here  
+## Put preambles here
+  - preamble/agradecimientos.md
   - preamble/abstract.md
   - preamble/authorization.md
   - separators/mainmatter.md
