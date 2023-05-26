@@ -9,7 +9,7 @@ fontfamily: tgpagella
 lang: es-es
 header-includes:
 - \fvset{fontsize=\footnotesize}
-- \hypersetup{colorlinks=true}
+#- \hypersetup{colorlinks=true}
 - \usepackage{subfig}
 #- \usepackage[ruled,vlined]{algorithm2e}
 - \usepackage{fancyhdr}
