@@ -6,10 +6,7 @@ geometry: "top=3cm, bottom=3cm, left=3cm, right=3cm"
 fontsize: 12pt
 fontfamily: tgpagella
 #fontfamily: times
-lang: es-ES
-colorlinks: true
-linkcolor: red
-urlcolor: red
+lang: es-es
 header-includes:
 - \fvset{fontsize=\footnotesize}
 - \hypersetup{colorlinks=true}
