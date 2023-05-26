@@ -993,5 +993,204 @@ El segundo comando que soporta el driver es *buzzer* seguido de la frecuencia de
 
 ## AllDevicesDriver
 
-Este driver es el más potente de todos, es una combinación de todos los anteriores. Funciona cuando el dispositivo se encuentra flasheado con la plantilla *ALL_DEVICES*. Permite controlar todos los periféricos, así como acceder a las dos operaciones de lectura que ofrece el dispositivo.
+Este driver es el más potente de todos, es una combinación de todos los anteriores. Funciona cuando el dispositivo se encuentra flasheado con la plantilla *ALL_DEVICES*. Permite controlar todos los periféricos, así como acceder a las dos operaciones de lectura que ofrece el dispositivo, gestionado mediante compilación condicional que define la macro `#define GET_OPERATION`, que puede tomar los valores 0 o 1, definidos según las macros `GET_LED` y `GET_MSG`. Las implementaciones de `pwnedDevice_read()` y `pwnedDevice_write()`, como hemos mencionado, representan una combinación de todos los drivers explicados en las secciones anteriores. A continuación se muestra la implementación correspondiente a `pwnedDevice_read()`:
+
+```C
+1     static ssize_t pwnedDevice_read(struct file *file, char *user_buffer,
+2                                 size_t count, loff_t *ppos) {
+3         struct usb_pwnedDevice *dev;
+4         int retval = 0;
+5         unsigned char* message;	
+6         int nr_bytes = 0;
+7         unsigned int wValue = 0;
+8         int msgSize = 0;
+9
+10        dev = file->private_data;
+11
+12        if (*ppos>0)
+13            return 0;
+14
+15        message = kmalloc(MAX_LEN_MESSAGE, GFP_DMA);
+16
+17        /* zero fill*/
+18        memset(message, 0, MAX_LEN_MESSAGE);
+19
+20        #if GET_OPERATION == GET_LED
+21            wValue = 0x2;
+22            msgSize = 4;
+23        #elif GET_OPERATION == GET_MSG
+24            wValue = 0x1;
+25            msgSize = 33;
+26        #endif
+27
+28        retval = usb_control_msg_recv(dev->udev,	
+29                                        0, 
+30                                        USB_REQ_CLEAR_FEATURE, 
+31                                        USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_DEVICE,
+32                                        wValue,	/* wValue = Descriptor index */
+33                                        0x0, 	/* wIndex = Endpoint # */
+34                                        message,	/* Pointer to the message */ 
+35                                        msgSize, /* message's size in bytes */
+36                                        0, /* Dale lo necesario*/
+37                                        GFP_DMA);
+38
+39        if (retval)
+40            goto out_error;
+41
+42        #if GET_OPERATION == GET_LED
+43            sprintf(message, "R: %d G: %d B: %d \n", message[1], message[2], message[3]);
+44            nr_bytes = strlen(message);
+45
+46            if (copy_to_user(user_buffer, message, strlen(message))){
+47                retval=-EFAULT;
+48                goto out_error;
+49            }
+50        #elif GET_OPERATION == GET_MSG
+51            message[33]='\n';
+52            message[34]='\0';
+53            nr_bytes = strlen(message + 1); // Remove reportID
+54
+55            if (copy_to_user(user_buffer, message + 1, strlen(message + 1))){
+56                retval=-EFAULT;
+57                goto out_error;
+58            }
+59        #endif
+60
+61
+62        kfree(message);
+63        (*ppos) += nr_bytes;
+64
+65        return nr_bytes;
+66
+67    out_error:
+68        if (message)
+69            kfree(message);
+70
+71        return retval;	
+72    }
+```
+
+
+
+La implementación de la función `pwnedDevice_write()` se encuentra en el siguiente fragmento de código.
+
+```C
+1     static ssize_t pwnedDevice_write(struct file *file, const char *user_buffer,
+2                                 size_t count, loff_t *ppos) {
+3         struct usb_pwnedDevice *dev;
+4         int retval = 0;
+5         int r,g,b,led = 0;
+6         int freq,stop = 0;
+7         unsigned int digit = 0;
+8         char* strcfg = NULL;
+9         unsigned int wValue = 0;
+10        int dataSize = 0;
+11        char *buffer;
+12
+13        dev = file->private_data;
+14
+15        if ((strcfg=kmalloc(count + 1, GFP_KERNEL)) == NULL)
+16            return -ENOMEM;
+17
+18        if (copy_from_user(strcfg, user_buffer, count)){
+19            retval=-EFAULT;
+20            goto out_error;
+21        }
+22        strcfg[count] = '\0';
+23
+24        if ((buffer = kmalloc(MAX_LEN_MESSAGE, GFP_KERNEL)) == NULL) {
+25            retval = -ENOMEM;
+26            goto out_error;
+27        }
+28
+29        if (sscanf(strcfg,"setFullColor %d:%d:%d", &r, &g, &b) == 3 
+30                && (r >= 0 && r <= 255) && (g >= 0 && g <= 255) && (b >= 0 && b <= 255)) {		
+31            buffer[0] = 1; // ReportID
+32            buffer[1] = r;
+33            buffer[2] = g;
+34            buffer[3] = b;
+35            dataSize = 4;
+36            wValue = 1;
+37            printk(KERN_INFO ">> Full led %d %d %d", r, g, b);
+38        } else if (sscanf(strcfg,"setLedColor %d:%d:%d:%d", &led, &r, &g, &b) == 4 
+39                && (r >= 0 && r <= 255) && (g >= 0 && g <= 255) && (b >= 0 && b <= 255) && (led >= 0 && led <= LED_SIZE)) {
+40            buffer[0] = 2; // ReportID
+41            buffer[1] = led;
+42            buffer[2] = r;
+43            buffer[3] = g;
+44            buffer[4] = b;
+45            dataSize = 5;
+46            wValue = 2;
+47            printk(KERN_INFO ">> Led %d %d %d %d", led, r, g, b);
+48        } else if (strstr(strcfg, "oled ") != NULL) {
+49            strcpy(buffer, strcfg + 5); // Remove oled command
+50            dataSize = count - 5;
+51            wValue = 3;
+52            printk(KERN_INFO ">> oled %s", buffer);
+53        } else if (sscanf(strcfg,"7s %x", &digit) == 1) {
+54            buffer[0] = 4; // ReportID
+55            buffer[1] = digit;
+56            dataSize = 2;
+57            wValue = 4;
+58            printk(KERN_INFO ">> 7s %x", digit);
+59        } else if (sscanf(strcfg,"blinkLed %d", &stop) == 1) {
+60            buffer[0] = 5; // ReportID
+61            buffer[1] = stop;
+62            dataSize = 2;
+63            wValue = 5;
+64            printk(KERN_INFO ">> LED %d", stop);
+65        } else if (sscanf(strcfg,"buzzer %d %d", &freq, &stop) == 2) {
+66            buffer[0] = 6; // ReportID
+67
+68            if (stop) {
+69                buffer[1] = 1;
+70                dataSize = 2;
+71            } else {
+72                buffer[1] = 0;
+73                buffer[2] = (freq >> 24) & 0xFF;
+74                buffer[3] = (freq >> 16) & 0xFF;
+75                buffer[4] = (freq >> 8) & 0xFF;
+76                buffer[5] = freq & 0xFF;
+77                dataSize = 6;
+78            }
+79
+80            wValue = 6;
+81            printk(KERN_INFO ">> Buzzer %d %d", freq, stop);
+82        }
+83
+84        if (wValue != 0) {
+85            retval = usb_control_msg(dev->udev,	
+86                                    usb_sndctrlpipe(dev->udev, 00), /* Specify endpoint #0 */
+87                                    USB_REQ_SET_CONFIGURATION, 
+88                                    USB_DIR_OUT| USB_TYPE_CLASS | USB_RECIP_INTERFACE,
+89                                    wValue,	/* wValue */
+90                                    0, 	/* wIndex=Endpoint # */
+91                                    buffer,	/* Pointer to the message */ 
+92                                    dataSize, /* message's size in bytes */
+93                                    0);
+94        }
+95
+96        if (retval < 0 && retval != -EPIPE){
+97            printk(KERN_ALERT "Executed with retval=%d\n",retval);
+98            goto out_error;		
+99        }
+100
+101       goto ok_path;
+102
+103   ok_path:
+104       kfree(strcfg);
+105       kfree(buffer);
+106       (*ppos)+=count;
+107       return count;
+108
+109   out_error:
+110       if (strcfg)
+111           kfree(strcfg);
+112       if (buffer)
+113           kfree(buffer);
+114       return retval;	
+115   }
+```
+
+
 
