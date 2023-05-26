@@ -6,7 +6,7 @@ Este capítulo consta de una introducción general al protocolo de comunicación
 
 ## ¿Qué es USB?
 
-*USB* nace en 1996 como una manera de establecer la comunicación entre los ordenador y sus periféricos, buscando estandarizar la interfaz de conexión de estos ya que por aquél entonces los periféricos disponibles utilizaban diversas formas de conexión como puertos paralelos, puertos serie, PS2, entre otras. Las palabra *USB* origina de las siglas *Universal Serial Bus*, dicho nombre describe de una manera clara lo que se intenta conseguir con el desarrollo de este estándar.
+*USB* nace en 1996 como una manera de establecer la comunicación entre los ordenadores y sus periféricos, buscando estandarizar la interfaz de conexión de estos ya que por aquél entonces los periféricos disponibles utilizaban diversas formas de conexión como puertos paralelos, puertos serie, PS2, entre otras. Las palabra *USB* origina de las siglas *Universal Serial Bus*, dicho nombre describe de una manera clara lo que se intenta conseguir con el desarrollo de este estándar.
 
 Aunque originalmente este protocolo fue diseñado para usarse en ordenadores, hoy en día está presente en una inmensa variedad de dispositivos tales como teléfonos móviles, tabletas, adaptadores de carga, dispositivos de almacenamiento, etcétera. Esto ha ocasionado también algunas dificultades ya que su estandarización ha traído consigo un gran incremento de complejidad del protocolo debido a que debe de adaptarse para permitir la interoperabilidad entre dispositivos que en ocasiones son muy dispares entre sí.
 
@@ -18,7 +18,7 @@ Aunque originalmente este protocolo fue diseñado para usarse en ordenadores, ho
 
 El propósito principal de *USB Core* es abstraer el hardware lo máximo posible y ofrecer al desarrollador una *API* con la que poder trabajar con estos dispositivos, provista de estructuras de datos, macros y funciones que restan complejidad a la integración de nuevos dispositivos con el kernel Linux.
 
-Como vemos en la figura \ref{fig:usb-core}, la parte más cercana a los dispositivos USB son las controladoras de host USB. Estas controladoras son las encargadas de la comunicación directa con el dispositivo USB y son manejadas por drivers implementados en el kernel Linux. Como veremos en la sección [REF], hay diferentes tipos de controladoras USB, aunque su funcionamiento es similar.
+Como vemos en la figura \ref{fig:usb-core}, la parte más cercana a los dispositivos USB son las controladoras de host USB (*USB host controller*). Estas controladoras son las encargadas de la comunicación directa con el dispositivo USB y son manejadas por drivers implementados en el kernel Linux. Como veremos en la sección [REF], hay diferentes tipos de controladoras USB, aunque su funcionamiento es similar.
 
 En la siguiente capa encontramos toda la parte software dentro del kernel Linux, como vemos en la figura \ref{fig:usb-core}, podemos diferenciar tres partes clave dentro de esta capa:
 
@@ -34,7 +34,7 @@ En la siguiente capa encontramos toda la parte software dentro del kernel Linux,
 
 Las controladoras de Host USB son el hardware encargado de conectarse con los dispositivos USB físicamente y manejan todos los aspectos de más bajo nivel en la comunicación y conexión de estos. 
 
-En los inicios de USB se crearon las controladoras *HDC, Host Control Device*, y existieron dos tipos que competían entre ellos por ser el estándar, lo que provocaba a los fabricantes que tuvieran que probar los dispositivos para ambos tipos de controladoras. Estas controladoras eran:
+En los inicios de USB se crearon las controladoras *HDC, Host Control Device*, y existieron dos tipos que competían entre ellos por ser el estándar, lo que hacía que los fabricantes tuvieran que probar los dispositivos para ambos tipos de controladoras. Estas controladoras eran:
 
 - *OHCI - Open Host Controller Interface*. Creada por *Compaq* y adaptada por la organización que controla el estándar USB, *USB-IF*. Servía para interactuar con dispositivos USB en versiones 1.0 y 1.1.
 - *UHCI - Univeral Host Controller Interface*. Era la alternativa de *Intel*, por lo que los fabricantes que la integraban tenían que pagar a esta empresa unas tasas por su uso.
@@ -47,7 +47,7 @@ Por último, se crean las controladoras más recientes, las *XHCI, Extensible Ho
 
 ## Velocidades de transferencia en dispositivos USB
 
-El desarrollo del protocolo USB y su adopción en todo tipo de dispositivos ha traído consigo mejoras en las velocidades de transferencia motivadas por las utilidades que se le han dado al protocolo. Estas velocidades se han ido nombrando en base a la velocidad que pueden certificar y requieren de una versión USB concreta para ser oficialmente soportadas. Las velocidades que podemos encontrar actualmente son:
+El desarrollo del protocolo USB y su adopción en todo tipo de dispositivos ha traído consigo mejoras en las velocidades de transferencia motivadas por las utilidades que se le han dado al protocolo. Así, se han clasificado los dispositivos USB en categorías según la velocidad que pueden certificar y la versión USB que requieren. Las categorías que podemos encontrar habitualmente son:
 
 - *Low-Speed*, disponible desde la primera versión del protocolo, *USB 1.0*. Permite transferencias de hasta 1.5 *Mbps*.
 - *Full-Speed*, disponible a partir de *USB 1.1*. Soporta velocidades de transmisión de hasta 12 *Mbps*.
@@ -86,7 +86,7 @@ En los sistemas operativos que usan un kernel Linux, podemos ver los diferentes 
 
 ### Device descriptors
 
-Los descriptores de dispositivo son el tipo de descriptor más general, contiene información básica acerca del dispositivo pero a la vez muy útil. Este tipo de descriptor representa al dispositivo USB como una entidad completa, por lo que debido a su propia naturaleza, solo puede haber uno por dispositivo.
+Los descriptores de dispositivo son el tipo de descriptor más general, contiene información básica acerca del dispositivo. Representa al dispositivo USB como una entidad completa, por lo que debido a su propia naturaleza, solo puede haber uno por dispositivo.
 
 Algunos de los campos más importantes que contiene este descriptor son los siguientes:
 
@@ -104,9 +104,9 @@ Algunos de los campos más importantes que contiene este descriptor son los sigu
 
 ### Configuration descriptors
 
-Los descriptores de configuración contienen toda la información relativa al funcionamiento del dispositivo, desde la corriente máxima que consume, si es alimentado por el bus o se alimenta de manera externa, el número de interfaces que tiene y un largo etcetera. 
+Los descriptores de configuración contienen toda la información relativa al funcionamiento del dispositivo: la corriente máxima que consume, si es alimentado por el bus o se alimenta de manera externa, el número de interfaces que tiene y un largo etcetera. 
 
-Los dispositivos USB pueden tener diferentes modos de trabajo, que se representan en diferentes descriptores de configuración, es por ello que un dispositivo puede tener múltiples descriptores de este tipo. Cuando el host comienza a interacturar con el dispositivo USB, recibe entre otras cosas estos descriptores y finalmente le manda una confirmación al dispositivo indicándole con cual de las configuraciones va a configurar el dispositivo.
+Los dispositivos USB pueden tener diferentes modos de trabajo, que se representan en diferentes descriptores de configuración, es por ello que un dispositivo puede tener múltiples descriptores de este tipo. Cuando el host comienza a interacturar con el dispositivo USB, recibe entre otras cosas estos descriptores y finalmente le manda una confirmación al dispositivo indicándole la configuración a utilizar.
 
 Dentro del descriptor tenemos múltiples parámetros de entre los que podemos destacar:
 
@@ -123,11 +123,7 @@ Dentro del descriptor tenemos múltiples parámetros de entre los que podemos de
 
 ### Interface descriptors
 
-Los descriptores de tipo interfaz podrían verse como una manera de agrupar los diferentes endpoints que son responsables de alguna funcionalidad del dispositivo.
-
-Los dispositivos USB pueden tener múltiples interfaces, el límite máximo de interfaces es de 16 IN y 16 OUT.
-
-De los diferentes parámetros del descriptor destacamos:
+Los descriptores de tipo interfaz podrían verse como una manera de agrupar los diferentes endpoints que son responsables de alguna funcionalidad del dispositivo. Los dispositivos USB pueden tener múltiples interfaces, el límite máximo de interfaces es de 16 IN y 16 OUT. De los diferentes parámetros del descriptor destacamos:
 
 | Parámetro        | Descripción del valor                                        |
 | ---------------- | ------------------------------------------------------------ |
@@ -139,9 +135,7 @@ De los diferentes parámetros del descriptor destacamos:
 
 ### Endpoint descriptors
 
-Los descriptores de endpoints contienen información acerca del tipo de transferencia, la dirección de los datos, el tamaño máximo de paquete o el intervalo de polling.
-
-Destacamos los siguientes parámetros:
+Los descriptores de endpoints contienen información acerca del tipo de transferencia, la dirección de los datos, el tamaño máximo de paquete o el intervalo de polling. Destacamos los siguientes parámetros:
 
 | Parámetro        | Descripción del valor                                        |
 | ---------------- | ------------------------------------------------------------ |
@@ -158,7 +152,7 @@ Destacamos los siguientes parámetros:
 
 Estos descriptores son opcionales y contienen información legible en formato UNICODE. El resto de descriptores pueden hacer referencia a estos descriptores para ampliar algún tipo de información en formato legible por humanos.
 
-Al estar codificado en UNICODE, estos descriptores soportan varios idiomas. Para ello, cuando se pide uno de estos descriptores, se hace con un descriptor que contiene los idiomas que se solicitan.
+Al estar codificado en UNICODE, estos descriptores soportan varios idiomas. Cuando se pide uno de estos descriptores, la petición incluye un descriptor que contiene los idiomas que se solicitan.
 
 | Parámetro       | Descripción del valor                                      |
 | --------------- | ---------------------------------------------------------- |
@@ -182,7 +176,7 @@ Ahora que ya conocemos los tipos de descriptores que existen, es importante dest
 
 ![Jerarquía de descriptores USB. [@jerarquia-descriptores-image]](img/jerarquia-descriptores.png){width=80% #fig:jerarquia-descriptores}
 
-El descriptor de tipo *Device* es el más genérico de todos ya que describe al dispositivo en sí como un único componente hardware. Después tenemos los descriptores de tipo *Configuration*, que representan diferentes configuraciones con las que puede trabajar el dispositivo. Dentro de cada configuración pueden haber diferentes interfaces, descritas por el descriptor de tipo *Interface* y estas a su vez pueden contener diferentes endpoints, descritos por el descriptor de tipo *Endpoint*.
+El descriptor de tipo *Device* es el más genérico de todos ya que describe al dispositivo en sí como un único componente hardware. Después tenemos los descriptores de tipo *Configuration*, que representan diferentes configuraciones con las que puede trabajar el dispositivo. Dentro de cada configuración puede haber diferentes interfaces, descritas por el descriptor de tipo *Interface* y estas a su vez pueden contener diferentes endpoints, descritos por el descriptor de tipo *Endpoint*.
 
 
 ## Endpoints
@@ -200,11 +194,7 @@ Dentro de los endpoints podemos encontrar diferentes tipos definidos para difere
 
 ### Control Endpoints
 
-Los endpoints de control se encargan de las transferencias de información relativa a la configuración del dispositivo y pueden ser de tipo IN o de tipo OUT.
-
-Aunque este tipo de endpoints no se suelen usar para transferencias masivas de datos debido a sus limitaciones y uso restringido a configuración, pueden usarse para mandar algunos bytes de datos.
-
-El endpoint 0 siempre está reservado para la configuración del dispositivo con el host y no tienen ningún descriptor asignado, ya que toda su configuracion está definida por el estandar USB. De igual manera es especial en cuanto a su tipo de dirección, ya que es accesible tanto por el tipo IN como por el OUT.
+Los endpoints de control se encargan de las transferencias de información relativa a la configuración del dispositivo y pueden ser de tipo IN o de tipo OUT. Aunque este tipo de endpoints no se suelen usar para transferencias masivas de datos debido a sus limitaciones y uso restringido a configuración, pueden usarse para mandar algunos bytes de datos. El endpoint 0 siempre está reservado para la configuración del dispositivo con el host y no tienen ningún descriptor asignado, ya que toda su configuracion está definida por el estandar USB. De igual manera es especial en cuanto a su tipo de dirección, ya que es accesible tanto por el tipo IN como por el OUT.
 
 <!--
 
@@ -270,7 +260,7 @@ Al implementar un dispositivo de este tipo es necesario seguir ciertos estándar
 
 Como hemos mencionado anteriormente, los *Reports* son estructuras donde se encapsula la información que viaja en la comunicación con un dispositivo HID. Son de un tamaño fijo y previamente definido, ya que el host debe conocer esta información para generarlos.
 
-Un dispositivo HID puede tener múltiples *Reports*, identificados por *Report IDs*, que básicamente son indentificadores hexadecimales que permiten diferenciar el tipo de información que se envía y se recibe. Todas estas estructuras tienen un uso definido, que puede ser indefinido en caso de emplearse para acciones personalizadas.
+Un dispositivo HID puede tener múltiples *Reports*, identificados por *Report IDs*, que básicamente son indentificadores hexadecimales que permiten diferenciar el tipo de información que se envía y se recibe. Todas estas estructuras tienen un uso definido, aunque en caso de utilizarse para acciones personalizadas este puede dejarse sin definir.
 
 Los *Reports* se mueven a través de transferencias, y las dos más usadas dentro de esta clase de dispositivos son:
 
@@ -323,7 +313,7 @@ En la API USB integrada en el kernel Linux los URBs se pueden manejar de manera 
 
 Dentro del USB Core que viene incorporado en el kernel Linux tenemos dos modelos de API para realizar llamadas USB. El primero de ellos es el más estandar, está soportado por todos los tipos de transferencia y es el modelo ***asíncrono***. [@usb-api-docs]
 
-La manera de funcionar del modelo asíncrono consiste en crear un *URB*, rellenarlo y posteriormente ser enviado a la controladora USB asociado a una función *callback*. Esta función será llamada una vez se complete la transferencia y será la encargada del siguiente paso.
+La manera de funcionar del modelo asíncrono consiste en crear un *URB*, rellenarlo y posteriormente enviarlo a la controladora USB asociado a una función *callback*. Esta función será llamada una vez se complete la transferencia y será la encargada del siguiente paso.
 
 Construida por encima de esta API podemos encontrar la API ***síncrona***, que principalmente hace uso de todas las funciones que nos ofrece la anterior pero además añade bloqueos una vez se envían los URBs para esperar a su respuesta. Esta API oculta al desarrollador todos los detalles de reserva de memoria y envío de los URBS, ya que ofrece funciones muy sencillas para enviar los datos necesarios.
 
@@ -342,7 +332,7 @@ Actualmente, en la asignatura optativa *Arquitectura Interna de Linux y Android*
 
 ![Dispositivo Blinkstick usado actualmente en LIN [@blinkstick-page]](img/blinkstick.jpg)
 
-Pero este dispositivo tiene diferentes aspectos negativos que hacen de él una opción no del todo aconsejable, ya que el precio de venta es demasiado elevado para lo que ofrece y la cantidad de material que hay que adquirir para un aula. También es demasiado sencillo, lo que limita en gran medida el tipo de drivers que los alumnos pueden desarrollar y la API que pueden usar, ya que este dispositivo solo admite transferencias de tipo *CONTROL*.
+Pero este dispositivo tiene diferentes aspectos negativos que hacen de él una opción no del todo aconsejable, debido a que el precio de venta es demasiado elevado para lo que ofrece y la cantidad de material que hay que adquirir para un aula. También es demasiado sencillo, lo que limita en gran medida el tipo de drivers que los alumnos pueden desarrollar y la API que pueden usar, ya que este dispositivo solo admite transferencias de tipo *CONTROL*.
 
 Por ello, nuestro dispositivo ofrece significativas ventajas tanto en precio como en versatibilidad:
 
