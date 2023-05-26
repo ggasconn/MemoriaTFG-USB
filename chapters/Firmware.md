@@ -2,11 +2,11 @@
 
 # Firmware: Diseño del código
 
-El firmware es el código fuente que se ejecuta dentro del microcontrolador responsable de controlar los periféricos con los que interactúa, así como de gestionar un extremo de la comunicación USB gracias a V-USB. En este capítulo se describen con detalle las partes y características más importantes del firmware, así como las librerías auxiliares utlizadas para los periféricos
+El firmware es el código fuente que se ejecuta dentro del microcontrolador responsable de controlar los periféricos con los que interactúa, así como de gestionar un extremo de la comunicación USB. En este capítulo se describen con detalle las partes y características más importantes del firmware, así como las librerías auxiliares utlizadas para los periféricos
 
 ## Motivación
 
-El diseño del firmware juega un papel muy importante dentro de lo que se pretende conseguir con este proyecto, ya que tiene la capacidad de soportar y exponer diferentes periféricos a través de un mismo dispositivo USB gracias a plantillas configurables por el usuario o el docente. Esto brinda la posibilidad de tener "diferentes" dispositivos con los que interactuar y que de cara al desarrollo de drivers sean completamente distintos. Esta flexibilidad nos permite también incorporar de manera sencilla placas de expansión como Bee, usada actualmente en la Facultad de Informática, que nos proporciona múltiples periféricos en un mismo espacio haciendo el hardware mucho más flexible.
+El diseño del firmware juega un papel muy importante dentro de lo que se pretende conseguir con este proyecto, ya que tiene la capacidad de soportar y exponer diferentes periféricos a través de un mismo dispositivo USB gracias a plantillas configurables por el usuario o el docente. Esto brinda la posibilidad de tener "diferentes" dispositivos con los que interactuar y que de cara al desarrollo de drivers sean completamente distintos. Esta flexibilidad nos permite también incorporar de manera sencilla placas de expansión como Bee, que nos proporciona múltiples periféricos en un mismo espacio haciendo el hardware mucho más flexible.
 
 Dentro del entorno docente, esto permite disponer de un gran abanico de opciones para realizar prácticas en las asignaturas donde se imparta el desarrollo de drivers para dispositivos USB, ya que con un mismo dispositivo físico, podemos tener periféricos con maneras diferentes de ser accedidos y que permiten explorar muchas partes de la API USB presente en el kernel Linux. La manera en la que se ha diseñado la forma de seleccionar qué periféricos están disponibles también es otro punto a recalcar, ya que al configurarse a través de macros, `define`, permite a profesores y usuarios de la infraestructura escoger un subconjunto de prácticas que le interesen sin necesidad de tener el conocimiento de cómo programar el dispositivo.
 
@@ -14,7 +14,7 @@ Dentro del entorno docente, esto permite disponer de un gran abanico de opciones
 
 Una de las partes claves del diseño del código es la segmentación en perfiles según los periféricos que se deseen utilizar. Esto permite crear diferentes tipos de dispositivos simplemente configurando la opción en el fichero correspondiente. Dependiendo de la opción seleccionada, por ejemplo, pueden solo habilitarse las funciones y *Report IDs* relativos a la iluminación LED o a las pantallas y displays, quedando dispositivos con funcionalidades completamente diferentes pero usando el mismo código.
 
-La configuración de estos perfiles se realiza a través de una plantilla que contiene los diferentes perfiéricos agrupados según su funcionalidad. Lo primero que encontramos en ella son dos macros definidas para activar (*ON*) o desactivar (*OFF*) de manera *"user-friendly"* los perfiles. A continuación, están definidos los perfiles que actualmente están soportados junto con su estado, *ON* u *OFF*. Y por último y de gran importancia para permitir la  flexibilidad en el hardware, se encuentran definidas una serie de macros que indican dónde están conectados todos los periféricos, de esta manera podríamos cambiar de placa o simplemente mover un periférico de puerto con tan solo variar el valor en este fichero. El siguiente ejemplo de código ilustra de manera clara las macros que se explican en este párrafo:
+La configuración de estos perfiles se realiza a través de una plantilla que contiene los diferentes perfiéricos agrupados según su funcionalidad. Lo primero que encontramos en ella son dos macros definidas para activar (*ON*) o desactivar (*OFF*) de manera amigable los perfiles. A continuación, están definidos los perfiles que actualmente están soportados junto con su estado, *ON* u *OFF*. Y por último, y de gran importancia, para permitir la  flexibilidad en el hardware, se encuentran definidas una serie de macros que indican dónde están conectados todos los periféricos, de esta manera podríamos cambiar de placa o simplemente mover un periférico de puerto con tan solo variar el valor en este fichero. El siguiente ejemplo de código ilustra de manera clara las macros que se explican en este párrafo:
 
 ```C
 #define ON  1
@@ -67,7 +67,7 @@ La manera en la que se ha implementado esta funcionalidad ha sido usando compila
 
 ## main.cpp
 
-El fichero `main.cpp` es el punto central de la implementación, en él se maneja tanto la comunicación y respuesta USB, como la inicialización de los periféricos, reserva de memoria necesaria, entre otras acciones. También contiene el bucle principal del firmware, donde se realiza un polling para comprobar si hay mensajes pendientes de responder, además de atender las interrupciones cuando paquetes de tipo INTERRUPT IN están esperando ser atendidos. El siguiente código muestra el bucle principal:
+El fichero `main.cpp` es el punto central de la implementación, en él se maneja tanto la comunicación y respuesta USB, como la inicialización de los periféricos, reserva de memoria necesaria, entre otras acciones. También contiene el bucle principal del firmware, donde se realiza una encuenta para comprobar si hay mensajes pendientes de responder, además de atender las interrupciones cuando paquetes de tipo INTERRUPT IN están esperando ser atendidos. El siguiente código muestra el bucle principal:
 
 ```C
 int main(void) {
@@ -95,7 +95,7 @@ Además en este fichero podemos encontrar implementadas diferentes funciones de 
 
 En los siguientes apartados, se describen tres de las funciones clave en la comunicación USB.
 
-### Función `usbMsgLen_t usbFunctionSetup(uchar)`
+### Función `usbFunctionSetup`
 
 Esta función es el principal punto de entrada cuando se empieza a procesar un paquete USB procedente del host. La función recibe como parámetro 8 bytes de datos que contienen información como el *ReportID* al que va dirigido el paquete, el número de bytes recibidos, también conocido en terminología USB como *wLenght* o el tipo de transmisión, *bRequest*, que puede ser de tipo SET o GET en nuestro caso.
 
@@ -152,7 +152,7 @@ extern "C" usbMsgLen_t usbFunctionSetup(uchar data[8]) {
 
 
 
-### Funciones `uchar usbFunctionRead(uchar*, uchar)` y `uchar usbFunctionWrite(uchar*, uchar)`
+### Funciones `usbFunctionRead` y `usbFunctionWrite`
 
 Como se mencionaba en la sección anterior, estas funciones son llamadas por el core de V-USB cuando en la función `usbFunctionSetup()` se devuelve el valor *USB_NO_MSG*. 
 
@@ -189,7 +189,7 @@ Es importante recalcar que ambas funciones deben de ser previamente definidas po
 
 ## usbconfig.h
 
-El fichero *usbconfig.h* proviene del proyecto V-USB, es obligatorio incluirlo ya que contiene toda la configuración del dispositivo a emular. Cuando comenzamos la fase de codificación tuvimos refactorizarlo de forma sustancial, ya que dependiendo de lo que esté definido se creará un dispositivo diferente.
+El fichero *usbconfig.h* proviene del proyecto V-USB, es obligatorio incluirlo ya que contiene toda la configuración del dispositivo a emular. Cuando comenzamos la fase de codificación tuvimos que refactorizarlo de forma sustancial, ya que dependiendo de los valores definidos se creará un dispositivo diferente.
 
 Este fichero contiene numerosas macros que controlan diversos aspectos de la configuración hardware, ya que como comentamos en otro punto de esta memoria, V-USB soporta muchos tipos de microcontroladores y es ampliamente configurable, pero en esta sección repasaremos algunos de los más importantes.
 
@@ -251,9 +251,7 @@ Por último, otros dos valores interesantes de configurar son el nombre del fabr
 
 En este fichero se implementan diferentes funciones que nos permiten controlar los componentes más básicos como pueden ser los diodos leds y el buzzer. 
 
-Aquí también se trabaja con los timers que nos ofrece el hardware en las funciones `blinkPWM() y `harwarePWMBeep(uint16_t)`, que son las encargadas de empezar a parpadear el led con frecuencia de 1 segundo y de generar una señal PWM con la frecuencia indicada por parámetro.
-
-Es un fichero relativamente sencillo pero de gran uso, ya que libera del fichero de ejecución principal el código de estas funciones.
+Aquí también se trabaja con los timers que nos ofrece el hardware en las funciones `blinkPWM()` y `harwarePWMBeep()`, que son las encargadas de empezar a parpadear el led con frecuencia de 1 segundo y de generar una señal PWM con la frecuencia indicada por parámetro, respectivamente.
 
 ## Otras librerías usadas
 
