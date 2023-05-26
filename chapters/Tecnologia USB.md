@@ -24,9 +24,9 @@ En la siguiente capa encontramos toda la parte software dentro del kernel Linux,
 
 - *Drivers para dispositivos USB*, son los controladores más cercanos al usuario. Abstraen el dispositivo USB y proveen al usuario de una manera de comunicarse con él a través de diferentes operaciones soportadas por el driver. En el capítulo Drivers USB \ref{sec:drivers} se pueden encontrar muchos más detalles sobre estos controladores.
 
-- *USB Core*, podemos catalogarlo como el núcleo de todo. Acerca al usuario los dispositivos USB abstrayendo el hardware lo máximo posible. Como hemos hablado antes, ofrece una API para desarrolladores que es la que permite controlar los dispositivos sin necesidad de conocer el hardware en detalle. También integra la comunicación con los drivers que manejan la controladora de host, encargada de la comunicación con el dispositivo.
+- *USB Core*, podemos catalogarlo como el núcleo de todo. Acerca al desarrollador los dispositivos USB abstrayendo el hardware lo máximo posible. Como hemos hablado antes, ofrece una API que permite controlar los dispositivos sin necesidad de conocer el hardware en detalle. También integra la comunicación con los drivers que manejan la controladora de host, encargada de la comunicación con el dispositivo USB físico.
 
-- *Drivers para controladoras de host*, como vamos a ver en la sección dedicada a ello \ref{sec:usbController} hay diversos tipos de controladoras de host y cada una es manejada por un driver diferente. Estos drivers son una parte esencial para garantizar el funcionamiento de los dispositivos USB en Linux, ya que se encargan de manejar las conexiones y transferencias a más bajo nivel con los dispositivos, actuando como intermediario entre el propio hardware y el kernel.
+- *Drivers para controladoras de host*, como vamos a ver en la sección dedicada a ello \ref{sec:usbController} hay diversos tipos de controladoras de host y cada una es manejada por un driver específico para la controladora en uso. Estos drivers son una parte esencial para garantizar el funcionamiento de los dispositivos USB en Linux, ya que se encargan de manejar las conexiones y transferencias a más bajo nivel con los dispositivos, actuando como intermediario entre el propio hardware y el kernel.
 
   
 
@@ -220,7 +220,7 @@ La etapa de configuración podemos dividirla en tres pasos:
 
 Este tipo de transferencias se utiliza cuando la comunicación entre el dispositivo y el host es asíncrona. La manera de avisar que se quieren recibir datos es a través de un *polling*, cuyo intervalo de consulta es parametrizable por el usuario de 1ms  a 255ms para dispositivos *low-Speed* y de 125us a 4096ms para dispositivos *high-Speed*.
 
-El sentido de la comunicación puede ser *IN* o *OUT*. Para comunicarse, se revisa el endpoint con el intervalo definido por el polling para ver si hay alguna interrupción pendiente de atender, si es así, se atiende. Esto es igual para ambas direcciones, cuando sea de tipo IN se enviarán los datos en un sentido y cuando sea de tipo *OUT* se realizará en sentido contrario.
+El sentido de la comunicación puede ser *IN* o *OUT*. Para comunicarse, se revisa el endpoint con el intervalo definido por el *polling* para ver si hay alguna interrupción pendiente de atender, si es así, se atiende. Esto es igual para ambas direcciones, cuando sea de tipo IN se enviarán los datos en un sentido y cuando sea de tipo *OUT* se realizará en sentido contrario. En el caso de que el envío vaya desde el dispositivo al host, la controladora USB de este último será la encargada de realizar el *polling*, en caso contrario, será el dispositivo a través de su mecanismo concreto de implementación.
 
 ### Bulk Endpoints
 
@@ -302,11 +302,11 @@ Como se puede ver en la imagen anterior, el USB Core es sistema que se encuentra
 
 ## URBs
 
-Los *URBs* son paquetes de datos donde se encapsula una petición USB, su propio nombre hace referencia a ello, ya que *URB* son las siglas de *USB Request Block* [@urb-docs]. Esta estructura posee todos los valores relevantes para que una petición USB pueda llevarse a cabo, pudiendo entregar los datos y obtener un estado de respuesta encapsulado también en URB. 
+Los *URBs* son paquetes de datos donde se encapsula una petición USB, su propio nombre hace referencia a ello, ya que *URB* son las siglas de *USB Request Block* [@urb-docs]. Esta estructura, propia de la implementación de USB en Linux, posee todos los valores relevantes para que una petición USB pueda llevarse a cabo, pudiendo entregar los datos y obtener un estado de respuesta encapsulado también en URB. 
 
 Cuando se emplea la *API* asíncrona, cada vez que se envía uno de estos paquetes se produce una operación asíncrona, que tiene asociada una función callback que será ejecutada una vez finalice dicha operación. Además, cada dispositivo lógico soporta una cola de peticiones, por lo que el hardware puede ir llenando esta cola mientras que el driver atiende las peticiones más antiguas.
 
-En la API USB integrada en el kernel Linux los URBs se pueden manejar de manera muy natural, esto es posible gracias a la estructura que nos ofrecen,  `struct urb`, que encapsula todos los datos que pueden llevar estos paquetes. Para la gestión de esta estructura, el kernel también nos ofrece funciones de las cuales podemos destacar las siguientes:
+En la *API USB* integrada en el kernel Linux los *URBs* se pueden manejar de manera muy natural, esto es posible gracias a la estructura que nos ofrecen,  `struct urb`, que encapsula todos los datos que pueden llevar estos paquetes. Para la gestión de esta estructura, el kernel también nos ofrece funciones de las cuales podemos destacar las siguientes:
 
 - `usb_alloc_urb()`, permite reservar memoria donde alojar un URB. Esta memoria luego será compartida con el controlador USB hardware para que envíe el paquete al dispositivo.
 
@@ -319,9 +319,9 @@ En la API USB integrada en el kernel Linux los URBs se pueden manejar de manera 
 
 
 
-## API síncrona y asíncrona
+## API USB en Linux. Síncrona y asíncrona
 
-Dentro del USB Core que viene incorporado en el kernel Linux tenemos dos modelos de API para realizar llamadas USB. El primero de ellos es el más estandar, está soportado por todos los tipos de transferencia y es el modelo ***asíncrono***. [@usb-api-docs]
+Dentro del *USB Core* que viene incorporado en el kernel Linux tenemos dos modelos de API para realizar llamadas USB. El primero de ellos es el más estandar, está soportado por todos los tipos de transferencia y es el modelo ***asíncrono***. [@usb-api-docs]
 
 La manera de funcionar del modelo asíncrono consiste en crear un *URB*, rellenarlo y posteriormente enviarlo a la controladora USB asociado a una función *callback*. Esta función será llamada una vez se complete la transferencia y será la encargada del siguiente paso.
 
