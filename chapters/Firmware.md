@@ -69,7 +69,7 @@ La manera en la que se ha implementado esta funcionalidad ha sido usando compila
 
 El fichero `main.cpp` es el punto central de la implementación, en él se maneja tanto la comunicación y respuesta USB, como la inicialización de los periféricos, reserva de memoria necesaria, entre otras acciones. También contiene el bucle principal del firmware, donde se realiza un *pooling* para comprobar si hay mensajes pendientes de responder, además de atender las interrupciones cuando paquetes de tipo INTERRUPT IN están esperando ser atendidos. El siguiente fragmento de código muestra el bucle principal:
 
-```C
+```{.c .numberLines}
 int main(void) {
     
 	...
@@ -103,7 +103,7 @@ Dentro de esta función se examinan los diferentes bytes para ir tomando decisio
 
 En caso de que el código que haya que ejecutar para realizar la petición con éxito no sea demasiado simple o necesite más de 8 bytes de datos se debe de ejecutar la función `usbFunctionRead(uchar)` en transferencias de lectura o `usbFunctionWrite(uchar)` en caso de escritura, esto ocurre por que la función de *setup* se llama una sola vez con 8 bytes de datos y el diseño del *framework* obliga a realizar el procesamiento de transferencias superiores a 8 bytes de datos en las funciones correspondientes. Estas funciones serán llamadas automáticamente por *V-USB* tantas veces como sea necesario en trozos de 8 bytes hasta completar la longitud total del mensaje. Para que esto suceda, la función debe devolver la macro `USB_NO_MSG`. Por otro lado, si la petición puede completarse en esta función se devolverá el número de bytes que se han escrito en el buffer que será devuelto al host. En el siguiente fragmento de código se puede observar el tratamiento de algunos de los *ReportIDs* implementados y la invocación de las funciones *write* y *read* por transferencias superiores a 8 bytes:
 
-```C
+```{.c .numberLines}
 extern "C" usbMsgLen_t usbFunctionSetup(uchar data[8]) {
 	usbRequest_t *rq = (usbRequest_t *)data;
 	reportId = rq->wValue.bytes[0];
@@ -272,7 +272,7 @@ Con el cambio de chip al *ATMega328p* pudimos hacer uso de la interfaz UART que 
 
 A este fichero añadimos una función que nos resultó muy cómoda para poder imprimir cadenas de caracteres y es la función `int odPrintf(char *fmt, ...)`. Esta función nos permite escribir por el puerto serie cadenas de caracteres con formato, usando los mismos *placeholders* que `printf()`. De esta manera, pudimos incluir trazas distribuidas por el código para ver los diferentes flujos de ejecución, así como el valor de determinadas variables, de manera muy sencilla como muestra el siguiente código:
 
-```C
+```{.c .numberLines}
 odDebugInit();
 odPrintf("V-USB device initializing... ");
 ...

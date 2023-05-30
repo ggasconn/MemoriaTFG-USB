@@ -52,6 +52,8 @@ https://www.uv.es/wikibase/doc/cas/pandoc_manual_2.7.3.wiki?82
 
 
 
+
+
 T1
 
 :	Estudio de la placa Digispark y análisis del control de los diferentes periféricos bajo entorno Arduino
@@ -151,12 +153,10 @@ T24
 
 Durante el desarrollo del proyecto se han mantenido distintas reuniones con los directores del TFG. La frecuencia de las mismas se ha ido incrementando de forma gradual conforme ha ido avanzado el desarrollo. Estas reuniones han servido para resolver problemas de diseño, plantear las diferentes fases y solucionar múltiples dudas y limitaciones que han ido surgiendo durante todo el proyecto.
 
-
 Para la gestión tanto del código como de las fuentes de la memoria del proyecto se han utilizado repositorios compartidos en la plataforma GitHub. Los enlaces a ambos repositorios son:
-* **Código fuente**. https://github.com/ggasconn/TFG_USB
-* **Memoria**. https://github.com/ggasconn/MemoriaTFG-USB/
 
-
+- **Código fuente**. https://github.com/ggasconn/TFG_USB
+- **Memoria**. https://github.com/ggasconn/MemoriaTFG-USB/
 
 ## Organización de la memoria
 
